@@ -1,3 +1,11 @@
+const google = window.google;
+const JSIO = window.JSIO;
+const MultiGeometry = window.MutiGeometry;
+const ProjectedOverlay = window.ProjectedOverlay;
+const ActiveXObject = window.ActiveXObject;
+const ZipFile = window.ZipFile;
+let thisDoc;
+
 /**
  * @fileOverview Renders KML on the Google Maps JavaScript API Version 3
  * @name GeoXML3
@@ -69,7 +77,7 @@ if (!!window.google && !!google.maps) {
     this.setValues(multiGeometryOptions);
     this.polylines = [];
 
-    for (i = 0; i < this.paths.length; i++) {
+    for (var i = 0; i < this.paths.length; i++) {
       var polylineOptions = multiGeometryOptions;
       polylineOptions.path = this.paths[i];
       var polyline = createPolyline(polylineOptions, this);
@@ -110,7 +118,7 @@ if (!String.prototype.trim) {
 /**
  * @namespace The GeoXML3 namespace.
  */
-geoXML3 = window.geoXML3 || { instances: [] };
+const geoXML3 = window.geoXML3 || { instances: [] };
 
 /**
  * Constructor for the root KML parser object.
@@ -172,7 +180,7 @@ geoXML3.parser = function (options) {
     };
     var thisDoc, j;
     for (var i = 0; i < urls.length; i++) {
-      var baseUrl = cleanURL(defileURL(location.pathname), urls[i]);
+      var baseUrl = cleanURL(defileURL(document.location.pathname), urls[i]);
       if (docsByUrl[baseUrl]) {
         // Reloading an existing document
         thisDoc = docsByUrl[baseUrl];
@@ -202,6 +210,7 @@ geoXML3.parser = function (options) {
     ) {
       // KMZ support requires these modules loaded
       // if url is a data URI scheme, do not guess type based on extension.
+      let contentType;
       if (/^data:[^,]*(kmz)/.test(doc.baseUrl)) {
         contentType = JSIO.FileType.Binary;
       } else if (/^data:[^,]*(kml|xml)/.test(doc.baseUrl)) {
@@ -674,7 +683,8 @@ geoXML3.parser = function (options) {
       doc.styles = styles[doc.baseUrl] = styles[doc.baseUrl] || {};
       var styleID, styleNodes;
       nodes = getElementsByTagName(responseXML, 'Style');
-      nodeCount = nodes.length;
+      const nodeCount = nodes.length;
+      let thisNode;
       for (i = 0; i < nodeCount; i++) {
         thisNode = nodes[i];
         var styleID = thisNode.getAttribute('id');
@@ -704,7 +714,7 @@ geoXML3.parser = function (options) {
       var placemark, node, coords, path, marker, poly;
       var pathLength, marker;
       var placemarkNodes = getElementsByTagName(responseXML, 'Placemark');
-      for (pm = 0; pm < placemarkNodes.length; pm++) {
+      for (let pm = 0; pm < placemarkNodes.length; pm++) {
         // Init the placemark object
         node = placemarkNodes[pm];
         var styleUrl = processStyleUrl(node);
@@ -1031,7 +1041,7 @@ geoXML3.parser = function (options) {
         if (!!doc) {
           doc.groundoverlays = doc.groundoverlays || [];
           if (doc.reload) {
-            overlayBounds = new google.maps.LatLngBounds(
+            let overlayBounds = new google.maps.LatLngBounds(
               new google.maps.LatLng(
                 groundOverlay.latLonBox.south,
                 groundOverlay.latLonBox.west
@@ -1747,52 +1757,52 @@ geoXML3.log = function (msg) {
  * @property {ProjectedOverlay.options} overlayOptions If the parser is adding ProjectedOverlays to the map itself, any options specified here will be applied to them.
  */
 geoXML3.parserOptions = function (overrides) {
-  (this.map = null),
-    /** If true, the parser will automatically move the map to a best-fit of the geodata after parsing of a KML document completes.
-     * @type Boolean
-     * @default true
-     */
-    (this.zoom = true),
-    /**#@+ @type Boolean
-     *     @default false */
-    /** If true, only a single Marker created by the parser will be able to have its InfoWindow open at once (simulating the behavior of GMaps API v2). */
-    (this.singleInfoWindow = false),
-    /** If true, suppresses the rendering of info windows. */
-    (this.suppressInfoWindows = false),
-    /**
-     * Control whether to process styles now or later.
-     *
-     * <p>By default, the parser only processes KML &lt;Style&gt; elements into their GMaps equivalents
-     * if it will be creating its own Markers (the createMarker option is null). Setting this option
-     * to true will force such processing to happen anyway, useful if you're going to be calling parser.createMarker
-     * yourself later. OTOH, leaving this option false removes runtime dependency on the GMaps API, enabling
-     * the use of geoXML3 as a standalone KML parser.</p>
-     */
-    (this.processStyles = false),
-    /**#@-*/
+  this.map = null;
+  /** If true, the parser will automatically move the map to a best-fit of the geodata after parsing of a KML document completes.
+   * @type Boolean
+   * @default true
+   */
+  (this.zoom = true);
+  /**#@+ @type Boolean
+   *     @default false */
+  /** If true, only a single Marker created by the parser will be able to have its InfoWindow open at once (simulating the behavior of GMaps API v2). */
+  (this.singleInfoWindow = false);
+  /** If true, suppresses the rendering of info windows. */
+  this.suppressInfoWindows = false;
+  /**
+   * Control whether to process styles now or later.
+   *
+   * <p>By default, the parser only processes KML &lt;Style&gt; elements into their GMaps equivalents
+   * if it will be creating its own Markers (the createMarker option is null). Setting this option
+   * to true will force such processing to happen anyway, useful if you're going to be calling parser.createMarker
+   * yourself later. OTOH, leaving this option false removes runtime dependency on the GMaps API, enabling
+   * the use of geoXML3 as a standalone KML parser.</p>
+   */
+  this.processStyles = false;
+  /**#@-*/
 
-    (this.markerOptions = {}),
-    (this.infoWindowOptions = {}),
-    (this.overlayOptions = {}),
-    /**#@+ @event */
-    /** This function will be called when parsing of a KML document is complete.
-     * @param {geoXML3.parser#docs} doc Parsed KML data. */
-    (this.afterParse = null),
-    /** This function will be called when parsing of a KML document is complete.
-     * @param {geoXML3.parser#docs} doc Parsed KML data. */
-    (this.failedParse = null),
-    /**
-     * If supplied, this function will be called once for each marker <Placemark> in the KML document, instead of the parser adding its own Marker to the map.
-     * @param {geoXML3.parser.render#placemark} placemark Placemark object.
-     * @param {geoXML3.parser#docs} doc Parsed KML data.
-     */
-    (this.createMarker = null),
-    /**
-     * If supplied, this function will be called once for each <GroundOverlay> in the KML document, instead of the parser adding its own ProjectedOverlay to the map.
-     * @param {geoXML3.parser.render#groundOverlay} groundOverlay GroundOverlay object.
-     * @param {geoXML3.parser#docs} doc Parsed KML data.
-     */
-    (this.createOverlay = null);
+  this.markerOptions = {};
+  this.infoWindowOptions = {};
+  this.overlayOptions = {};
+  /**#@+ @event */
+  /** This function will be called when parsing of a KML document is complete.
+   * @param {geoXML3.parser#docs} doc Parsed KML data. */
+  this.afterParse = null;
+  /** This function will be called when parsing of a KML document is complete.
+   * @param {geoXML3.parser#docs} doc Parsed KML data. */
+  this.failedParse = null;
+  /**
+   * If supplied, this function will be called once for each marker <Placemark> in the KML document, instead of the parser adding its own Marker to the map.
+   * @param {geoXML3.parser.render#placemark} placemark Placemark object.
+   * @param {geoXML3.parser#docs} doc Parsed KML data.
+   */
+  this.createMarker = null;
+  /**
+   * If supplied, this function will be called once for each <GroundOverlay> in the KML document, instead of the parser adding its own ProjectedOverlay to the map.
+   * @param {geoXML3.parser.render#groundOverlay} groundOverlay GroundOverlay object.
+   * @param {geoXML3.parser#docs} doc Parsed KML data.
+   */
+  this.createOverlay = null;
   /**#@-*/
 
   if (overrides) {
@@ -2294,7 +2304,7 @@ geoXML3.getElementsByTagName = function (node, tagname) {
  */
 var toAbsURL = function (d, s) {
   var p, f, i;
-  var h = location.protocol + '://' + location.host;
+  var h = document.location.protocol + '://' + document.location.host;
 
   if (!s.length) return '';
   if (/^\w+:/.test(s)) return s;
@@ -2330,7 +2340,7 @@ var internalSrc = function (src) {
  * @author Brendan Byrd
  */
 var dehostURL = function (s) {
-  var h = location.protocol + '://' + location.host;
+  var h = document.location.protocol + '://' + document.location.host;
   h = h.replace(/([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1'); // quotemeta
   return s.replace(new RegExp('^' + h, 'i'), '');
 };
@@ -2348,7 +2358,7 @@ var dehostURL = function (s) {
 var cleanURL = function (d, s) {
   return dehostURL(
     toAbsURL(
-      d ? d.split('#')[0].split('?')[0] : defileURL(location.pathname),
+      d ? d.split('#')[0].split('?')[0] : defileURL(document.location.pathname),
       s ? s.split('#')[0].split('?')[0] : ''
     )
   );
@@ -2445,3 +2455,5 @@ var base64Encode = function (input) {
   }
   return output;
 };
+
+export default geoXML3.parser;
