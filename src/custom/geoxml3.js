@@ -702,7 +702,7 @@ geoXML3.parser = function (options) {
         }
       }
       var placemark, node, coords, path, marker, poly;
-      var pathLength, marker, polygonNodes, coordList;
+      var pathLength, marker;
       var placemarkNodes = getElementsByTagName(responseXML, 'Placemark');
       for (pm = 0; pm < placemarkNodes.length; pm++) {
         // Init the placemark object
@@ -811,37 +811,27 @@ geoXML3.parser = function (options) {
                   pathLength = 1;
                   break;
                 case 'LinearRing':
-                  // Polygon/line
-                  polygonNodes = getElementsByTagName(node, 'Polygon');
-                  // Polygon
-                  if (!placemark.Polygon)
-                    placemark.Polygon = [
-                      {
-                        outerBoundaryIs: { coordinates: [] },
-                        innerBoundaryIs: [{ coordinates: [] }],
-                      },
-                    ];
-                  for (var pg = 0; pg < polygonNodes.length; pg++) {
-                    placemark.Polygon[pg] = {
-                      outerBoundaryIs: { coordinates: [] },
-                      innerBoundaryIs: [{ coordinates: [] }],
-                    };
-                    placemark.Polygon[
-                      pg
-                    ].outerBoundaryIs = processPlacemarkCoords(
-                      polygonNodes[pg],
-                      'outerBoundaryIs'
-                    );
-                    placemark.Polygon[
-                      pg
-                    ].innerBoundaryIs = processPlacemarkCoords(
-                      polygonNodes[pg],
-                      'innerBoundaryIs'
-                    );
+                  // THIS PART IS CHANGED!!!
+                  var polygonNode = GeometryPN.parentNode.parentNode;
+                  if (GeometryPN.parentNode.tagName === 'innerBoundaryIs') {
+                    // As base loop processes all 'coordinated' it includes outer and inner coords. TODO: Change outer loop to process polygon node insteadss
+                    continue;
                   }
-                  coordList = placemark.Polygon[0].outerBoundaryIs;
+                  var outer = processPlacemarkCoords(
+                    polygonNode,
+                    'outerBoundaryIs'
+                  );
+                  var inner = processPlacemarkCoords(
+                    polygonNode,
+                    'innerBoundaryIs'
+                  );
+                  var newPolygon = {
+                    outerBoundaryIs: outer,
+                    innerBoundaryIs: inner,
+                  };
+                  if (!placemark.Polygon) placemark.Polygon = [];
+                  placemark.Polygon.push(newPolygon);
                   break;
-
                 case 'LineString':
                   pathLength = 0;
                   placemark.LineString = processPlacemarkCoords(
