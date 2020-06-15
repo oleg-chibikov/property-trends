@@ -14,8 +14,7 @@
 }
 
 .container > header,
-.container > footer,
-.container > .info-container {
+.container > footer {
   padding: 20px;
 }
 
@@ -25,7 +24,7 @@
 
 .container > .info-container {
   grid-area: left;
-  background-color: whitesmoke;
+  overflow-y: auto;
 }
 
 .container > .map {
@@ -41,5 +40,4 @@
 
 .container > footer {
   grid-area: bot;
-  height: 60px;
 }

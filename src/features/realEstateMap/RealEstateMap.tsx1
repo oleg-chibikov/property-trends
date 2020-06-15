@@ -1,0 +1,405 @@
+import React from 'react';
+import { Map, GoogleApiWrapper, IMapProps } from 'google-maps-react';
+import { throttle } from 'throttle-typescript';
+const LoadingContainer = (props: any) => <div>Fancy loading container!</div>;
+
+interface RealEstateResponse {
+  medianPrice: number;
+  postCode: number;
+  minPrice: number;
+  averagePrice: number;
+  maxPrice: number;
+  percentile95Price: number;
+  count: number;
+}
+
+interface Placemark {
+  Point: { coordinates: [{ lat: number; lng: number }] };
+  Polygon: google.maps.Polygon;
+  polygon: CustomPolygon;
+  name: string;
+  description?: string;
+}
+
+interface CustomPolygon extends google.maps.Polygon {
+  bounds: google.maps.LatLngBounds;
+  unhighlightedStyle: any;
+}
+
+class RealEstateMap extends React.Component<IMapProps> {
+  placemarks: Placemark[] = [];
+  infoWindow?: google.maps.InfoWindow;
+  map?: google.maps.Map;
+  pricesToColors: { [needle: number]: string } = {
+    0: '#8EEF92',
+    100000: '#83F781',
+    200000: '#88FF00',
+    300000: '#A7FF44',
+    400000: '#CEFF18',
+    500000: '#FFF518',
+    600000: '#FFC918',
+    700000: '#FF8E18',
+    800000: '#FF5318',
+    900000: '#FF1818',
+    1000000: '#FF1870',
+  };
+  pricesToColorsKeys = Object.keys(this.pricesToColors).map(Number);
+
+  setPolygonHighlightEvents(
+    placemark: Placemark,
+    sideBarEntry: HTMLDivElement
+  ) {
+    var self = this;
+    google.maps.event.addListener(placemark.polygon, 'mouseover', function () {
+      sideBarEntry.classList.add('highlighted');
+      sideBarEntry.scrollIntoView();
+      sideBarEntry.style.removeProperty('backgroundColor');
+      self.kmlHighlightPoly(placemark);
+    });
+    google.maps.event.addListener(placemark.polygon, 'mouseout', function () {
+      sideBarEntry.classList.remove('highlighted');
+      sideBarEntry.style.backgroundColor =
+        placemark.polygon.unhighlightedStyle.fillColor;
+      self.kmlUnHighlightPoly(placemark);
+    });
+  }
+
+  makeSidebarEntry(
+    placemark: Placemark,
+    placemarkIndex: number,
+    map: google.maps.Map,
+    infoWindow: google.maps.InfoWindow
+  ) {
+    let name = placemark.name;
+    if (!name || name.length === 0) {
+      name = placemarkIndex.toString();
+    }
+    const div = document.createElement('div');
+    div.onmouseover = () => {
+      this.kmlHighlightPoly(placemark);
+    };
+    div.onmouseout = () => {
+      this.kmlUnHighlightPoly(placemark);
+    };
+    const a = document.createElement('a');
+    a.innerText = name;
+    a.href = 'javascript:void(0)';
+    a.onclick = () => {
+      map.fitBounds(placemark.polygon.bounds, 0);
+      this.showInfoWindow(placemark, map, infoWindow);
+    };
+    div.appendChild(a);
+    div.style.backgroundColor = placemark.polygon.unhighlightedStyle.fillColor;
+    document.getElementsByClassName('suburbs')[0].appendChild(div);
+    return div;
+  }
+
+  // Add useful missing method - credit to http://stackoverflow.com/a/13772082/5338708
+  getBoundingBox(polygon: CustomPolygon) {
+    const bounds = new google.maps.LatLngBounds();
+
+    polygon.getPath().forEach(function (element, index) {
+      bounds.extend(element);
+    });
+
+    return bounds;
+  }
+
+  getApproximateCenter(polygon: CustomPolygon) {
+    let boundsHeight = 0,
+      boundsWidth = 0,
+      centerPoint,
+      heightIncr = 0;
+    const maxSearchSteps = 10;
+    let n = 1,
+      northWest;
+    const polygonBounds = this.getBoundingBox(polygon);
+    let testPos,
+      widthIncr = 0;
+    // Get polygon Centroid
+    centerPoint = polygonBounds.getCenter();
+    if (google.maps.geometry.poly.containsLocation(centerPoint, polygon)) {
+      // Nothing to do Centroid is in polygon use it as is
+      return centerPoint;
+    } else {
+      // Calculate NorthWest point so we can work out
+      // height of polygon NW->SE
+      northWest = new google.maps.LatLng(
+        polygonBounds.getNorthEast().lat(),
+        polygonBounds.getSouthWest().lng()
+      );
+      // Work out how tall and wide the bounds are and what our search
+      // increment will be
+      boundsHeight = google.maps.geometry.spherical.computeDistanceBetween(
+        northWest,
+        polygonBounds.getSouthWest()
+      );
+      heightIncr = boundsHeight / maxSearchSteps;
+      boundsWidth = google.maps.geometry.spherical.computeDistanceBetween(
+        northWest,
+        polygonBounds.getNorthEast()
+      );
+      widthIncr = boundsWidth / maxSearchSteps;
+      // Expand out from Centroid and find a point within polygon at
+      // 0, 90, 180, 270 degrees
+      for (; n <= maxSearchSteps; n++) {
+        // Test point North of Centroid
+        testPos = google.maps.geometry.spherical.computeOffset(
+          centerPoint,
+          heightIncr * n,
+          0
+        );
+        if (google.maps.geometry.poly.containsLocation(testPos, polygon)) {
+          break;
+        }
+        // Test point East of Centroid
+        testPos = google.maps.geometry.spherical.computeOffset(
+          centerPoint,
+          widthIncr * n,
+          90
+        );
+        if (google.maps.geometry.poly.containsLocation(testPos, polygon)) {
+          break;
+        }
+        // Test point South of Centroid
+        testPos = google.maps.geometry.spherical.computeOffset(
+          centerPoint,
+          heightIncr * n,
+          180
+        );
+        if (google.maps.geometry.poly.containsLocation(testPos, polygon)) {
+          break;
+        }
+        // Test point West of Centroid
+        testPos = google.maps.geometry.spherical.computeOffset(
+          centerPoint,
+          widthIncr * n,
+          270
+        );
+        if (google.maps.geometry.poly.containsLocation(testPos, polygon)) {
+          break;
+        }
+      }
+
+      if (!testPos) {
+        throw 'Center Point cannot be detected';
+      }
+      return testPos;
+    }
+  }
+
+  showInfoWindow(
+    placemark: Placemark,
+    map: google.maps.Map,
+    infoWindow: google.maps.InfoWindow
+  ) {
+    const centerPoint = this.getApproximateCenter(placemark.polygon);
+    infoWindow.setContent(
+      '<b>' +
+        placemark.name +
+        '</b><br>' +
+        placemark.description +
+        '<br>' +
+        centerPoint?.toUrlValue(6)
+    );
+    infoWindow.setPosition(centerPoint);
+    infoWindow.open(map);
+  }
+
+  kmlHighlightPoly(placemark: Placemark) {
+    placemark.polygon.setOptions({
+      fillColor: '#FFFF00',
+      strokeColor: '#000000',
+      fillOpacity: 0.2,
+      // @ts-ignore
+      strokeWidth: 10,
+    });
+  }
+
+  kmlUnHighlightPoly(placemark: Placemark) {
+    placemark.polygon.setOptions(placemark.polygon.unhighlightedStyle);
+  }
+
+  showAll(map: google.maps.Map, infoWindow: google.maps.InfoWindow) {
+    infoWindow.close();
+    let bounds = new google.maps.LatLngBounds();
+    for (let i = 0; i < this.placemarks.length; i++) {
+      const placemark = this.placemarks[i];
+      bounds = bounds.union(placemark.polygon.bounds);
+      placemark.polygon.setMap(map);
+    }
+    map.fitBounds(bounds, 0);
+  }
+
+  showAllWithThrottling = throttle(this.showAll, 250);
+
+  async getRealEstate() {
+    return await fetch(
+      'https://localhost:5001/api/RealEstate?postCodeMin=2000&postCodeMax=2099&allowedWindowInDays=7&mainPriceOnly=true&bedroomsMin=1&bedroomsMax=5&bathroomsMin=1&bathroomsMax=5&parkingSpacesMin=1&parkingSpacesMax=5'
+    )
+      .then((response) => {
+        if (response.status >= 400 && response.status < 600) {
+          throw new Error('Bad response from server');
+        }
+        return response.json();
+      })
+      .catch((error) => {
+        // Your error is here!
+        console.error(error);
+      });
+  }
+
+  async getRealEstateDictionary() {
+    const realEstate = await this.getRealEstate();
+    if (!realEstate) {
+      return {};
+    }
+    const realEstateDictionary: {
+      [characterName: string]: RealEstateResponse;
+    } = {};
+    for (const element of realEstate) {
+      realEstateDictionary[element.locality.toLowerCase()] = element;
+    }
+    return realEstateDictionary;
+  }
+
+  async afterGeoXmlParse(doc: any) {
+    // if (!this.map) {
+    //   throw 'this.map is undefined';
+    // }
+    // if (!this.infoWindow) {
+    //   throw 'this.infoWindow is undefined';
+    // }
+    // const map = this.map;
+    // const infoWindow = this.infoWindow;
+    // const realEstateDictionary = await this.realEstateDictionaryPromise;
+    // const geoXmlDoc = doc[0];
+    // if (!geoXmlDoc || !geoXmlDoc.placemarks) {
+    //   return;
+    // }
+    // for (let i = 0; i < geoXmlDoc.placemarks.length; i++) {
+    //   this.processPolygon(
+    //     geoXmlDoc.placemarks[i],
+    //     realEstateDictionary,
+    //     map,
+    //     infoWindow
+    //   );
+    // }
+  }
+
+  async processPolygon(
+    placemark: Placemark,
+    realEstateDictionary: { [characterName: string]: RealEstateResponse },
+    map: google.maps.Map,
+    infoWindow: google.maps.InfoWindow
+  ) {
+    if (!placemark.Point) {
+      const latLng = this.getApproximateCenter(placemark.polygon);
+      const lat = latLng.lat();
+      const lng = latLng.lng();
+      placemark.Point = { coordinates: [{ lat: lat, lng: lng }] };
+    }
+    //addMyMarker(placemark);
+
+    const toTitleCase = (phrase: string) => {
+      return phrase
+        .toLowerCase()
+        .split(' ')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    placemark.name = toTitleCase(placemark.name);
+    const realEstateDataForPlacemark =
+      realEstateDictionary[placemark.name.toLowerCase()];
+    if (realEstateDataForPlacemark) {
+      const closestMinimal = (needle: number, haystack: number[]) => {
+        var i = 0;
+        while (haystack[++i] < needle);
+        return haystack[--i];
+      };
+      const closest = closestMinimal(
+        realEstateDataForPlacemark.medianPrice,
+        this.pricesToColorsKeys
+      );
+      placemark.polygon.setOptions({ fillColor: this.pricesToColors[closest] });
+    }
+
+    placemark.description = realEstateDataForPlacemark
+      ? `
+  <div class="property-info">
+    <div>Post Code: ${realEstateDataForPlacemark.postCode}</div>
+    <div>Min: ${realEstateDataForPlacemark.minPrice}</div>
+    <div>Median: ${realEstateDataForPlacemark.medianPrice}</div>
+    <div>Average: ${realEstateDataForPlacemark.averagePrice}</div>
+    <div>95 percentile: ${realEstateDataForPlacemark.percentile95Price}</div>
+    <div>Max: ${realEstateDataForPlacemark.maxPrice}</div>
+    <div>Count: ${realEstateDataForPlacemark.count}</div>
+  </div>
+`
+      : undefined;
+    const globalCounter = this.placemarks.length;
+    this.placemarks.push(placemark);
+    const unhighlightedStyle = {
+      strokeColor: placemark.polygon.get('strokeColor'),
+      strokeWeight: placemark.polygon.get('strokeWeight'),
+      strokeOpacity: placemark.polygon.get('strokeOpacity'),
+      fillColor: placemark.polygon.get('fillColor'),
+      fillOpacity: placemark.polygon.get('fillOpacity'),
+    };
+    placemark.polygon.unhighlightedStyle = unhighlightedStyle;
+
+    const sideBarEntry = this.makeSidebarEntry(
+      placemark,
+      globalCounter,
+      map,
+      infoWindow
+    );
+    this.setPolygonHighlightEvents(placemark, sideBarEntry);
+
+    google.maps.event.addListener(placemark.polygon, 'click', () =>
+      this.showInfoWindow(placemark, map, infoWindow)
+    );
+
+    this.showAllWithThrottling(map, infoWindow);
+  }
+
+  processGeoXml(mapProps?: IMapProps, map?: google.maps.Map, event?: any) {
+    console.log('processGeoXml');
+    //this.map = map;
+    // const infoWindow = new google.maps.InfoWindow({
+    //   maxWidth: 500,
+    // });
+    // this.infoWindow = infoWindow;
+    var parser = require('../../custom/geoxml3.js');
+    const geoXml = new parser.default({
+      map: map,
+      singleInfoWindow: true,
+      afterParse: this.afterGeoXmlParse.bind(this),
+      // @ts-ignore
+      polygonOptions: {
+        clickable: true,
+        strokeColor: 'black',
+        strokeWeight: 1,
+        strokeOpacity: 1,
+        fillColor: 'Transparent',
+        fillOpacity: 0.7,
+      },
+    });
+
+    // @ts-ignore
+    geoXml.parse(
+      process.env.PUBLIC_URL + '/aus_suburb_kml-master/NSW/MATRAVILLE.kml'
+    );
+  }
+
+  render() {
+    return <Map onReady={this.processGeoXml.bind(this)} {...this.props}></Map>;
+  }
+}
+
+export default GoogleApiWrapper({
+  apiKey: 'AIzaSyBCctYFKHEVCC5yaFkbCAjNwgzMGn923hQ',
+  LoadingContainer: LoadingContainer,
+  libraries: ['geometry'],
+})(RealEstateMap);

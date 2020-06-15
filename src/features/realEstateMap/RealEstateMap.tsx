@@ -1,58 +1,37 @@
-import React, { useState } from 'react';
-import {
-  Map,
-  GoogleApiWrapper,
-  IProvidedProps,
-  IMapProps,
-} from 'google-maps-react';
-const LoadingContainer = (props: any) => <div>Fancy loading container!</div>;
-class RealEstateMap extends React.Component<IMapProps> {
-  useTheData(doc: any) {}
-  fetchPlaces(mapProps?: IMapProps, map?: google.maps.Map, event?: any) {
-    const infoWindow = new google.maps.InfoWindow({
-      maxWidth: 500,
-    });
+import React, { useMemo } from 'react';
+import './RealEstateMap.module.css';
+import { Map, TileLayer } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import SuburbsControl from './SuburbsControl';
 
-    var parser = require('../../custom/geoxml3.js');
-    const geoXml = new parser.default({
-      map: map,
-      singleInfoWindow: true,
-      afterParse: this.useTheData,
-      // @ts-ignore
-      polygonOptions: {
-        clickable: true,
-        strokeColor: 'black',
-        strokeWeight: 1,
-        strokeOpacity: 1,
-        fillColor: 'Transparent',
-        fillOpacity: 0.7,
-      },
-      //createMarker: createMarker,
-      //pmParseFn: parsePlacemark
-      //createMarker: addMyMarker,
-      //createPolygon: addMyPolygon
-    });
+const RealEstateMap: React.FunctionComponent = () => {
+  const [json, setJson] = React.useState<GeoJSON.GeoJsonObject>();
 
-    //geoXml.parse('aus_suburb_kml-master/TAS/SOUTHWEST.kml');
-    //geoXml.parse('aus_suburb_kml-master/TAS/RISDON.kml');
-    //geoXml.parse('aus_suburb_kml-master/TAS/TROWUTTA.kml');
-    //geoXml.parse('aus_suburb_kml-master/TAS/HOBART.kml');
-    //geoXml.parse('aus_suburb_kml-master/TAS/North HOBART.kml');
-    //geoXml.parse('aus_suburb_kml-master/TAS/Battery point.kml');
-    //geoXml.parse('aus_suburb_kml-master/TAS/TARLETON.kml');
-    //geoXml.parse('aus_suburb_kml-master/TAS/SOUTHWEST.kml');
-    // @ts-ignore
-    geoXml.parse(
-      process.env.PUBLIC_URL + '/aus_suburb_kml-master/NSW/APPIN.kml'
-    );
-  }
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch(process.env.PUBLIC_URL + '/geo/act.geojson');
+      setJson(await response.json());
+    };
+    fetchData();
+  }, []);
 
-  render() {
-    return <Map onReady={this.fetchPlaces} {...this.props}></Map>;
-  }
-}
+  return useMemo(
+    () => (
+      <Map
+        inertia={true}
+        preferCanvas={true}
+        zoom={17}
+        center={[-33.9613, 151.23]}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {json && <SuburbsControl json={json} />}
+      </Map>
+    ),
+    [json]
+  );
+};
 
-export default GoogleApiWrapper({
-  apiKey: 'AIzaSyBCctYFKHEVCC5yaFkbCAjNwgzMGn923hQ',
-  LoadingContainer: LoadingContainer,
-})(RealEstateMap);
+export default RealEstateMap;
