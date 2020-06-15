@@ -1,12 +1,12 @@
 import React, { useMemo, useCallback, useRef } from 'react';
 import { GeoJSON, FeatureGroup } from 'react-leaflet';
 import L, { StyleFunction } from 'leaflet';
-import InfoControl from './InfoControl';
-import LegendControl from './LegendControl';
+import Info from '../info/Info';
 import { useDispatch } from 'react-redux';
-import { addSuburb } from './suburbsListControlSlice';
+import { addSuburb } from '../suburbsList/suburbsListSlice';
+import Legend from '../legend/Legend';
 
-interface SuburbsControlProps {
+interface SuburbsMapProps {
   json: GeoJSON.GeoJsonObject;
 }
 
@@ -30,9 +30,7 @@ const getColor = (d: number) => {
   return pricesToColors[closestMinimal(700, pricesToColorsKeys)];
 };
 
-const SuburbsControl: React.FunctionComponent<SuburbsControlProps> = (
-  props
-) => {
+const SuburbsMap: React.FunctionComponent<SuburbsMapProps> = (props) => {
   const dispatch = useDispatch();
   const geojson = useRef<any>();
   const [info, setInfo] = React.useState<string>();
@@ -101,7 +99,7 @@ const SuburbsControl: React.FunctionComponent<SuburbsControlProps> = (
       properties.popupContent = popupContent;
       layer.bindPopup(popupContent);
     },
-    [highlightFeature, removeHighlightFromFeature, zoomToFeature]
+    [highlightFeature, removeHighlightFromFeature, zoomToFeature, dispatch]
   );
 
   const onFeatureGroupAdd = useCallback((e) => {
@@ -124,10 +122,10 @@ const SuburbsControl: React.FunctionComponent<SuburbsControlProps> = (
         ),
         [props.json, onEachFeature, onFeatureGroupAdd, style]
       )}
-      {useMemo(() => info && <InfoControl info={info} />, [info])}
+      {useMemo(() => info && <Info info={info} />, [info])}
       {useMemo(
         () => (
-          <LegendControl colorsDictionary={pricesToColors} />
+          <Legend colorsDictionary={pricesToColors} />
         ),
         []
       )}
@@ -135,4 +133,4 @@ const SuburbsControl: React.FunctionComponent<SuburbsControlProps> = (
   );
 };
 
-export default SuburbsControl;
+export default SuburbsMap;

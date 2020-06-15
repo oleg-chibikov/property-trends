@@ -1,11 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import counterReducer from '../features/counter/counterSlice';
-import suburbsListControlReducer from '../features/realEstateMap/suburbsListControlSlice';
+import suburbsListReducer from '../features/suburbsList/suburbsListSlice';
 
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
-    suburbsListControl: suburbsListControlReducer,
+    suburbsList: suburbsListReducer,
   },
 });
 

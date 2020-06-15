@@ -1,12 +1,12 @@
 import React from 'react';
-import styles from './InfoControl.module.css';
+import styles from './Info.module.css';
 import Control from 'react-leaflet-control';
 
-interface InfoControlProps {
+interface InfoProps {
   info: string;
 }
 
-const InfoControl: React.FunctionComponent<InfoControlProps> = ({ info }) => (
+const Info: React.FunctionComponent<InfoProps> = ({ info }) => (
   <Control position="topright">
     <div className={styles.info}>
       <h4>{info}</h4>
@@ -14,4 +14,4 @@ const InfoControl: React.FunctionComponent<InfoControlProps> = ({ info }) => (
   </Control>
 );
 
-export default InfoControl;
+export default Info;

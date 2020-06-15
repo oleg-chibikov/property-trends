@@ -1,13 +1,13 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { selectSuburbs } from './suburbsListControlSlice';
-import styles from './SuburbsListControl.module.css';
+import { selectSuburbs } from './suburbsListSlice';
+import styles from './SuburbsList.module.css';
 
-interface SuburbsListControlState {
+interface SuburbsListState {
   suburbs: string[];
 }
 
-const SuburbsListControl: React.FunctionComponent = () => {
+const SuburbsList: React.FunctionComponent = () => {
   const suburbs = useSelector(selectSuburbs);
   return (
     <div className={styles.suburbs}>
@@ -22,4 +22,4 @@ const SuburbsListControl: React.FunctionComponent = () => {
   );
 };
 
-export default SuburbsListControl;
+export default SuburbsList;

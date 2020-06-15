@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import './RealEstateMap.module.css';
 import { Map, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import SuburbsControl from './SuburbsControl';
+import SuburbsMap from '../suburbsMap/SuburbsMap';
 
 const RealEstateMap: React.FunctionComponent = () => {
   const [json, setJson] = React.useState<GeoJSON.GeoJsonObject>();
@@ -27,7 +27,7 @@ const RealEstateMap: React.FunctionComponent = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         />
-        {json && <SuburbsControl json={json} />}
+        {json && <SuburbsMap json={json} />}
       </Map>
     ),
     [json]

@@ -1,14 +1,12 @@
 import React from 'react';
-import styles from './LegendControl.module.css';
+import styles from './Legend.module.css';
 import Control from 'react-leaflet-control';
 
-interface LegendControlProps {
+interface LegendProps {
   colorsDictionary: { [needle: number]: string };
 }
 
-const LegendControl: React.FunctionComponent<LegendControlProps> = ({
-  colorsDictionary,
-}) => (
+const Legend: React.FunctionComponent<LegendProps> = ({ colorsDictionary }) => (
   <Control position="bottomright">
     <div className={styles.Legend}>
       {Object.keys(colorsDictionary)
@@ -25,4 +23,4 @@ const LegendControl: React.FunctionComponent<LegendControlProps> = ({
   </Control>
 );
 
-export default LegendControl;
+export default Legend;
