@@ -1,0 +1,17 @@
+.features {
+  background-color: rgb(39, 39, 39);
+  padding: 20px;
+  height: 700px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.feature {
+  color: white;
+  cursor: pointer;
+}
+
+.feature.highlighted {
+  background-color: white;
+  color: black;
+}

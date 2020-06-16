@@ -90,7 +90,7 @@ class RealEstateMap extends React.Component<IMapProps> {
     };
     div.appendChild(a);
     div.style.backgroundColor = placemark.polygon.unhighlightedStyle.fillColor;
-    document.getElementsByClassName('suburbs')[0].appendChild(div);
+    document.getElementsByClassName('features')[0].appendChild(div);
     return div;
   }
 
@@ -389,7 +389,7 @@ class RealEstateMap extends React.Component<IMapProps> {
 
     // @ts-ignore
     geoXml.parse(
-      process.env.PUBLIC_URL + '/aus_suburb_kml-master/NSW/MATRAVILLE.kml'
+      process.env.PUBLIC_URL + '/aus_feature_kml-master/NSW/MATRAVILLE.kml'
     );
   }
 

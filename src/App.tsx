@@ -1,7 +1,6 @@
 import React from 'react';
 import './App.css';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
-import SuburbsList from './features/suburbsList/SuburbsList';
 
 function App() {
   return (
@@ -10,9 +9,9 @@ function App() {
       <div className="map">
         <RealEstateMap />
       </div>
-      <div className="info-container">
-        <SuburbsList />
-      </div>
+      {/* <div className="info-container">
+        <FeatureList />
+      </div> */}
       <footer>Map</footer>
     </div>
   );

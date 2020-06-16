@@ -25,6 +25,7 @@ header {
 .info-container {
   grid-area: left;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .map {

@@ -2,14 +2,16 @@ import React, { useMemo } from 'react';
 import './RealEstateMap.module.css';
 import { Map, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import SuburbsMap from '../suburbsMap/SuburbsMap';
+import FeatureMap from '../featureMap/FeatureMap';
 
 const RealEstateMap: React.FunctionComponent = () => {
   const [json, setJson] = React.useState<GeoJSON.GeoJsonObject>();
 
   React.useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(process.env.PUBLIC_URL + '/geo/act.geojson');
+      const response = await fetch(
+        process.env.PUBLIC_URL + '/geo/arthur river.geojson'
+      );
       setJson(await response.json());
     };
     fetchData();
@@ -27,7 +29,7 @@ const RealEstateMap: React.FunctionComponent = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         />
-        {json && <SuburbsMap json={json} />}
+        {json && <FeatureMap json={json} />}
       </Map>
     ),
     [json]
