@@ -28,7 +28,7 @@ const initialState: FeatureListState = {
   highlightedFeatureId: undefined,
 };
 
-export const FeatureListSlice = createSlice({
+export const featureListSlice = createSlice({
   name: 'FeatureList',
   initialState,
   reducers: {
@@ -60,10 +60,10 @@ export const {
   addFeature,
   highlightFeature,
   unhighlightFeature,
-} = FeatureListSlice.actions;
+} = featureListSlice.actions;
 
-export const selectFeatures = (state: RootState) => state.FeatureList.features;
+export const selectFeatures = (state: RootState) => state.featureList.features;
 export const selectHighlightedFeature = (state: RootState) =>
-  state.FeatureList.highlightedFeatureId;
+  state.featureList.highlightedFeatureId;
 
-export default FeatureListSlice.reducer;
+export default featureListSlice.reducer;

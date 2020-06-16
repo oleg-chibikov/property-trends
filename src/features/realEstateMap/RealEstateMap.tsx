@@ -1,18 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import './RealEstateMap.module.css';
 import { Map, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import FeatureMap from '../featureMap/FeatureMap';
 
 const RealEstateMap: React.FunctionComponent = () => {
-  const [json, setJson] = React.useState<GeoJSON.GeoJsonObject>();
+  const [polygonData, setPolygonData] = React.useState<GeoJSON.GeoJsonObject>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(
+      const polygonDataResponse = await fetch(
         process.env.PUBLIC_URL + '/geo/arthur river.geojson'
       );
-      setJson(await response.json());
+      setPolygonData(await polygonDataResponse.json());
     };
     fetchData();
   }, []);
@@ -29,10 +29,10 @@ const RealEstateMap: React.FunctionComponent = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         />
-        {json && <FeatureMap json={json} />}
+        {polygonData && <FeatureMap polygonData={polygonData} />}
       </Map>
     ),
-    [json]
+    [polygonData]
   );
 };
 

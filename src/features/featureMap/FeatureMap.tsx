@@ -11,20 +11,12 @@ import {
 import Legend from '../legend/Legend';
 import Control from 'react-leaflet-control';
 import FeatureList from '../featureList/FeatureList';
+import HashingUtils from '../../utils/hashingUtils';
+import StringUtils from '../../utils/stringUtils';
 
-interface FeaturesMapProps {
-  json: GeoJSON.GeoJsonObject;
+interface FeatureMapProps {
+  polygonData: GeoJSON.GeoJsonObject;
 }
-
-const hashCode = (s: string) => {
-  var hash = 0;
-  for (var i = 0; i < s.length; i++) {
-    var character = s.charCodeAt(i);
-    hash = (hash << 5) - hash + character;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash;
-};
 
 const pricesToColors: { [needle: number]: string } = {
   0: '#FFEDA0',
@@ -48,12 +40,17 @@ const getColor = (d: number) => {
   return pricesToColors[closestMinimal(700, pricesToColorsKeys)];
 };
 
-const FeaturesMap: React.FunctionComponent<FeaturesMapProps> = (props) => {
+const getId = (name: string, layer: any) =>
+  StringUtils.removeWhitespace(name).toLowerCase() +
+  '_' +
+  HashingUtils.hashCode(JSON.stringify(layer.getBounds()));
+
+const FeaturesMap: React.FunctionComponent<FeatureMapProps> = (props) => {
   const dispatch = useDispatch();
   const geojson = useRef<any>();
   const [info, setInfo] = React.useState<string>();
 
-  const style: StyleFunction<GeoJSON.Feature> = useCallback(
+  const applyStyle: StyleFunction<GeoJSON.Feature> = useCallback(
     (feature) => ({
       fillColor: getColor(700),
       weight: 1,
@@ -74,7 +71,7 @@ const FeaturesMap: React.FunctionComponent<FeaturesMapProps> = (props) => {
       layer.setStyle({
         // weight: 1,
         //color: 'dimgray',
-        fillColor: 'yellow',
+        fillColor: 'magenta',
         dashArray: '',
         fillOpacity: 0.3,
       });
@@ -127,21 +124,10 @@ const FeaturesMap: React.FunctionComponent<FeaturesMapProps> = (props) => {
         click: zoomToFeatureHandler,
       });
 
-      const toTitleCase = (phrase: string) => {
-        return phrase
-          .toLowerCase()
-          .split(' ')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      };
-
-      const bounds = layer.getBounds();
       const properties = layer.feature.properties;
-      const name = toTitleCase(properties.Name || properties.name);
-      const id =
-        name.replace(/\s/g, '-').toLowerCase() +
-        '_' +
-        hashCode(JSON.stringify(bounds));
+      const name = StringUtils.toTitleCase(properties.Name || properties.name);
+      const id = getId(name, layer);
+
       featuresById[id] = layer;
       dispatch(
         addFeature({
@@ -176,14 +162,14 @@ const FeaturesMap: React.FunctionComponent<FeaturesMapProps> = (props) => {
         () => (
           <FeatureGroup onAdd={onFeatureGroupAdd}>
             <GeoJSON
-              style={style}
+              style={applyStyle}
               ref={geojson}
-              data={props.json}
+              data={props.polygonData}
               onEachFeature={onEachFeature}
             />
           </FeatureGroup>
         ),
-        [props.json, onEachFeature, onFeatureGroupAdd, style]
+        [props.polygonData, onEachFeature, onFeatureGroupAdd, applyStyle]
       )}
       {useMemo(
         () =>
