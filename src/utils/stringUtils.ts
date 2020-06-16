@@ -7,5 +7,5 @@ export default class StringUtils {
       .join(' ');
   };
 
-  static removeWhitespace = (str: string) => str.replace(/\s/g, '-');
+  static removeWhitespace = (str: string) => str.replace(/[\s'"]/g, '-');
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import { GeoJSON, FeatureGroup } from 'react-leaflet';
 import L, { StyleFunction } from 'leaflet';
 import Info from '../info/Info';
@@ -13,9 +13,23 @@ import Control from 'react-leaflet-control';
 import FeatureList from '../featureList/FeatureList';
 import HashingUtils from '../../utils/hashingUtils';
 import StringUtils from '../../utils/stringUtils';
+import axios from 'axios';
+import ReactDOMServer from 'react-dom/server';
+
+export interface RealEstateResponse {
+  postCode?: number;
+  locality: string;
+  medianPrice?: number;
+  minPrice?: number;
+  averagePrice?: number;
+  maxPrice?: number;
+  percentile95Price?: number;
+  count?: number;
+}
 
 interface FeatureMapProps {
   polygonData: GeoJSON.GeoJsonObject;
+  priceData?: RealEstateResponse;
 }
 
 const pricesToColors: { [needle: number]: string } = {
@@ -31,13 +45,13 @@ const pricesToColorsKeys = Object.keys(pricesToColors).map(Number);
 
 const featuresById: { [id: string]: any } = {};
 
-const getColor = (d: number) => {
+const getColor = (price: number) => {
   const closestMinimal = (needle: number, haystack: number[]) => {
     var i = 0;
     while (haystack[++i] < needle);
     return haystack[--i];
   };
-  return pricesToColors[closestMinimal(700, pricesToColorsKeys)];
+  return pricesToColors[closestMinimal(price, pricesToColorsKeys)];
 };
 
 const getId = (name: string, layer: any) =>
@@ -45,21 +59,74 @@ const getId = (name: string, layer: any) =>
   '_' +
   HashingUtils.hashCode(JSON.stringify(layer.getBounds()));
 
-const FeaturesMap: React.FunctionComponent<FeatureMapProps> = (props) => {
+const FeatureMap: React.FunctionComponent<FeatureMapProps> = (props) => {
   const dispatch = useDispatch();
   const geojson = useRef<any>();
-  const [info, setInfo] = React.useState<string>();
+  const [info, setInfo] = React.useState<RealEstateResponse>();
+  const [priceData, setPriceData] = React.useState<{
+    [characterName: string]: RealEstateResponse;
+  }>();
 
-  const applyStyle: StyleFunction<GeoJSON.Feature> = useCallback(
-    (feature) => ({
-      fillColor: getColor(700),
-      weight: 1,
-      opacity: 1,
-      color: 'dimgray',
-      dashArray: '3',
-      fillOpacity: 0.7,
-    }),
-    []
+  useEffect(() => {
+    const getRealEstateDictionary = (priceDataArray: RealEstateResponse[]) => {
+      if (!priceDataArray) {
+        return {};
+      }
+      const realEstateDictionary: {
+        [characterName: string]: RealEstateResponse;
+      } = {};
+      for (const element of priceDataArray) {
+        realEstateDictionary[
+          StringUtils.toTitleCase(element.locality)
+        ] = element;
+      }
+      return realEstateDictionary;
+    };
+
+    const fetchPriceData = async () => {
+      const url =
+        process.env.REACT_APP_PRICES_API_URL +
+        'RealEstate?postCodeMin=2600&postCodeMax=3000&allowedWindowInDays=7&mainPriceOnly=true&bedroomsMin=1&bedroomsMax=5&bathroomsMin=1&bathroomsMax=5&parkingSpacesMin=1&parkingSpacesMax=5';
+      const priceDataResponse = await axios.get<RealEstateResponse[]>(url);
+      setPriceData(getRealEstateDictionary(priceDataResponse.data));
+    };
+    fetchPriceData();
+  }, []);
+
+  const applyStyle: StyleFunction = useCallback(
+    (feature) => {
+      const priceDataForFeature =
+        priceData && feature && priceData[feature.properties.name];
+      if (feature && priceDataForFeature) {
+        feature.properties.priceInfo = priceDataForFeature;
+      }
+      if (
+        feature &&
+        feature.properties.setPopupContent &&
+        priceDataForFeature
+      ) {
+        const priceInfo = priceDataForFeature && (
+          <Info {...priceDataForFeature} />
+        );
+        feature.properties.setPopupContent(
+          ReactDOMServer.renderToStaticMarkup(priceInfo)
+        );
+      }
+
+      const medianPrice = priceDataForFeature?.medianPrice;
+      console.log(
+        'price for ' + feature?.properties.name + ': ' + medianPrice || -1
+      );
+      return {
+        fillColor: medianPrice ? getColor(medianPrice) : 'transparent',
+        weight: 1,
+        opacity: 1,
+        color: 'dimgray',
+        dashArray: '3',
+        fillOpacity: 0.7,
+      };
+    },
+    [priceData]
   );
 
   const zoomToFeatureOnMap = useCallback((layer) => {
@@ -80,8 +147,8 @@ const FeaturesMap: React.FunctionComponent<FeatureMapProps> = (props) => {
         layer.bringToFront();
       }
 
-      var name = layer.feature.properties.name;
-      setInfo(name);
+      var priceInfo = layer.feature.properties.priceInfo;
+      setInfo(priceInfo);
       const id = layer.feature.properties.id;
       dispatch(highlightFeature({ id, scroll: scroll }));
     },
@@ -141,6 +208,12 @@ const FeaturesMap: React.FunctionComponent<FeatureMapProps> = (props) => {
       var popupContent = `<div>
           ${name} - ${id}
         </div>`;
+      properties.popupContent = popupContent;
+      properties.setPopupContent = (popupContent: string) => {
+        layer.setPopupContent(popupContent);
+        layer.popupContent = popupContent;
+      };
+      properties.priceInfo = { locality: name };
       layer.bindPopup(popupContent);
     },
     [
@@ -175,7 +248,7 @@ const FeaturesMap: React.FunctionComponent<FeatureMapProps> = (props) => {
         () =>
           info && (
             <Control position="topright">
-              <Info info={info} />
+              <Info {...info} />
             </Control>
           ),
         [info]
@@ -214,4 +287,4 @@ const FeaturesMap: React.FunctionComponent<FeatureMapProps> = (props) => {
 
 // TODO: cuurent location, search (geocoder)
 
-export default FeaturesMap;
+export default FeatureMap;

@@ -3,18 +3,19 @@ import './RealEstateMap.module.css';
 import { Map, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import FeatureMap from '../featureMap/FeatureMap';
+import axios from 'axios';
 
 const RealEstateMap: React.FunctionComponent = () => {
   const [polygonData, setPolygonData] = React.useState<GeoJSON.GeoJsonObject>();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const polygonDataResponse = await fetch(
-        process.env.PUBLIC_URL + '/geo/arthur river.geojson'
+    const fetchPolygonData = async () => {
+      const response = await axios.get<GeoJSON.GeoJsonObject>(
+        process.env.PUBLIC_URL + '/geo/act.geojson'
       );
-      setPolygonData(await polygonDataResponse.json());
+      setPolygonData(response.data);
     };
-    fetchData();
+    fetchPolygonData();
   }, []);
 
   return useMemo(
