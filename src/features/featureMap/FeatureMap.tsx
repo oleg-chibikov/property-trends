@@ -285,6 +285,6 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = (props) => {
   );
 };
 
-// TODO: cuurent location, search (geocoder)
+// TODO: curent location, search (geocoder), loading indicators for polygons and prices. Change styles. Add left panel - filters. While loading big region display a couple of smaller regions to show how it looks like
 
 export default FeatureMap;
