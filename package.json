@@ -2,35 +2,48 @@
   "name": "property-trends",
   "version": "0.1.0",
   "private": true,
+  "cracoConfig": "config/craco.config.js",
   "dependencies": {
+    "@craco/craco": "^5.6.4",
     "@mapbox/togeojson": "^0.16.0",
+    "@opuscapita/react-checkbox": "^2.0.2",
     "@reduxjs/toolkit": "^1.3.6",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "@types/jest": "^24.9.1",
     "@types/node": "^12.12.47",
-    "@types/react": "^16.9.36",
     "@types/react-dom": "^16.9.8",
     "@types/react-leaflet": "^2.5.1",
     "@types/react-redux": "^7.1.9",
+    "@types/topojson-client": "^3.0.0",
+    "@welldone-software/why-did-you-render": "^4.2.5",
     "axios": "^0.19.2",
+    "colormap": "^2.3.1",
     "leaflet": "^1.6.0",
+    "list-react-files": "^0.2.0",
+    "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-leaflet": "^2.7.0",
+    "react-leaflet-box-zoom": "^1.0.2",
     "react-leaflet-control": "^2.1.2",
     "react-redux": "^7.2.0",
     "react-scripts": "3.4.1",
+    "rsuite": "^4.7.5",
+    "throttle-typescript": "^1.0.1",
+    "topojson-client": "^3.1.0",
+    "ts-debounce": "^2.0.1",
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject",
     "run": "serve -s build",
-    "build-and-run": "run-s build run"
+    "build-and-run": "run-s build run",
+    "lint:fix": "eslint --fix ./src/**/*.{ts,tsx}"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -48,6 +61,13 @@
     ]
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5"
+    "@types/react": "^16.9.36",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-react": "^1.1.7",
+    "eslint-plugin-prettier": "^3.1.4",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.0.5"
   }
 }

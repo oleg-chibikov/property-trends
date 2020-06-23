@@ -1,0 +1,11 @@
+.districtList {
+  margin: 10px 0;
+}
+
+.districtList > div {
+  font-size: small;
+}
+
+.districtList > div > input {
+  margin-right: 10px;
+}

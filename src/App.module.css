@@ -1,0 +1,44 @@
+.container {
+  height: 100%;
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: 50px 1fr 50px;
+  grid-template-columns: 350px 1fr;
+  grid-template-areas:
+    'top top'
+    'left right'
+    'bot bot';
+  font-family: sans-serif;
+  background-color: rgb(29, 29, 29);
+  color: white;
+}
+
+header,
+footer {
+  padding: 20px;
+}
+
+header {
+  grid-area: top;
+}
+
+.info-container {
+  grid-area: left;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.map {
+  grid-area: right;
+}
+
+.map > div {
+  position: relative;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+footer {
+  grid-area: bot;
+}

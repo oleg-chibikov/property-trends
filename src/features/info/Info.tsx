@@ -1,22 +1,23 @@
 import React from 'react';
 import styles from './Info.module.css';
-import { RealEstateResponse } from '../featureMap/FeatureMap';
+import { selectInfo } from './infoSlice';
+import { useSelector } from 'react-redux';
+import MoneyUtils from '../../utils/moneyUtils';
 
-interface InfoProps extends RealEstateResponse {}
+const Info: React.FunctionComponent = () => {
+  const info = useSelector(selectInfo).currentInfo;
+  return info ? (
+    <div className={styles.info}>
+      <h4>{info.locality}</h4>
+      {info.postCode && <div>Post Code: {info.postCode}</div>}
+      {info.minPrice && <div>Min: {MoneyUtils.format(info.minPrice)}</div>}
+      {info.medianPrice && <div>Median: {MoneyUtils.format(info.medianPrice)}</div>}
+      {info.averagePrice && <div>Average: {MoneyUtils.format(info.averagePrice)}</div>}
+      {info.percentile95Price && <div>95 percentile: {MoneyUtils.format(info.percentile95Price)}</div>}
+      {info.maxPrice && <div>Max: {MoneyUtils.format(info.maxPrice)}</div>}
+      {info.count && <div>Count: {info.count}</div>}
+    </div>
+  ) : null;
+};
 
-const Info: React.FunctionComponent<InfoProps> = (props) => (
-  <div className={styles.info}>
-    <h4>{props.locality}</h4>
-    {props.postCode && <div>Post Code: {props.postCode}</div>}
-    {props.minPrice && <div>Min: ${props.minPrice}</div>}
-    {props.medianPrice && <div>Median: ${props.medianPrice}</div>}
-    {props.averagePrice && <div>Average: ${props.averagePrice}</div>}
-    {props.percentile95Price && (
-      <div>95 percentile: ${props.percentile95Price}</div>
-    )}
-    {props.maxPrice && <div>Max: ${props.maxPrice}</div>}
-    {props.count && <div>Count: {props.count}</div>}
-  </div>
-);
-
-export default Info;
+export default React.memo(Info);

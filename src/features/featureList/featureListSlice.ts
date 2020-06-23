@@ -1,17 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
-
-export interface FeatureInfo {
-  name: string;
-  id: string;
-  isHighlighted?: boolean;
-}
-
-export interface FeatureHandlers {
-  onFeatureEntryMouseOver: (id: string) => any;
-  onFeatureEntryMouseOut: (id: string) => any;
-  onFeatureEntryClick: (id: string) => any;
-}
+import { FeatureInfo } from '../../interfaces';
 
 interface HighlightFeatureParams {
   id: string;
@@ -35,16 +24,16 @@ export const featureListSlice = createSlice({
     addFeature: (state, action: PayloadAction<FeatureInfo>) => {
       state.features[action.payload.id] = action.payload;
     },
-    highlightFeature: (
-      state,
-      action: PayloadAction<HighlightFeatureParams>
-    ) => {
+    removeFeature: (state, action: PayloadAction<string>) => {
+      delete state.features[action.payload];
+    },
+    highlightFeature: (state, action: PayloadAction<HighlightFeatureParams>) => {
       state.features[action.payload.id].isHighlighted = true;
       if (action.payload.scroll) {
         const scrollIntoView = () => {
           const el = document.querySelector('#feature' + action.payload.id);
           if (el) {
-            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            el.scrollIntoView({ block: 'end', behavior: 'auto' });
           }
         };
         scrollIntoView();
@@ -56,14 +45,9 @@ export const featureListSlice = createSlice({
   },
 });
 
-export const {
-  addFeature,
-  highlightFeature,
-  unhighlightFeature,
-} = featureListSlice.actions;
+export const { addFeature, removeFeature, highlightFeature, unhighlightFeature } = featureListSlice.actions;
 
 export const selectFeatures = (state: RootState) => state.featureList.features;
-export const selectHighlightedFeature = (state: RootState) =>
-  state.featureList.highlightedFeatureId;
+export const selectHighlightedFeature = (state: RootState) => state.featureList.highlightedFeatureId;
 
 export default featureListSlice.reducer;
