@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import { SuburbKey } from '../../interfaces';
 
 const defaultRange: [number, number] = [1, 7];
 
@@ -12,19 +13,19 @@ export interface FiltersState {
   constructionStatus: string;
   allowedWindowInDays: number;
   mainPriceOnly: boolean;
-  postCodes: [number?, number?];
+  postCodes: SuburbKey[];
 }
 
 const initialState: FiltersState = {
   propertyType: 'apartment',
   dealType: 'buy',
-  bedrooms: [1, 2],
+  bedrooms: [1, 1],
   bathrooms: defaultRange,
   parkingSpaces: defaultRange,
   constructionStatus: '',
   allowedWindowInDays: 7,
   mainPriceOnly: false,
-  postCodes: [undefined, undefined],
+  postCodes: [],
 };
 
 export const FiltersSlice = createSlice({
@@ -55,7 +56,7 @@ export const FiltersSlice = createSlice({
     changeConstructionStatus: (state, action: PayloadAction<string>) => {
       state.constructionStatus = action.payload;
     },
-    changePostCodes: (state, action: PayloadAction<[number?, number?]>) => {
+    changePostCodes: (state, action: PayloadAction<SuburbKey[]>) => {
       state.postCodes = action.payload;
     },
   },

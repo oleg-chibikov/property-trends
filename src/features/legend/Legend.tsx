@@ -8,16 +8,24 @@ const Legend: React.FunctionComponent = () => {
   const pricesToColors = useSelector(selectPricesToColors);
   return (
     <div className={styles.legendContainer}>
-      {Object.keys(pricesToColors)
-        .map(Number)
-        .map((key, index, elements) => {
-          return (
-            <div key={key}>
-              <div style={{ backgroundColor: pricesToColors[key] }} />
-              <span>{MoneyUtils.format(elements[index]) + ' - ' + (elements[index + 1] ? MoneyUtils.format(elements[index + 1]) : '...')}</span>
-            </div>
-          );
-        })}
+      {Object.keys(pricesToColors).map((el, shadeIndex) => {
+        const priceSubIntervalInfo = pricesToColors[shadeIndex];
+        const nextPriceSubIntervalInfo = pricesToColors[shadeIndex + 1];
+        return (
+          <div key={shadeIndex}>
+            <div style={{ backgroundColor: priceSubIntervalInfo.color }} />
+            <span>
+              {shadeIndex + 1}
+              {' -'}
+            </span>{' '}
+            <span>{MoneyUtils.format(priceSubIntervalInfo.price) + ' - ' + (nextPriceSubIntervalInfo ? MoneyUtils.format(nextPriceSubIntervalInfo.price) : '...')}</span>{' '}
+            <span>
+              {' '}
+              ({priceSubIntervalInfo.suburbCount} {priceSubIntervalInfo.suburbCount === 1 ? 'suburb' : 'suburbs'})
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -8,7 +8,7 @@ const districts = districtString.split('|');
 const DistrictList: React.FunctionComponent = () => (
   <div className={styles.districtList}>
     {districts.map((key) => (
-      <DistrictSelector key={key} checked={key.indexOf('NSW - Sydney - City and Inner South') !== -1} name={key} />
+      <DistrictSelector key={key} checked={key.indexOf('NSW - Sydney - Inner') !== -1} name={key} />
     ))}
   </div>
 );

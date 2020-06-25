@@ -1,9 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
-
-interface PricesToColors {
-  [needle: number]: string;
-}
+import { PricesToColors } from '../../interfaces';
 
 interface LegendState {
   pricesToColors: PricesToColors;

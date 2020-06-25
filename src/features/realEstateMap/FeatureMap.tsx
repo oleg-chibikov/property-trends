@@ -18,9 +18,12 @@ import { selectDistrictList } from '../districtList/districtListSlice';
 import { selectFilters, changePostCodes, FiltersState } from '../filters/filtersSlice';
 import { changePricesToColors } from '../legend/legendSlice';
 import * as topojson from 'topojson-client';
-import { RealEstateResponse, CustomLayer, CompoundLayer, EventArgs, FeatureProperties, WithFeatures } from '../../interfaces';
+import { RealEstateResponse, CustomLayer, CompoundLayer, EventArgs, FeatureProperties, WithFeatures, PricesToColors, SuburbKey } from '../../interfaces';
 import { debounce } from 'ts-debounce';
-import colormap from 'colormap';
+import { createColors, rgbHex, RGB } from 'color-map';
+import ColorUtils from '../../utils/colorUtils';
+import MathUtils from '../../utils/mathUtils';
+import piecewise from '@freder/piecewise';
 
 interface FeatureMapProps {
   leafletMap: Map;
@@ -34,8 +37,22 @@ let priceDictionary: { [suburbId: string]: RealEstateResponse } | undefined = un
 const currentlyCheckedDistricts: { [fileName: string]: undefined } = {};
 const layersBySuburbId: { [id: string]: CustomLayer } = {};
 const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
-let pricesToColors: { [needle: number]: string } = {};
-let pricesToColorsKeys: number[] = [];
+
+const generateColors = (shadeCount: number) => {
+  const minColor = ColorUtils.hexToRgb('#e5ce8b') as RGB;
+  const midColor = ColorUtils.hexToRgb('#e85617') as RGB;
+  const maxColor = ColorUtils.hexToRgb('#3e0925') as RGB;
+
+  const isEven = shadeCount % 2 === 0;
+  const halfShadeCount = shadeCount / 2;
+  const firstHalf = createColors(minColor, midColor, halfShadeCount);
+  const secondHalf = createColors(midColor, maxColor, halfShadeCount + (isEven ? 1 : 2));
+  secondHalf.shift(); // shift removes the first element which is the same as the last element of the first half
+  return firstHalf.concat(secondHalf).map((x) => rgbHex(x));
+};
+
+const shadeCount = 15;
+const colors = generateColors(shadeCount);
 
 const getSuburbId = (name: string, postCode: number) => StringUtils.removeNonAlphaNumberic(name).toLowerCase() + '_' + postCode;
 
@@ -72,7 +89,7 @@ const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
 
   const properties = layer.feature.properties;
   if (properties && dispatch) {
-    dispatch(setInfo(properties.priceDataForFeature || ({ locality: properties.name, postCode: properties.description } as RealEstateResponse)));
+    dispatch(setInfo(properties.priceDataForFeature || ({ locality: properties.name, postCode: properties.postCode } as RealEstateResponse)));
     const id = properties.id;
     dispatch(highlightFeature({ id, scroll: scroll }));
   }
@@ -116,29 +133,20 @@ const setPricePopupContent = (layer: CustomLayer, properties: FeatureProperties)
   }
 };
 
-const getFeatureStyle: StyleFunction = (feature) => {
+const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
   if (!feature) {
     return {};
   }
-  const medianPrice = feature.properties.priceDataForFeature?.medianPrice;
-
-  const getColor = (price: number) => {
-    const closestMinimal = (needle: number, haystack: number[]) => {
-      let i = 0;
-      while (haystack[++i] < needle);
-      return haystack[--i];
-    };
-    return pricesToColors[closestMinimal(price, pricesToColorsKeys)];
-  };
+  const color = feature.properties.priceDataForFeature?.priceSubIntrevalInfo?.color;
 
   // console.log('price for ' + feature?.properties.name + ': ' + medianPrice || 'not set');
   return {
-    fillColor: medianPrice ? getColor(medianPrice) : '#48dfea',
+    fillColor: color ? color : '#d1abf2',
     weight: 2,
     opacity: 1,
     color: 'dimgray',
     dashArray: '3',
-    fillOpacity: medianPrice ? 0.7 : 0.3,
+    fillOpacity: color ? 0.9 : 0.3,
   };
 };
 
@@ -149,10 +157,6 @@ const applyStyleToLayer = (layer: CustomLayer) => {
 
 const fetchPriceData = debounce(
   async (filters: FiltersState) => {
-    if (filters.postCodes[0] === undefined) {
-      return;
-    }
-
     const getMinValue = (value: [number, number]) => {
       return value[0];
     };
@@ -170,10 +174,10 @@ const fetchPriceData = debounce(
     const isRent = filters.dealType === 'rent';
     const url =
       process.env.REACT_APP_PRICES_API_URL +
-      `RealEstate?postCodeMin=${filters.postCodes[0]}&postCodeMax=${filters.postCodes[1]}&&isRent=${isRent}&propertyTypes=${filters.propertyType}&constructionStatus=${filters.constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${filters.mainPriceOnly}&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
+      `RealEstate?isRent=${isRent}&propertyTypes=${filters.propertyType}&constructionStatus=${filters.constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${filters.mainPriceOnly}&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
     console.log(`Fetching ${url}...`);
     try {
-      const priceDataResponse = await axios.get<RealEstateResponse[]>(url);
+      const priceDataResponse = await axios.post<RealEstateResponse[]>(url, filters.postCodes);
       console.log('Got prices');
       const data = priceDataResponse.data;
 
@@ -181,28 +185,124 @@ const fetchPriceData = debounce(
         const getMinMedianPrice = (data: RealEstateResponse[]) => data.reduce((min, p) => (p.medianPrice < min ? p.medianPrice : min), data[0].medianPrice);
         const getMaxMedianPrice = (data: RealEstateResponse[]) => data.reduce((max, p) => (p.medianPrice > max ? p.medianPrice : max), data[0].medianPrice);
 
-        const getPricesToColors = (minPrice: number, maxPrice: number) => {
-          const shadeCount = 10;
-          const colors = colormap({
-            colormap: 'copper', // https://www.npmjs.com/package/colormap
-            nshades: shadeCount + 1,
-            format: 'hex',
-            alpha: 1,
-          }).reverse();
-          const step = (maxPrice - minPrice) / shadeCount;
-          const pricesToColors: { [needle: number]: string } = {};
+        const minMedianPrice = getMinMedianPrice(data);
+        const maxMedianPrice = getMaxMedianPrice(data);
+        const totalPriceRangeSize = maxMedianPrice - minMedianPrice;
+        const priceIntervalSize = Math.round(totalPriceRangeSize / shadeCount);
+
+        const suburbsByPriceChunks: { [needle: number]: number } = {};
+        for (let currentPriceAnchor = minMedianPrice; currentPriceAnchor <= maxMedianPrice; currentPriceAnchor += priceIntervalSize) {
+          suburbsByPriceChunks[currentPriceAnchor] = 0;
+        }
+
+        const priceAnchorPoints = Object.keys(suburbsByPriceChunks).map(Number);
+
+        for (const suburbInfo of data) {
+          const priceAnchorPoint = MathUtils.closestMinimal(suburbInfo.medianPrice, priceAnchorPoints);
+          suburbsByPriceChunks[priceAnchorPoint]++;
+        }
+
+        const totalSuburbCount = data.length;
+
+        const pricesToColors: PricesToColors = {};
+        let totalSubIntervalCount = 0;
+
+        const buildSubIntervals = () => {
+          const subIntervalInfo: { subIntervalCount: number; subIntervalCountDouble: number; suburbCount: number; intervalMinPrice: number }[] = [];
           for (let shadeIndex = 0; shadeIndex <= shadeCount; shadeIndex++) {
-            pricesToColors[Math.round(minPrice + shadeIndex * step)] = colors[shadeIndex];
+            const intervalMinPrice = priceAnchorPoints[shadeIndex];
+            const currentSuburbCount = suburbsByPriceChunks[intervalMinPrice];
+
+            const subIntervalCountDouble = (currentSuburbCount * shadeCount) / totalSuburbCount;
+            const subIntervalCount = Math.round(subIntervalCountDouble);
+            totalSubIntervalCount += subIntervalCount;
+            subIntervalInfo.push({
+              subIntervalCount: subIntervalCount,
+              subIntervalCountDouble: subIntervalCountDouble,
+              suburbCount: currentSuburbCount,
+              intervalMinPrice: intervalMinPrice,
+            });
           }
-          return pricesToColors;
+
+          return subIntervalInfo;
         };
 
-        pricesToColors = getPricesToColors(getMinMedianPrice(data), getMaxMedianPrice(data));
-        pricesToColorsKeys = Object.keys(pricesToColors).map(Number);
+        const subIntervals = buildSubIntervals();
+
+        const adjustShadeCountIfExceeding = () => {
+          // need to remove some additional intervals which were added due to rounding.
+          const orderedBySuburbsCountDesending = subIntervals.concat().sort((a, b) => (a.subIntervalCount < b.subIntervalCount ? 1 : -1));
+          let i = 0;
+          while (totalSubIntervalCount > shadeCount) {
+            const current = orderedBySuburbsCountDesending[i];
+            if (current.subIntervalCount > 0) {
+              current.subIntervalCount--;
+              totalSubIntervalCount--;
+            }
+            i++;
+            // Loop ended. repeat from start (unlikely situation
+            if (i === orderedBySuburbsCountDesending.length) {
+              i = 0;
+            }
+          }
+        };
+
+        const adjustShadeCountIfNotEnough = () => {
+          // need to add some additional intervals which were not added due to rounding.
+          const orderedBySuburbsCountDesending = subIntervals.concat().sort((a, b) => (a.subIntervalCount < b.subIntervalCount ? 1 : -1));
+          let i = 0;
+          while (totalSubIntervalCount < shadeCount) {
+            const current = orderedBySuburbsCountDesending[i];
+            current.subIntervalCount++;
+            totalSubIntervalCount++;
+            i++;
+            // Loop ended. repeat from start (unlikely situation
+            if (i === orderedBySuburbsCountDesending.length) {
+              i = 0;
+            }
+          }
+        };
+
+        if (totalSubIntervalCount > shadeCount) {
+          adjustShadeCountIfExceeding();
+        } else if (totalSubIntervalCount < shadeCount) {
+          adjustShadeCountIfNotEnough();
+        }
+
+        let globalSubIntervalIndex = 0;
+        let firstPriceSet = false;
+        for (const subIntervalInfo of subIntervals) {
+          const subIntervalSize = priceIntervalSize / subIntervalInfo.subIntervalCount;
+          for (let i = 0; i < subIntervalInfo.subIntervalCount; i++) {
+            const subIntervalMinPrice = firstPriceSet ? subIntervalInfo.intervalMinPrice + i * subIntervalSize : minMedianPrice; // the first interval with subIntervals should encompass all the previous intervals without subIntervals
+            pricesToColors[globalSubIntervalIndex] = { price: subIntervalMinPrice, color: colors[globalSubIntervalIndex], suburbCount: 0 };
+            globalSubIntervalIndex++;
+            firstPriceSet = true;
+          }
+        }
+
+        const buildPiecewiseEasingFunction = () => {
+          const piecewiseEasingFnObjects = [];
+          for (const subIntervalIndex of Object.keys(pricesToColors).map(Number)) {
+            const priceSubIntervalInfo = pricesToColors[subIntervalIndex];
+            const nextPriceSubIntervalInfo = pricesToColors[subIntervalIndex + 1];
+            piecewiseEasingFnObjects.push({ tInterval: [priceSubIntervalInfo.price, nextPriceSubIntervalInfo?.price || Number.MAX_VALUE], easingFn: () => subIntervalIndex });
+          }
+          return piecewise.easing(piecewiseEasingFnObjects);
+        };
+
+        const piecewiseEasingFn = buildPiecewiseEasingFunction();
+
+        for (const suburbInfo of data) {
+          const shadeIndex = piecewiseEasingFn(suburbInfo.medianPrice);
+          const priceSubIntrevalInfo = pricesToColors[shadeIndex];
+          priceSubIntrevalInfo.suburbCount++;
+          suburbInfo.priceSubIntrevalInfo = priceSubIntrevalInfo;
+        }
+
         if (dispatch) {
           dispatch(changePricesToColors(pricesToColors));
         }
-        console.log('Recalculated prices');
       };
 
       setPricesToColors(data);
@@ -285,13 +385,14 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         const properties = feature.properties;
         properties.fileName = fileName;
         const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
-        const postCode = properties.description;
+        const postCode = parseInt(properties.description);
+        properties.postCode = postCode;
         const suburbId = getSuburbId(name, postCode);
         properties.name = name;
         properties.id = suburbId;
-        properties.popupContent = `<h4>
+        properties.popupContent = `<h6>
           ${name} ${postCode}
-        </h4>`;
+        </h6>`;
 
         // Setting prices for new features when prices are already fetched and new layer is added
         setFeaturePriceProperties(properties);
@@ -336,25 +437,12 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
     }
 
     if (dispatch) {
-      const suburbIds = Object.keys(layersBySuburbId);
-      const getMinPostCode = () =>
-        suburbIds.reduce(
-          (min, suburbId) => {
-            const postCode = layersBySuburbId[suburbId].feature.properties.description;
-            return !min || postCode < min ? postCode : min;
-          },
-          suburbIds.length ? layersBySuburbId[suburbIds[0]].feature.properties.description : undefined
-        );
-      const getMaxPostCode = () =>
-        suburbIds.reduce(
-          (max, suburbId) => {
-            const postCode = layersBySuburbId[suburbId].feature.properties.description;
-            return !max || postCode > max ? postCode : max;
-          },
-          suburbIds.length ? layersBySuburbId[suburbIds[0]].feature.properties.description : undefined
-        );
+      const suburbKeys = Object.keys(layersBySuburbId).map((suburbId) => {
+        const properties = layersBySuburbId[suburbId].feature.properties;
+        return { postCode: properties.postCode, locality: properties.name } as SuburbKey;
+      });
 
-      dispatch(changePostCodes([getMinPostCode(), getMaxPostCode()]));
+      dispatch(changePostCodes(suburbKeys));
     }
   };
 

@@ -1,5 +1,11 @@
 import { Polygon } from 'leaflet';
 
+export interface PriceSubIntrevalInfo {
+  price: number;
+  color: string;
+  suburbCount: number;
+}
+
 export interface RealEstateResponse {
   postCode: number;
   locality: string;
@@ -9,6 +15,7 @@ export interface RealEstateResponse {
   maxPrice: number;
   percentile95Price: number;
   count: number;
+  priceSubIntrevalInfo?: PriceSubIntrevalInfo;
 }
 
 export interface CustomLayer extends Polygon<FeatureProperties> {
@@ -30,6 +37,11 @@ export interface FeatureInfo {
   isHighlighted?: boolean;
 }
 
+export interface SuburbKey {
+  postCode: number;
+  locality: string;
+}
+
 export interface FeatureHandlers {
   onFeatureEntryMouseOver: (id: string) => void;
   onFeatureEntryMouseOut: (id: string) => void;
@@ -43,9 +55,14 @@ export interface FeatureProperties {
   popupContent: string;
   id: string;
   priceDataForFeature?: RealEstateResponse;
-  description: number;
+  description: string;
+  postCode: number;
 }
 
 export interface WithFeatures extends GeoJSON.GeoJsonObject {
   features: GeoJSON.Feature<GeoJSON.Geometry, FeatureProperties>[];
+}
+
+export interface PricesToColors {
+  [intervalKey: number]: PriceSubIntrevalInfo;
 }

@@ -8,7 +8,7 @@ const Info: React.FunctionComponent = () => {
   const info = useSelector(selectInfo).currentInfo;
   return info ? (
     <div className={styles.info}>
-      <h4>{info.locality}</h4>
+      <h6>{info.locality}</h6>
       {info.postCode && <div>Post Code: {info.postCode}</div>}
       {info.minPrice && <div>Min: {MoneyUtils.format(info.minPrice)}</div>}
       {info.medianPrice && <div>Median: {MoneyUtils.format(info.medianPrice)}</div>}
