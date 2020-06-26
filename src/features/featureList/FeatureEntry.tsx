@@ -5,8 +5,9 @@ import { FeatureHandlers, FeatureInfo } from '../../interfaces';
 
 interface FeatureEntryProps extends FeatureHandlers, FeatureInfo {}
 
-const FeatureEntry: React.FunctionComponent<FeatureEntryProps> = ({ name, id, isHighlighted, onFeatureEntryMouseOver, onFeatureEntryMouseOut, onFeatureEntryClick }) => (
+const FeatureEntry: React.FunctionComponent<FeatureEntryProps> = ({ name, id, isHighlighted, color, onFeatureEntryMouseOver, onFeatureEntryMouseOut, onFeatureEntryClick }) => (
   <div
+    style={{ backgroundColor: color }}
     onMouseOver={() => onFeatureEntryMouseOver(id)}
     onMouseOut={() => onFeatureEntryMouseOut(id)}
     onClick={() => onFeatureEntryClick(id)}
@@ -21,6 +22,7 @@ FeatureEntry.propTypes = {
   name: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
   isHighlighted: PropTypes.bool,
+  color: PropTypes.string,
   onFeatureEntryMouseOver: PropTypes.func.isRequired,
   onFeatureEntryMouseOut: PropTypes.func.isRequired,
   onFeatureEntryClick: PropTypes.func.isRequired,

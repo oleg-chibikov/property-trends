@@ -3,7 +3,7 @@ import { GeoJSON, ZoomControl } from 'react-leaflet';
 import L, { StyleFunction, Map, LatLngBounds } from 'leaflet';
 import Info from '../info/Info';
 import { useDispatch, useSelector } from 'react-redux';
-import { addFeature, removeFeature, highlightFeature, unhighlightFeature } from '../featureList/featureListSlice';
+import { addFeature, removeFeature, highlightFeature, unhighlightFeature, setFeatureColor } from '../featureList/featureListSlice';
 import Legend from '../legend/Legend';
 import Control from 'react-leaflet-control';
 import FeatureList from '../featureList/FeatureList';
@@ -18,7 +18,7 @@ import { selectDistrictList } from '../districtList/districtListSlice';
 import { selectFilters, changePostCodes, FiltersState } from '../filters/filtersSlice';
 import { changePricesToColors } from '../legend/legendSlice';
 import * as topojson from 'topojson-client';
-import { RealEstateResponse, CustomLayer, CompoundLayer, EventArgs, FeatureProperties, WithFeatures, SuburbKey } from '../../interfaces';
+import { RealEstateResponse, CustomLayer, CompoundLayer, EventArgs, FeatureProperties, WithFeatures, SuburbKey, FeatureInfo } from '../../interfaces';
 import { debounce } from 'ts-debounce';
 import ColorUtils from '../../utils/colorUtils';
 interface FeatureMapProps {
@@ -34,7 +34,7 @@ const currentlyCheckedDistricts: { [fileName: string]: undefined } = {};
 const layersBySuburbId: { [id: string]: CustomLayer } = {};
 const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
 
-const colors = ColorUtils.generateColors(16);
+const colors = ColorUtils.generateColors(30);
 
 const getSuburbId = (name: string, postCode: number) => StringUtils.removeNonAlphaNumberic(name).toLowerCase() + '_' + postCode;
 
@@ -119,7 +119,11 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
   if (!feature) {
     return {};
   }
-  const color = feature.properties.priceDataForFeature?.priceSubIntrevalInfo?.color;
+  const properties = feature.properties;
+  const color = properties.priceDataForFeature?.priceSubIntrevalInfo?.color;
+  if (dispatch && color) {
+    dispatch(setFeatureColor({ id: properties.id, color: color }));
+  }
 
   // console.log('price for ' + feature?.properties.name + ': ' + medianPrice || 'not set');
   return {
@@ -231,7 +235,7 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
       addFeature({
         name: properties.name,
         id: id,
-      })
+      } as FeatureInfo)
     );
   }
 

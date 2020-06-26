@@ -42,10 +42,13 @@ export const featureListSlice = createSlice({
     unhighlightFeature: (state, action: PayloadAction<string>) => {
       state.features[action.payload].isHighlighted = false;
     },
+    setFeatureColor: (state, action: PayloadAction<{ id: string; color: string }>) => {
+      state.features[action.payload.id].color = action.payload.color;
+    },
   },
 });
 
-export const { addFeature, removeFeature, highlightFeature, unhighlightFeature } = featureListSlice.actions;
+export const { addFeature, removeFeature, highlightFeature, unhighlightFeature, setFeatureColor } = featureListSlice.actions;
 
 export const selectFeatures = (state: RootState) => state.featureList.features;
 export const selectHighlightedFeature = (state: RootState) => state.featureList.highlightedFeatureId;

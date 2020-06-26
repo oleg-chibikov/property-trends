@@ -35,6 +35,7 @@ export interface FeatureInfo {
   name: string;
   id: string;
   isHighlighted?: boolean;
+  color?: string;
 }
 
 export interface SuburbKey {

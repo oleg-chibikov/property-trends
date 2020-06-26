@@ -56,7 +56,9 @@ export default class ColorUtils {
       }
       const subIntervals: { subIntervalCount: number; subIntervalCountDouble: number; suburbCount: number; intervalMinPrice: number }[] = [];
 
+      const emptyConsecutiveSubIntervalsWithAtLeastOneSuburbMaxCount = 2;
       let isEmptySubIntervalCreated = false;
+      let emptyConsecutiveSubIntervalsWithAtLeastOneSuburbIndex = 0;
       for (let shadeIndex = 0; shadeIndex < shadeCount; shadeIndex++) {
         const intervalMinPrice = priceAnchorPoints[shadeIndex];
         const currentSuburbCount = suburbsByPriceChunks[intervalMinPrice];
@@ -64,6 +66,14 @@ export default class ColorUtils {
         const subIntervalCountDouble = (currentSuburbCount * shadeCount) / totalSuburbCount;
         let subIntervalCount = Math.round(subIntervalCountDouble);
         if (!subIntervalCount) {
+          if (currentSuburbCount) {
+            emptyConsecutiveSubIntervalsWithAtLeastOneSuburbIndex++;
+            if (emptyConsecutiveSubIntervalsWithAtLeastOneSuburbIndex === emptyConsecutiveSubIntervalsWithAtLeastOneSuburbMaxCount) {
+              // this code allows a big non entirely empty range do be split despite it has low count of suburbs
+              isEmptySubIntervalCreated = false;
+              emptyConsecutiveSubIntervalsWithAtLeastOneSuburbIndex = 0;
+            }
+          }
           if (!isEmptySubIntervalCreated) {
             // creating empty subInterval encompassing all consecutive empty fixed-length intervals
             subIntervalCount = 1;
