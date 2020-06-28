@@ -1,14 +1,17 @@
 import React from 'react';
 import styles from './App.module.css';
 import 'rsuite/dist/styles/rsuite-default.css';
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
 import Sidebar from './features/sidebar/Sidebar';
+import Loader from 'react-loader-spinner';
 
 function App() {
   return (
     <div className={styles.container}>
       <header>Real Estate Map</header>
       <div className={styles.map}>
+        {/* <Loader type="Puff" color="#00BFFF" height={100} width={100} /> */}
         <RealEstateMap />
       </div>
       <Sidebar />

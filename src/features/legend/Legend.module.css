@@ -7,6 +7,7 @@
   line-height: 18px;
   white-space: nowrap;
   padding: 2px;
+  cursor: pointer;
 }
 .legendContainer > div > div {
   display: inline-block;
@@ -19,4 +20,8 @@
 .legendContainer > div > span {
   display: inline-block;
   vertical-align: middle;
+}
+.legendContainer > div.highlighted {
+  background-color: yellow !important;
+  color: black !important;
 }

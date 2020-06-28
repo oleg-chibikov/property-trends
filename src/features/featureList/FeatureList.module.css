@@ -12,6 +12,6 @@
 }
 
 .feature.highlighted {
-  background-color: white;
-  color: black;
+  background-color: white !important;
+  color: black !important;
 }

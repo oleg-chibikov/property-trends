@@ -2,32 +2,39 @@ import React from 'react';
 import styles from './Legend.module.css';
 import { useSelector } from 'react-redux';
 import { selectPricesToColors } from './legendSlice';
-import MoneyUtils from '../../utils/moneyUtils';
+import { LegendEntryEventHandlers } from '../../interfaces';
+import PropTypes from 'prop-types';
+import LegendEntry from './LegendEntry';
 
-const Legend: React.FunctionComponent = () => {
+const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemMouseOver, onItemMouseOut }) => {
   const pricesToColors = useSelector(selectPricesToColors);
+  const keys = Object.keys(pricesToColors).map(Number);
   return (
     <div className={styles.legendContainer}>
-      {Object.keys(pricesToColors).map((el, shadeIndex) => {
-        const priceSubIntervalInfo = pricesToColors[shadeIndex];
-        const nextPriceSubIntervalInfo = pricesToColors[shadeIndex + 1];
+      {keys.map((el, index) => {
+        const currentPriceIntervalInfo = pricesToColors[el];
+        const nextPriceIntervalInfo = pricesToColors[keys[index + 1]];
         return (
-          <div key={shadeIndex}>
-            <div style={{ backgroundColor: priceSubIntervalInfo.color }} />
-            <span>
-              {shadeIndex + 1}
-              {' -'}
-            </span>{' '}
-            <span>{MoneyUtils.format(priceSubIntervalInfo.price) + ' - ' + (nextPriceSubIntervalInfo ? MoneyUtils.format(nextPriceSubIntervalInfo.price) : '...')}</span>{' '}
-            <span>
-              {' '}
-              ({priceSubIntervalInfo.suburbCount} {priceSubIntervalInfo.suburbCount === 1 ? 'suburb' : 'suburbs'})
-            </span>
-          </div>
+          <LegendEntry
+            key={index}
+            color={currentPriceIntervalInfo.color}
+            price={currentPriceIntervalInfo.intervalMinPrice}
+            nextPrice={nextPriceIntervalInfo?.intervalMinPrice}
+            suburbCount={currentPriceIntervalInfo.suburbCount}
+            isHighlighted={currentPriceIntervalInfo.isHighlighted || false}
+            index={index}
+            onItemMouseOver={onItemMouseOver}
+            onItemMouseOut={onItemMouseOut}
+          />
         );
       })}
     </div>
   );
+};
+
+Legend.propTypes = {
+  onItemMouseOver: PropTypes.func.isRequired,
+  onItemMouseOut: PropTypes.func.isRequired,
 };
 
 export default React.memo(Legend);

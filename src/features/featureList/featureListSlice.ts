@@ -3,18 +3,16 @@ import { RootState } from '../../app/store';
 import { FeatureInfo } from '../../interfaces';
 
 interface HighlightFeatureParams {
-  id: string;
+  suburbId: string;
   scroll: boolean;
 }
 
 interface FeatureListState {
-  features: { [id: string]: FeatureInfo };
-  highlightedFeatureId?: string;
+  features: { [suburbId: string]: FeatureInfo };
 }
 
 const initialState: FeatureListState = {
   features: {},
-  highlightedFeatureId: undefined,
 };
 
 export const featureListSlice = createSlice({
@@ -22,16 +20,16 @@ export const featureListSlice = createSlice({
   initialState,
   reducers: {
     addFeature: (state, action: PayloadAction<FeatureInfo>) => {
-      state.features[action.payload.id] = action.payload;
+      state.features[action.payload.suburbId] = action.payload;
     },
     removeFeature: (state, action: PayloadAction<string>) => {
       delete state.features[action.payload];
     },
     highlightFeature: (state, action: PayloadAction<HighlightFeatureParams>) => {
-      state.features[action.payload.id].isHighlighted = true;
+      state.features[action.payload.suburbId].isHighlighted = true;
       if (action.payload.scroll) {
         const scrollIntoView = () => {
-          const el = document.querySelector('#feature' + action.payload.id);
+          const el = document.querySelector('#feature' + action.payload.suburbId);
           if (el) {
             el.scrollIntoView({ block: 'end', behavior: 'auto' });
           }
@@ -42,8 +40,8 @@ export const featureListSlice = createSlice({
     unhighlightFeature: (state, action: PayloadAction<string>) => {
       state.features[action.payload].isHighlighted = false;
     },
-    setFeatureColor: (state, action: PayloadAction<{ id: string; color: string }>) => {
-      state.features[action.payload.id].color = action.payload.color;
+    setFeatureColor: (state, action: PayloadAction<{ suburbId: string; color: string }>) => {
+      state.features[action.payload.suburbId].color = action.payload.color;
     },
   },
 });
@@ -51,6 +49,5 @@ export const featureListSlice = createSlice({
 export const { addFeature, removeFeature, highlightFeature, unhighlightFeature, setFeatureColor } = featureListSlice.actions;
 
 export const selectFeatures = (state: RootState) => state.featureList.features;
-export const selectHighlightedFeature = (state: RootState) => state.featureList.highlightedFeatureId;
 
 export default featureListSlice.reducer;

@@ -16,9 +16,9 @@ export default class ColorUtils {
   };
 
   static generateColors = (shadeCount: number) => {
-    const minColor = ColorUtils.hexToRgb('#e5ce8b') as RGB;
-    const midColor = ColorUtils.hexToRgb('#e85617') as RGB;
-    const maxColor = ColorUtils.hexToRgb('#3e0925') as RGB;
+    const minColor = ColorUtils.hexToRgb('#4dd54d') as RGB;
+    const midColor = ColorUtils.hexToRgb('#e5c006') as RGB;
+    const maxColor = ColorUtils.hexToRgb('#e50606') as RGB;
 
     const isEven = shadeCount % 2 === 0;
     const halfShadeCount = shadeCount / 2;
@@ -152,10 +152,10 @@ export default class ColorUtils {
       let globalSubIntervalIndex = 0;
       let firstPriceSet = false;
       for (const subIntervalInfo of subIntervals) {
-        const subIntervalSize = priceIntervalSize / subIntervalInfo.subIntervalCount;
+        const subIntervalSize = Math.round(priceIntervalSize / subIntervalInfo.subIntervalCount);
         for (let i = 0; i < subIntervalInfo.subIntervalCount; i++) {
           const subIntervalMinPrice = firstPriceSet ? subIntervalInfo.intervalMinPrice + i * subIntervalSize : minMedianPrice; // the first interval with subIntervals should encompass all the previous intervals without subIntervals
-          pricesToColors[globalSubIntervalIndex] = { price: subIntervalMinPrice, color: colors[globalSubIntervalIndex], suburbCount: 0 };
+          pricesToColors[subIntervalMinPrice] = { intervalMinPrice: subIntervalMinPrice, color: colors[globalSubIntervalIndex], suburbCount: 0 };
           globalSubIntervalIndex++;
           firstPriceSet = true;
         }
@@ -168,26 +168,36 @@ export default class ColorUtils {
     const assignColorsToSuburbs = () => {
       const buildPiecewiseEasingFunction = () => {
         const piecewiseEasingFnObjects = [];
-        for (const subIntervalIndex of Object.keys(pricesToColors).map(Number)) {
-          const priceSubIntervalInfo = pricesToColors[subIntervalIndex];
-          const nextPriceSubIntervalInfo = pricesToColors[subIntervalIndex + 1];
-          piecewiseEasingFnObjects.push({ tInterval: [priceSubIntervalInfo.price, nextPriceSubIntervalInfo?.price || Number.MAX_VALUE], easingFn: () => subIntervalIndex });
+        const keys = Object.keys(pricesToColors).map(Number);
+        let index = 0;
+        for (const subIntervalMinPrice of keys) {
+          const priceSubIntervalInfo = pricesToColors[subIntervalMinPrice];
+          const nextPriceSubIntervalInfo = pricesToColors[keys[index + 1]];
+          piecewiseEasingFnObjects.push({ tInterval: [priceSubIntervalInfo.intervalMinPrice, nextPriceSubIntervalInfo?.intervalMinPrice || Number.MAX_VALUE], easingFn: () => subIntervalMinPrice });
+          index++;
         }
         return piecewise.easing(piecewiseEasingFnObjects);
       };
 
       const piecewiseEasingFn = buildPiecewiseEasingFunction();
 
+      const suburbIdsByPriceInterval: { [price: number]: string[] } = {};
       for (const suburbInfo of data) {
-        const shadeIndex = piecewiseEasingFn(suburbInfo.medianPrice);
-        const priceSubIntrevalInfo = pricesToColors[shadeIndex];
+        const subIntervalMinPrice = piecewiseEasingFn(suburbInfo.medianPrice);
+        const priceSubIntrevalInfo = pricesToColors[subIntervalMinPrice];
         priceSubIntrevalInfo.suburbCount++;
-        suburbInfo.priceSubIntrevalInfo = priceSubIntrevalInfo;
+        suburbInfo.priceIntrevalInfo = priceSubIntrevalInfo;
+        if (!suburbIdsByPriceInterval[priceSubIntrevalInfo.intervalMinPrice]) {
+          suburbIdsByPriceInterval[priceSubIntrevalInfo.intervalMinPrice] = [suburbInfo.suburbId];
+        } else {
+          suburbIdsByPriceInterval[priceSubIntrevalInfo.intervalMinPrice].push(suburbInfo.suburbId);
+        }
       }
+      return suburbIdsByPriceInterval;
     };
 
-    assignColorsToSuburbs();
+    const suburbsByPrice = assignColorsToSuburbs();
 
-    return pricesToColors;
+    return { pricesToColors, suburbsByPrice };
   };
 }

@@ -8,7 +8,7 @@ import Legend from '../legend/Legend';
 import Control from 'react-leaflet-control';
 import FeatureList from '../featureList/FeatureList';
 import StringUtils from '../../utils/stringUtils';
-import axios from 'axios';
+import axios, { CancelTokenSource } from 'axios';
 import PropTypes from 'prop-types';
 import { setInfo, clearInfo } from '../info/infoSlice';
 import ShowAll from '../showAll/ShowAll';
@@ -16,7 +16,7 @@ import CurrentLocation from '../currentLocation/CurrentLocation';
 import MoneyUtils from '../../utils/moneyUtils';
 import { selectDistrictList } from '../districtList/districtListSlice';
 import { selectFilters, changePostCodes, FiltersState } from '../filters/filtersSlice';
-import { changePricesToColors } from '../legend/legendSlice';
+import { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
 import * as topojson from 'topojson-client';
 import { RealEstateResponse, CustomLayer, CompoundLayer, EventArgs, FeatureProperties, WithFeatures, SuburbKey, FeatureInfo } from '../../interfaces';
 import { debounce } from 'ts-debounce';
@@ -29,12 +29,15 @@ let mapElement: Map | undefined;
 let bounds: LatLngBounds | undefined;
 let geoJsonElement: GeoJSON;
 let dispatch: Dispatch<unknown> | undefined;
-let priceDictionary: { [suburbId: string]: RealEstateResponse } | undefined = undefined;
+let priceDataBySuburbId: { [suburbId: string]: RealEstateResponse } | undefined = undefined;
+let suburbIdsByPriceInterval: { [price: number]: string[] } = {};
 const currentlyCheckedDistricts: { [fileName: string]: undefined } = {};
-const layersBySuburbId: { [id: string]: CustomLayer } = {};
+const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
 const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
 
 const colors = ColorUtils.generateColors(30);
+
+let cancellationTokenSource: CancelTokenSource | undefined;
 
 const getSuburbId = (name: string, postCode: number) => StringUtils.removeNonAlphaNumberic(name).toLowerCase() + '_' + postCode;
 
@@ -52,8 +55,8 @@ const zoomToFeatureOnMap = (layer: CustomLayer) => {
   mapElement?.fitBounds(layer.getBounds());
 };
 
-const zoomToFeatureById = (id: string) => {
-  zoomToFeatureOnMap(layersBySuburbId[id]);
+const zoomToFeatureById = (suburbId: string) => {
+  zoomToFeatureOnMap(layersBySuburbId[suburbId]);
 };
 
 const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
@@ -71,33 +74,48 @@ const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
 
   const properties = layer.feature.properties;
   if (properties && dispatch) {
-    dispatch(setInfo(properties.priceDataForFeature || ({ locality: properties.name, postCode: properties.postCode } as RealEstateResponse)));
-    const id = properties.id;
-    dispatch(highlightFeature({ id, scroll: scroll }));
+    dispatch(setInfo(properties.priceData || ({ locality: properties.name, postCode: properties.postCode } as RealEstateResponse)));
+    const suburbId = properties.suburbId;
+    dispatch(highlightFeature({ suburbId: suburbId, scroll: scroll }));
+    if (properties.priceData?.priceIntrevalInfo) {
+      dispatch(highlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
+    }
   }
 };
 
-const highlightFeatureById = (id: string) => {
-  highlightFeatureOnMap(layersBySuburbId[id], false);
+const highlightFeatureById = (suburbId: string) => {
+  highlightFeatureOnMap(layersBySuburbId[suburbId], false);
+};
+
+const applyByPriceInterval = (intervalMinPrice: number, func: (layer: CustomLayer) => void) => {
+  const suburbIds = suburbIdsByPriceInterval[intervalMinPrice];
+  if (suburbIds) {
+    for (const suburbId of suburbIds) {
+      func(layersBySuburbId[suburbId]);
+    }
+  }
 };
 
 const unhighlightFeatureOnMap = (layer: CustomLayer) => {
   geoJsonElement?.leafletElement.resetStyle(layer);
   const properties = layer.feature.properties;
   if (properties && dispatch) {
-    const id = properties.id;
+    const suburbId = properties.suburbId;
     dispatch(clearInfo());
-    dispatch(unhighlightFeature(id));
+    dispatch(unhighlightFeature(suburbId));
+    if (properties.priceData?.priceIntrevalInfo) {
+      dispatch(unhighlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
+    }
   }
 };
 
-const unhighlightFeatureById = (id: string) => {
-  unhighlightFeatureOnMap(layersBySuburbId[id]);
+const unhighlightFeatureById = (suburbId: string) => {
+  unhighlightFeatureOnMap(layersBySuburbId[suburbId]);
 };
 
 const setFeaturePriceProperties = (properties: FeatureProperties) => {
-  if (!properties.priceDataForFeature && priceDictionary) {
-    properties.priceDataForFeature = priceDictionary[properties.id];
+  if (!properties.priceData && priceDataBySuburbId) {
+    properties.priceData = priceDataBySuburbId[properties.suburbId];
   }
 };
 
@@ -107,7 +125,7 @@ const setPricePopupContent = (layer: CustomLayer, properties: FeatureProperties)
     layer.popupContent = popupContent;
   };
 
-  const priceDataForFeature = properties.priceDataForFeature;
+  const priceDataForFeature = properties.priceData;
   if (priceDataForFeature) {
     setPopupContent(layer, `${properties.popupContent}<div>${MoneyUtils.format(priceDataForFeature.medianPrice)}</div>`);
   } else {
@@ -120,9 +138,14 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
     return {};
   }
   const properties = feature.properties;
-  const color = properties.priceDataForFeature?.priceSubIntrevalInfo?.color;
+  const color = properties.priceData?.priceIntrevalInfo?.color;
+  const propertiesCount = properties.priceData?.count;
+  let opacity = 0.3;
+  if (propertiesCount) {
+    opacity = propertiesCount < 2 ? 0.3 : propertiesCount < 5 ? 0.4 : propertiesCount < 10 ? 0.5 : propertiesCount < 20 ? 0.6 : propertiesCount < 30 ? 0.7 : propertiesCount < 40 ? 0.8 : 0.9;
+  }
   if (dispatch && color) {
-    dispatch(setFeatureColor({ id: properties.id, color: color }));
+    dispatch(setFeatureColor({ suburbId: properties.suburbId, color: color }));
   }
 
   // console.log('price for ' + feature?.properties.name + ': ' + medianPrice || 'not set');
@@ -132,7 +155,7 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
     opacity: 1,
     color: 'dimgray',
     dashArray: '3',
-    fillOpacity: color ? 0.9 : 0.3,
+    fillOpacity: opacity,
   };
 };
 
@@ -143,10 +166,6 @@ const applyStyleToLayer = (layer: CustomLayer) => {
 
 const fetchPriceData = debounce(
   async (filters: FiltersState) => {
-    if (!filters.postCodes.length) {
-      return;
-    }
-
     const getMinValue = (value: [number, number]) => {
       return value[0];
     };
@@ -167,11 +186,33 @@ const fetchPriceData = debounce(
       `RealEstate?isRent=${isRent}&propertyTypes=${filters.propertyType}&constructionStatus=${filters.constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${filters.mainPriceOnly}&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
     console.log(`Fetching ${url}...`);
     try {
-      const priceDataResponse = await axios.post<RealEstateResponse[]>(url, filters.postCodes);
+      if (cancellationTokenSource) {
+        cancellationTokenSource.cancel();
+      }
+      const CancelToken = axios.CancelToken;
+      // create the source
+      cancellationTokenSource = CancelToken.source();
+      let data: RealEstateResponse[];
+      try {
+        const priceDataResponse = await axios.post<RealEstateResponse[]>(url, filters.postCodes, { cancelToken: cancellationTokenSource.token });
+        data = priceDataResponse.data;
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log(`Request ${url} cancelled`);
+        } else {
+          console.error(err.message);
+        }
+        return;
+      }
       console.log('Got prices');
-      const data = priceDataResponse.data;
+      for (const priceData of data) {
+        const suburbId = getSuburbId(priceData.locality, priceData.postCode);
+        priceData.suburbId = suburbId;
+      }
 
-      const pricesToColors = ColorUtils.calculatePricesToColors(data, colors);
+      const { pricesToColors, suburbsByPrice } = ColorUtils.calculatePricesToColors(data, colors);
+      suburbIdsByPriceInterval = suburbsByPrice;
+
       if (dispatch) {
         dispatch(changePricesToColors(pricesToColors));
       }
@@ -182,22 +223,22 @@ const fetchPriceData = debounce(
         if (!priceDataArray) {
           return {};
         }
-        const realEstateDictionary: {
+        const priceDataBySuburbId: {
           [suburbId: string]: RealEstateResponse;
         } = {};
-        for (const element of priceDataArray) {
-          const suburbId = getSuburbId(element.locality, element.postCode);
-          realEstateDictionary[suburbId] = element;
+        for (const priceData of priceDataArray) {
+          const suburbId = priceData.suburbId;
+          priceDataBySuburbId[suburbId] = priceData;
         }
-        return realEstateDictionary;
+        return priceDataBySuburbId;
       };
 
-      priceDictionary = getRealEstateDictionary(data);
+      priceDataBySuburbId = getRealEstateDictionary(data);
       for (const suburbId in layersBySuburbId) {
         const layer = layersBySuburbId[suburbId];
         const properties = layer.feature.properties;
-        if (properties.priceDataForFeature) {
-          properties.priceDataForFeature = undefined;
+        if (properties.priceData) {
+          properties.priceData = undefined;
         }
         // Setting price properties for existing features when the prices are fetched
         setFeaturePriceProperties(properties);
@@ -227,21 +268,21 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   const layersForFileName = layersByFileName[properties.fileName] || [];
   layersForFileName.push(layer);
   layersByFileName[properties.fileName] = layersForFileName;
-  const id = properties.id;
-  layersBySuburbId[id] = layer;
+  const suburbId = properties.suburbId;
+  layersBySuburbId[suburbId] = layer;
 
   if (dispatch) {
     dispatch(
       addFeature({
         name: properties.name,
-        id: id,
+        suburbId: suburbId,
       } as FeatureInfo)
     );
   }
 
   setPricePopupContent(layer, properties);
   // if priceData is fetched - the necessary properties and the style should be applied;
-  if (priceDictionary) {
+  if (priceDataBySuburbId) {
     applyStyleToLayer(layer);
   }
 
@@ -259,7 +300,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         properties.postCode = postCode;
         const suburbId = getSuburbId(name, postCode);
         properties.name = name;
-        properties.id = suburbId;
+        properties.suburbId = suburbId;
         properties.popupContent = `<h6>
           ${name} ${postCode}
         </h6>`;
@@ -326,13 +367,13 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
           showAll();
           const properties = layer.feature?.properties;
           if (dispatch && properties) {
-            dispatch(removeFeature(properties.id));
+            dispatch(removeFeature(properties.suburbId));
             // console.log('Deleted feature ' + properties.name);
           }
         }
 
         for (const layer of layersByFileName[fileName]) {
-          delete layersBySuburbId[layer.feature.properties.id];
+          delete layersBySuburbId[layer.feature.properties.suburbId];
         }
         delete layersByFileName[fileName];
         delete currentlyCheckedDistricts[fileName];
@@ -369,10 +410,21 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) =>
       <React.Fragment>
         <GeoJSON style={getFeatureStyle} ref={geojsonRef} data={[]} onEachFeature={onEachFeature} />
         <Control position="topleft">
-          <FeatureList onFeatureEntryMouseOver={highlightFeatureById} onFeatureEntryMouseOut={unhighlightFeatureById} onFeatureEntryClick={zoomToFeatureById} />
+          <FeatureList onItemMouseOver={highlightFeatureById} onItemMouseOut={unhighlightFeatureById} onItemClick={zoomToFeatureById} />
         </Control>
         <Control position="bottomleft">
-          <Legend />
+          <Legend
+            onItemMouseOver={(intervalMinPrice) =>
+              applyByPriceInterval(intervalMinPrice, (layer) => {
+                highlightFeatureOnMap(layer, false);
+              })
+            }
+            onItemMouseOut={(intervalMinPrice) =>
+              applyByPriceInterval(intervalMinPrice, (layer) => {
+                unhighlightFeatureOnMap(layer);
+              })
+            }
+          />
         </Control>
         <Control position="topright">
           <Info />

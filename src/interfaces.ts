@@ -1,9 +1,10 @@
 import { Polygon } from 'leaflet';
 
-export interface PriceSubIntrevalInfo {
-  price: number;
+export interface PriceIntrevalInfo {
+  intervalMinPrice: number;
   color: string;
   suburbCount: number;
+  isHighlighted?: boolean;
 }
 
 export interface RealEstateResponse {
@@ -15,7 +16,8 @@ export interface RealEstateResponse {
   maxPrice: number;
   percentile95Price: number;
   count: number;
-  priceSubIntrevalInfo?: PriceSubIntrevalInfo;
+  priceIntrevalInfo?: PriceIntrevalInfo;
+  suburbId: string;
 }
 
 export interface CustomLayer extends Polygon<FeatureProperties> {
@@ -33,7 +35,7 @@ export interface EventArgs<T> {
 
 export interface FeatureInfo {
   name: string;
-  id: string;
+  suburbId: string;
   isHighlighted?: boolean;
   color?: string;
 }
@@ -43,10 +45,15 @@ export interface SuburbKey {
   locality: string;
 }
 
-export interface FeatureHandlers {
-  onFeatureEntryMouseOver: (id: string) => void;
-  onFeatureEntryMouseOut: (id: string) => void;
-  onFeatureEntryClick: (id: string) => void;
+export interface LegendEntryEventHandlers {
+  onItemMouseOver: (subIntervalMinPrice: number) => void;
+  onItemMouseOut: (subIntervalMinPrice: number) => void;
+}
+
+export interface FeatureEntryEventHandlers {
+  onItemMouseOver: (suburbId: string) => void;
+  onItemMouseOut: (suburbId: string) => void;
+  onItemClick: (suburbId: string) => void;
 }
 
 export interface FeatureProperties {
@@ -54,8 +61,8 @@ export interface FeatureProperties {
   name: string;
   Name?: string;
   popupContent: string;
-  id: string;
-  priceDataForFeature?: RealEstateResponse;
+  suburbId: string;
+  priceData?: RealEstateResponse;
   description: string;
   postCode: number;
 }
@@ -65,5 +72,5 @@ export interface WithFeatures extends GeoJSON.GeoJsonObject {
 }
 
 export interface PricesToColors {
-  [intervalKey: number]: PriceSubIntrevalInfo;
+  [intervalMinPrice: number]: PriceIntrevalInfo;
 }

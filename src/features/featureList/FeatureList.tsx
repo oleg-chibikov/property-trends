@@ -4,23 +4,23 @@ import { selectFeatures } from './featureListSlice';
 import styles from './FeatureList.module.css';
 import FeatureEntry from './FeatureEntry';
 import PropTypes from 'prop-types';
-import { FeatureHandlers } from '../../interfaces';
+import { FeatureEntryEventHandlers } from '../../interfaces';
 
-const FeatureList: React.FunctionComponent<FeatureHandlers> = (props) => {
+const FeatureList: React.FunctionComponent<FeatureEntryEventHandlers> = (props) => {
   const features = useSelector(selectFeatures);
   return (
     <div className={styles.features}>
       {Object.keys(features).map((key) => {
-        return <FeatureEntry key={features[key].id} {...{ ...features[key], ...props }} />;
+        return <FeatureEntry key={features[key].suburbId} {...{ ...features[key], ...props }} />;
       })}
     </div>
   );
 };
 
 FeatureList.propTypes = {
-  onFeatureEntryMouseOver: PropTypes.func.isRequired,
-  onFeatureEntryMouseOut: PropTypes.func.isRequired,
-  onFeatureEntryClick: PropTypes.func.isRequired,
+  onItemMouseOver: PropTypes.func.isRequired,
+  onItemMouseOut: PropTypes.func.isRequired,
+  onItemClick: PropTypes.func.isRequired,
 };
 
 export default React.memo(FeatureList);

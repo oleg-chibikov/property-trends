@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { SuburbKey } from '../../interfaces';
 
-const defaultRange: [number, number] = [1, 7];
+const defaultRange: [number, number] = [0, 7];
 
 export interface FiltersState {
   dealType: string;
@@ -19,7 +19,7 @@ export interface FiltersState {
 const initialState: FiltersState = {
   propertyType: 'apartment',
   dealType: 'buy',
-  bedrooms: [1, 1],
+  bedrooms: [2, 2],
   bathrooms: defaultRange,
   parkingSpaces: defaultRange,
   constructionStatus: '',

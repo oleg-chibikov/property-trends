@@ -11,7 +11,7 @@ const Filters: React.FunctionComponent = () => {
     <div>
       Parking spaces:{' '}
       <RangeSlider
-        min={1}
+        min={0}
         max={7}
         defaultValue={parkingSpaces}
         onChange={(value: ValueType) => {
