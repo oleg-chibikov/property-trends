@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { checkDistrict, uncheckDistrict } from './districtListSlice';
+import StringUtils from '../../utils/stringUtils';
 
 interface IDistrictSelectorProps {
   name: string;
@@ -29,8 +30,8 @@ const DistrictSelector: React.FunctionComponent<IDistrictSelectorProps> = ({ nam
             dispatch(checkDistrict(name));
           }
         }}
-      />
-      {name.replace(/\..*/, '')}
+      />{' '}
+      {StringUtils.removePostfix(name.substr(name.indexOf(' - ') + 3))}
     </div>
   );
 };

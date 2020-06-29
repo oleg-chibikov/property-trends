@@ -77,7 +77,8 @@ const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
 
   const properties = layer.feature.properties;
   if (properties && dispatch) {
-    dispatch(setInfo(properties.priceData || ({ locality: properties.name, postCode: properties.postCode } as RealEstateResponse)));
+    const copy = { ...properties };
+    dispatch(setInfo(copy));
     const suburbId = properties.suburbId;
     dispatch(highlightFeature({ suburbId: suburbId, scroll: scroll }));
     if (properties.priceData?.priceIntrevalInfo) {
@@ -131,7 +132,7 @@ const setPricePopupContent = (layer: CustomLayer, properties: FeatureProperties)
 
   const priceDataForFeature = properties.priceData;
   if (priceDataForFeature) {
-    setPopupContent(layer, `${properties.popupContent}<div>${MoneyUtils.format(priceDataForFeature.medianPrice)}</div>`);
+    setPopupContent(layer, `${properties.popupContent}<div>${StringUtils.removePostfix(properties.fileName)}</div><div>${MoneyUtils.format(priceDataForFeature.medianPrice)}</div>`);
   } else {
     setPopupContent(layer, properties.popupContent);
   }

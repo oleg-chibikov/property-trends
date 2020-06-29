@@ -8,4 +8,6 @@ export default class StringUtils {
   };
 
   static removeNonAlphaNumberic = (str: string) => str.replace(/\W/g, '_');
+
+  static removePostfix = (str: string) => str.replace(/\..*/, '');
 }
