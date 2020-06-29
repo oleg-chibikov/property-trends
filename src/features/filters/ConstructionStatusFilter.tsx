@@ -2,7 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { changeConstructionStatus, selectConstructionStatus } from './filtersSlice';
 import { useSelector, useDispatch } from 'react-redux';
 
-const Filters: React.FunctionComponent = () => {
+const ConstructionStatusFilter: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const constructionStatus = useSelector(selectConstructionStatus);
   return (
@@ -22,4 +22,4 @@ const Filters: React.FunctionComponent = () => {
   );
 };
 
-export default React.memo(Filters);
+export default React.memo(ConstructionStatusFilter);

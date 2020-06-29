@@ -2,7 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { changeMainPriceOnly, selectMainPriceOnly } from './filtersSlice';
 import { useSelector, useDispatch } from 'react-redux';
 
-const Filters: React.FunctionComponent = () => {
+const MainPriceOnlyFilter: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const mainPriceOnly = useSelector(selectMainPriceOnly);
   return (
@@ -19,4 +19,4 @@ const Filters: React.FunctionComponent = () => {
   );
 };
 
-export default React.memo(Filters);
+export default React.memo(MainPriceOnlyFilter);

@@ -10,9 +10,11 @@ const FeatureList: React.FunctionComponent<FeatureEntryEventHandlers> = (props) 
   const features = useSelector(selectFeatures);
   return (
     <div className={styles.features}>
-      {Object.keys(features).map((key) => {
-        return <FeatureEntry key={features[key].suburbId} {...{ ...features[key], ...props }} />;
-      })}
+      {Object.keys(features)
+        .sort()
+        .map((key) => {
+          return <FeatureEntry key={features[key].suburbId} {...{ ...features[key], ...props }} />;
+        })}
     </div>
   );
 };

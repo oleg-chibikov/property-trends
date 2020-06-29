@@ -26,7 +26,11 @@ export const featureListSlice = createSlice({
       delete state.features[action.payload];
     },
     highlightFeature: (state, action: PayloadAction<HighlightFeatureParams>) => {
-      state.features[action.payload.suburbId].isHighlighted = true;
+      const feature = state.features[action.payload.suburbId];
+      if (!feature) {
+        return;
+      }
+      feature.isHighlighted = true;
       if (action.payload.scroll) {
         const scrollIntoView = () => {
           const el = document.querySelector('#feature' + action.payload.suburbId);
@@ -38,10 +42,18 @@ export const featureListSlice = createSlice({
       }
     },
     unhighlightFeature: (state, action: PayloadAction<string>) => {
-      state.features[action.payload].isHighlighted = false;
+      const feature = state.features[action.payload];
+      if (!feature) {
+        return;
+      }
+      feature.isHighlighted = false;
     },
     setFeatureColor: (state, action: PayloadAction<{ suburbId: string; color: string }>) => {
-      state.features[action.payload.suburbId].color = action.payload.color;
+      const feature = state.features[action.payload.suburbId];
+      if (!feature) {
+        return;
+      }
+      feature.color = action.payload.color;
     },
   },
 });

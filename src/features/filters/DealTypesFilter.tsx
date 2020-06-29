@@ -2,7 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { changeDealType, selectDealType } from './filtersSlice';
 import { useSelector, useDispatch } from 'react-redux';
 
-const Filters: React.FunctionComponent = () => {
+const DealTypesFilter: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const dealType = useSelector(selectDealType);
   return (
@@ -16,4 +16,4 @@ const Filters: React.FunctionComponent = () => {
   );
 };
 
-export default React.memo(Filters);
+export default React.memo(DealTypesFilter);

@@ -1,25 +1,12 @@
 import React from 'react';
 import { changeBathrooms, selectBathrooms } from './filtersSlice';
 import { useSelector, useDispatch } from 'react-redux';
-import { RangeSlider } from 'rsuite';
-import { ValueType } from 'rsuite/lib/RangeSlider';
+import RangeFilter from './RangeFilter';
 
-const Filters: React.FunctionComponent = () => {
+const BathroomsFilter: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const bathrooms = useSelector(selectBathrooms);
-  return (
-    <div>
-      Bathrooms:{' '}
-      <RangeSlider
-        min={0}
-        max={7}
-        defaultValue={bathrooms}
-        onChange={(value: ValueType) => {
-          dispatch(changeBathrooms(value));
-        }}
-      />
-    </div>
-  );
+  return <RangeFilter isRangeByDefault={true} label="Bathrooms" value={bathrooms} min={0} max={7} onChange={(value) => dispatch(changeBathrooms(value))}></RangeFilter>;
 };
 
-export default React.memo(Filters);
+export default React.memo(BathroomsFilter);

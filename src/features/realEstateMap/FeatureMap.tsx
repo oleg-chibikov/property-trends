@@ -19,8 +19,10 @@ import { selectFilters, changePostCodes, FiltersState } from '../filters/filters
 import { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
 import * as topojson from 'topojson-client';
 import { RealEstateResponse, CustomLayer, CompoundLayer, EventArgs, FeatureProperties, WithFeatures, SuburbKey, FeatureInfo } from '../../interfaces';
-import { debounce } from 'ts-debounce';
+import debounce from 'debounce-async';
 import ColorUtils from '../../utils/colorUtils';
+import { trackPromise, usePromiseTracker } from 'react-promise-tracker';
+import Loader from 'react-loader-spinner';
 interface FeatureMapProps {
   leafletMap: Map;
 }
@@ -35,7 +37,7 @@ const currentlyCheckedDistricts: { [fileName: string]: undefined } = {};
 const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
 const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
 
-const colors = ColorUtils.generateColors(30);
+const colors = ColorUtils.generateColors(15);
 
 let cancellationTokenSource: CancelTokenSource | undefined;
 
@@ -56,7 +58,8 @@ const zoomToFeatureOnMap = (layer: CustomLayer) => {
 };
 
 const zoomToFeatureById = (suburbId: string) => {
-  zoomToFeatureOnMap(layersBySuburbId[suburbId]);
+  const layer = layersBySuburbId[suburbId];
+  layer && zoomToFeatureOnMap(layer);
 };
 
 const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
@@ -91,7 +94,8 @@ const applyByPriceInterval = (intervalMinPrice: number, func: (layer: CustomLaye
   const suburbIds = suburbIdsByPriceInterval[intervalMinPrice];
   if (suburbIds) {
     for (const suburbId of suburbIds) {
-      func(layersBySuburbId[suburbId]);
+      const layer = layersBySuburbId[suburbId];
+      layer && func(layer);
     }
   }
 };
@@ -140,9 +144,11 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
   const properties = feature.properties;
   const color = properties.priceData?.priceIntrevalInfo?.color;
   const propertiesCount = properties.priceData?.count;
-  let opacity = 0.3;
+  let opacity: number;
   if (propertiesCount) {
-    opacity = propertiesCount < 2 ? 0.3 : propertiesCount < 5 ? 0.4 : propertiesCount < 10 ? 0.5 : propertiesCount < 20 ? 0.6 : propertiesCount < 30 ? 0.7 : propertiesCount < 40 ? 0.8 : 0.9;
+    opacity = propertiesCount < 2 ? 0.2 : propertiesCount < 5 ? 0.3 : propertiesCount < 10 ? 0.4 : propertiesCount < 15 ? 0.5 : propertiesCount < 20 ? 0.6 : propertiesCount < 25 ? 0.7 : propertiesCount < 30 ? 0.8 : 0.9;
+  } else {
+    opacity = 0;
   }
   if (dispatch && color) {
     dispatch(setFeatureColor({ suburbId: properties.suburbId, color: color }));
@@ -164,94 +170,88 @@ const applyStyleToLayer = (layer: CustomLayer) => {
   layer.setStyle(getFeatureStyle(feature));
 };
 
-const fetchPriceData = debounce(
-  async (filters: FiltersState) => {
-    const getMinValue = (value: [number, number]) => {
-      return value[0];
-    };
+const fetchPriceData = async (filters: FiltersState) => {
+  const getMinValue = (value: [number, number]) => {
+    return value[0];
+  };
 
-    const getMaxValue = (value: [number, number]) => {
-      return value[1];
-    };
+  const getMaxValue = (value: [number, number]) => {
+    return value[1];
+  };
 
-    const bedroomsMin = getMinValue(filters.bedrooms);
-    const bedroomsMax = getMaxValue(filters.bedrooms);
-    const bathroomsMin = getMinValue(filters.bathrooms);
-    const bathroomsMax = getMaxValue(filters.bathrooms);
-    const parkingSpacesMin = getMinValue(filters.parkingSpaces);
-    const parkingSpacesMax = getMaxValue(filters.parkingSpaces);
-    const isRent = filters.dealType === 'rent';
-    const url =
-      process.env.REACT_APP_PRICES_API_URL +
-      `RealEstate?isRent=${isRent}&propertyTypes=${filters.propertyType}&constructionStatus=${filters.constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${filters.mainPriceOnly}&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
-    console.log(`Fetching ${url}...`);
-    try {
-      if (cancellationTokenSource) {
-        cancellationTokenSource.cancel();
-      }
-      const CancelToken = axios.CancelToken;
-      // create the source
-      cancellationTokenSource = CancelToken.source();
-      let data: RealEstateResponse[];
-      try {
-        const priceDataResponse = await axios.post<RealEstateResponse[]>(url, filters.postCodes, { cancelToken: cancellationTokenSource.token });
-        data = priceDataResponse.data;
-      } catch (err) {
-        if (axios.isCancel(err)) {
-          console.log(`Request ${url} cancelled`);
-        } else {
-          console.error(err.message);
-        }
-        return;
-      }
-      console.log('Got prices');
-      for (const priceData of data) {
-        const suburbId = getSuburbId(priceData.locality, priceData.postCode);
-        priceData.suburbId = suburbId;
-      }
-
-      const { pricesToColors, suburbsByPrice } = ColorUtils.calculatePricesToColors(data, colors);
-      suburbIdsByPriceInterval = suburbsByPrice;
-
-      if (dispatch) {
-        dispatch(changePricesToColors(pricesToColors));
-      }
-
-      console.log('Caclulated colors');
-
-      const getRealEstateDictionary = (priceDataArray: RealEstateResponse[]) => {
-        if (!priceDataArray) {
-          return {};
-        }
-        const priceDataBySuburbId: {
-          [suburbId: string]: RealEstateResponse;
-        } = {};
-        for (const priceData of priceDataArray) {
-          const suburbId = priceData.suburbId;
-          priceDataBySuburbId[suburbId] = priceData;
-        }
-        return priceDataBySuburbId;
-      };
-
-      priceDataBySuburbId = getRealEstateDictionary(data);
-      for (const suburbId in layersBySuburbId) {
-        const layer = layersBySuburbId[suburbId];
-        const properties = layer.feature.properties;
-        if (properties.priceData) {
-          properties.priceData = undefined;
-        }
-        // Setting price properties for existing features when the prices are fetched
-        setFeaturePriceProperties(properties);
-        applyStyleToLayer(layer);
-        setPricePopupContent(layer, properties);
-      }
-    } catch (e) {
-      console.error('Cannot get prices: ' + e);
+  const bedroomsMin = getMinValue(filters.bedrooms);
+  const bedroomsMax = getMaxValue(filters.bedrooms);
+  const bathroomsMin = getMinValue(filters.bathrooms);
+  const bathroomsMax = getMaxValue(filters.bathrooms);
+  const parkingSpacesMin = getMinValue(filters.parkingSpaces);
+  const parkingSpacesMax = getMaxValue(filters.parkingSpaces);
+  const isRent = filters.dealType === 'rent';
+  let data: RealEstateResponse[];
+  const url =
+    process.env.REACT_APP_PRICES_API_URL +
+    `RealEstate?isRent=${isRent}&propertyTypes=${filters.propertyType}&constructionStatus=${filters.constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${filters.mainPriceOnly}&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
+  console.log(`Fetching ${url}...`);
+  if (cancellationTokenSource) {
+    cancellationTokenSource.cancel();
+  }
+  const CancelToken = axios.CancelToken;
+  // create the source
+  cancellationTokenSource = CancelToken.source();
+  try {
+    const priceDataResponse = await axios.post<RealEstateResponse[]>(url, filters.postCodes, { cancelToken: cancellationTokenSource.token });
+    data = priceDataResponse.data;
+  } catch (err) {
+    if (axios.isCancel(err)) {
+      console.log(`Request ${url} cancelled`);
+    } else {
+      console.error('Cannot get prices: ' + err);
     }
-  },
-  400,
-  { isImmediate: false }
-);
+    return;
+  }
+  console.log('Got prices');
+  for (const priceData of data) {
+    const suburbId = getSuburbId(priceData.locality, priceData.postCode);
+    priceData.suburbId = suburbId;
+  }
+
+  const { pricesToColors, suburbsByPrice } = ColorUtils.calculatePricesToColors(data, colors);
+  suburbIdsByPriceInterval = suburbsByPrice;
+
+  if (dispatch) {
+    dispatch(changePricesToColors(pricesToColors));
+  }
+
+  console.log('Caclulated colors');
+
+  const getRealEstateDictionary = (priceDataArray: RealEstateResponse[]) => {
+    if (!priceDataArray) {
+      return {};
+    }
+    const priceDataBySuburbId: {
+      [suburbId: string]: RealEstateResponse;
+    } = {};
+    for (const priceData of priceDataArray) {
+      const suburbId = priceData.suburbId;
+      priceDataBySuburbId[suburbId] = priceData;
+    }
+    return priceDataBySuburbId;
+  };
+
+  priceDataBySuburbId = getRealEstateDictionary(data);
+  for (const suburbId in layersBySuburbId) {
+    const layer = layersBySuburbId[suburbId];
+    const properties = layer.feature.properties;
+    if (properties.priceData) {
+      properties.priceData = undefined;
+    }
+    // Setting price properties for existing features when the prices are fetched
+    setFeaturePriceProperties(properties);
+    applyStyleToLayer(layer);
+    setPricePopupContent(layer, properties);
+  }
+};
+
+const fetchPriceDataDebounced = debounce(async (filters: FiltersState) => await trackPromise(fetchPriceData(filters)), 400);
 
 const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeatureProperties>, layer: CustomLayer) => {
   const properties = feature.properties;
@@ -318,7 +318,6 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
       // this object contains all the layers, not just recently added
       const compoundLayer = geoJsonElement?.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
       bounds = compoundLayer.getBounds();
-      showAll();
     };
 
     for (const fileName in checkedDistricts) {
@@ -364,7 +363,6 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         for (const layer of innerLayers) {
           const compoundLayer = geoJsonElement?.leafletElement.removeLayer(layer);
           bounds = compoundLayer.getBounds();
-          showAll();
           const properties = layer.feature?.properties;
           if (dispatch && properties) {
             dispatch(removeFeature(properties.suburbId));
@@ -383,6 +381,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
   };
   removeUncheckedLayers(checkedDistricts);
   await addCheckedLayers(checkedDistricts);
+  showAll();
 };
 
 const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) => {
@@ -402,8 +401,35 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) =>
   }, [districtList]);
 
   useEffect(() => {
-    fetchPriceData(filters);
+    fetchPriceDataDebounced(filters);
   }, [filters]);
+
+  const { promiseInProgress } = usePromiseTracker();
+
+  const renderLegendOrLoading = useCallback(() => {
+    if (promiseInProgress) {
+      return (
+        <div className="spinner">
+          <Loader type="TailSpin" color="#292929" height={70} width={70} />
+        </div>
+      );
+    } else {
+      return (
+        <Legend
+          onItemMouseOver={(intervalMinPrice) =>
+            applyByPriceInterval(intervalMinPrice, (layer) => {
+              highlightFeatureOnMap(layer, false);
+            })
+          }
+          onItemMouseOut={(intervalMinPrice) =>
+            applyByPriceInterval(intervalMinPrice, (layer) => {
+              unhighlightFeatureOnMap(layer);
+            })
+          }
+        />
+      );
+    }
+  }, [promiseInProgress]);
 
   return useMemo(
     () => (
@@ -412,20 +438,7 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) =>
         <Control position="topleft">
           <FeatureList onItemMouseOver={highlightFeatureById} onItemMouseOut={unhighlightFeatureById} onItemClick={zoomToFeatureById} />
         </Control>
-        <Control position="bottomleft">
-          <Legend
-            onItemMouseOver={(intervalMinPrice) =>
-              applyByPriceInterval(intervalMinPrice, (layer) => {
-                highlightFeatureOnMap(layer, false);
-              })
-            }
-            onItemMouseOut={(intervalMinPrice) =>
-              applyByPriceInterval(intervalMinPrice, (layer) => {
-                unhighlightFeatureOnMap(layer);
-              })
-            }
-          />
-        </Control>
+        <Control position="bottomleft">{renderLegendOrLoading()}</Control>
         <Control position="topright">
           <Info />
         </Control>
@@ -438,7 +451,7 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) =>
         <ZoomControl position="bottomright" />
       </React.Fragment>
     ),
-    [geojsonRef]
+    [geojsonRef, renderLegendOrLoading]
   );
 };
 

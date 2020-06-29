@@ -18,10 +18,10 @@ export default class ColorUtils {
   static generateColors = (shadeCount: number) => {
     const minColor = ColorUtils.hexToRgb('#4dd54d') as RGB;
     const midColor = ColorUtils.hexToRgb('#e5c006') as RGB;
-    const maxColor = ColorUtils.hexToRgb('#e50606') as RGB;
+    const maxColor = ColorUtils.hexToRgb('#cb0606') as RGB;
 
     const isEven = shadeCount % 2 === 0;
-    const halfShadeCount = shadeCount / 2;
+    const halfShadeCount = Math.ceil(shadeCount / 2);
     const firstHalf = createColors(minColor, midColor, halfShadeCount);
     const secondHalf = createColors(midColor, maxColor, halfShadeCount + (isEven ? 1 : 0));
     secondHalf.shift(); // shift removes the first element which is the same as the last element of the first half

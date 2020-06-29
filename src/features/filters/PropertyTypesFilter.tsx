@@ -2,7 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { changePropertyType, selectPropertyType } from './filtersSlice';
 import { useSelector, useDispatch } from 'react-redux';
 
-const Filters: React.FunctionComponent = () => {
+const PropertyTypesFilter: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const propertyType = useSelector(selectPropertyType);
   return (
@@ -16,4 +16,4 @@ const Filters: React.FunctionComponent = () => {
   );
 };
 
-export default React.memo(Filters);
+export default React.memo(PropertyTypesFilter);

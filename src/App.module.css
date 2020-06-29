@@ -22,12 +22,6 @@ header {
   grid-area: top;
 }
 
-.info-container {
-  grid-area: left;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
-
 .map {
   grid-area: right;
 }

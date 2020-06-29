@@ -1,5 +1,7 @@
 .districtList {
   margin: 10px 0;
+  overflow-y: auto;
+  height: 1000px;
 }
 
 .districtList > div {
