@@ -1,58 +1,68 @@
-import { Button } from '@material-ui/core';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import React from 'react';
+import styles from './App.module.css';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
 import Sidebar from './features/sidebar/Sidebar';
-import styles from './App.module.css';
-
-const themeLight = createMuiTheme({
-  palette: {
-    type: 'light',
-  },
-});
 
 const themeDark = createMuiTheme({
   palette: {
     type: 'dark',
+    primary: {
+      main: '#a22a11',
+    },
+    secondary: {
+      main: '#d32f2f',
+    },
   },
   overrides: {
-    MuiFormLabel: {
-      root: {
-        '&$focused': {
-          color: 'tomato',
-          fontWeight: 'bold',
-        },
+    MuiFormControlLabel: {
+      label: {
+        fontSize: '0.7rem',
       },
+    },
+    MuiFormControl: {
+      root: {
+        width: '100%',
+      },
+    },
+    MuiFormGroup: {
+      root: {
+        maxHeight: '200px',
+      },
+    },
+    // MuiFormLabel: {
+    //   root: {
+    //     '&$focused': {
+    //       color: 'tomato',
+    //       fontWeight: 'bold',
+    //     },
+    //   },
 
-      focused: {},
-    },
-    MuiOutlinedInput: {
-      root: {
-        '& $notchedOutline': {
-          borderColor: 'white',
-        },
-        '&:hover $notchedOutline': {
-          borderColor: 'cyan',
-        },
-        '&$focused $notchedOutline': {
-          borderColor: 'tomato',
-        },
-      },
-    },
+    //   focused: {},
+    // },
+    // MuiOutlinedInput: {
+    //   root: {
+    //     '& $notchedOutline': {
+    //       borderColor: 'white',
+    //     },
+    //     '&:hover $notchedOutline': {
+    //       borderColor: 'cyan',
+    //     },
+    //     '&$focused $notchedOutline': {
+    //       borderColor: 'tomato',
+    //     },
+    //   },
+    // },
   },
 });
 
 const App = () => {
-  const [light, setLight] = React.useState(false);
   return (
-    <MuiThemeProvider theme={light ? themeLight : themeDark}>
+    <MuiThemeProvider theme={themeDark}>
       <CssBaseline />{' '}
       <div className={styles.container}>
-        <header>
-          Australian Property Trends
-          <Button onClick={() => setLight((prev) => !prev)}>Toggle Theme</Button>
-        </header>
+        <header>Australian Property Trends</header>
         <div className={styles.map}>
           <RealEstateMap />
         </div>

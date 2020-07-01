@@ -1,15 +1,13 @@
-import './index.css';
-//import './rsuite.css';
-import './scrollbar.css';
-import './whyDidYouRender';
-import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
-//import 'rsuite/dist/styles/rsuite-dark.css';
-import * as serviceWorker from './serviceWorker';
-import { Provider } from 'react-redux';
-import { store } from './app/store';
-import App from './App';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import { Provider } from 'react-redux';
+import App from './App';
+import { store } from './app/store';
+import './index.css';
+import './scrollbar.css';
+import * as serviceWorker from './serviceWorker';
+import './whyDidYouRender';
 
 ReactDOM.render(
   <React.StrictMode>

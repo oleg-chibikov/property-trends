@@ -1,7 +1,7 @@
-import { PricesToColors, RealEstateResponse } from '../interfaces';
-import { RGB, createColors, rgbHex } from 'color-map';
-import MathUtils from './mathUtils';
 import piecewise from '@freder/piecewise';
+import { createColors, RGB, rgbHex } from 'color-map';
+import { PricesToColors, RealEstateResponse } from '../interfaces';
+import MathUtils from './mathUtils';
 
 export default class ColorUtils {
   static hexToRgb = (hex: string) => {
@@ -16,9 +16,12 @@ export default class ColorUtils {
   };
 
   static generateColors = (shadeCount: number) => {
-    const minColor = ColorUtils.hexToRgb('#4dd54d') as RGB;
-    const midColor = ColorUtils.hexToRgb('#e5c006') as RGB;
-    const maxColor = ColorUtils.hexToRgb('#cb0606') as RGB;
+    // const minColor = ColorUtils.hexToRgb('#4dd54d') as RGB;
+    // const midColor = ColorUtils.hexToRgb('#e5c006') as RGB;
+    // const maxColor = ColorUtils.hexToRgb('#cb0606') as RGB;
+    const minColor = ColorUtils.hexToRgb('#e9d09b') as RGB;
+    const midColor = ColorUtils.hexToRgb('#a23e10') as RGB;
+    const maxColor = ColorUtils.hexToRgb('#57052f') as RGB;
 
     const isEven = shadeCount % 2 === 0;
     const halfShadeCount = Math.ceil(shadeCount / 2);

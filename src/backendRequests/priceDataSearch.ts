@@ -1,8 +1,8 @@
-import { FiltersState } from '../features/filters/filtersSlice';
-import { RealEstateResponse } from '../interfaces';
-import { trackPromise } from 'react-promise-tracker';
 import axios, { CancelTokenSource } from 'axios';
 import debounce from 'debounce-async';
+import { trackPromise } from 'react-promise-tracker';
+import { FiltersState } from '../features/filters/filtersSlice';
+import { RealEstateResponse } from '../interfaces';
 
 let cancellationTokenSource: CancelTokenSource | undefined;
 

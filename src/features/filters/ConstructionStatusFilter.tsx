@@ -1,6 +1,6 @@
-import { changeConstructionStatus, selectConstructionStatus } from './filtersSlice';
-import { useSelector } from 'react-redux';
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { changeConstructionStatus, selectConstructionStatus } from './filtersSlice';
 import SelectFilter from './SelectFilter';
 
 const ConstructionStatusFilter: React.FunctionComponent = () => {

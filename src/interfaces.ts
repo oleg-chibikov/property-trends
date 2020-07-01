@@ -1,4 +1,4 @@
-import { Polygon } from 'leaflet';
+import { Map, Polygon } from 'leaflet';
 
 export interface PriceIntrevalInfo {
   intervalMinPrice: number;
@@ -81,4 +81,8 @@ export interface PostCodeFileInfo {
   innerDistrict: string;
   locality: string;
   postCode: number;
+}
+
+export interface WithMap {
+  leafletMap: Map;
 }

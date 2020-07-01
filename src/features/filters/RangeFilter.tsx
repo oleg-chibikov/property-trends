@@ -1,4 +1,4 @@
-import { Grid, Slider, Switch } from '@material-ui/core';
+import { Slider, Switch } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
@@ -13,26 +13,19 @@ interface RangeFilterProps {
 
 const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefault, label, value, onChange, min, max }) => {
   const [isRange, setIsRange] = useState<boolean>(isRangeByDefault || false);
+  const valueCopy = isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
   return (
     <div>
-      {label}:{' '}
-      <Grid component="label" container alignItems="center" spacing={1}>
-        <Grid item>Off</Grid>
-        <Grid item>
-          <Switch checked={isRange} onChange={() => setIsRange(!isRange)} />
-        </Grid>
-        <Grid item>On</Grid>
-      </Grid>
+      {label}: <Switch size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
       <Slider
         min={min}
         max={max}
-        defaultValue={value}
+        value={valueCopy}
         valueLabelDisplay="auto"
         onChange={(event: unknown, newValue: number | number[]) => {
-          //  onChange(newValue);
+          onChange(newValue);
         }}
       />
-      )
     </div>
   );
 };

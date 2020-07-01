@@ -1,4 +1,4 @@
-import { Slider } from 'rsuite';
+import { Slider } from '@material-ui/core';
 import { changeAllowedWindowInDays, selectAllowedWindowInDays } from './filtersSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import React from 'react';
@@ -12,9 +12,9 @@ const Filters: React.FunctionComponent = () => {
       <Slider
         min={1}
         max={365}
-        defaultValue={allowedWindowInDays}
-        onChange={(value: number) => {
-          dispatch(changeAllowedWindowInDays(value));
+        value={allowedWindowInDays}
+        onChange={(event: unknown, newValue: number | number[]) => {
+          dispatch(changeAllowedWindowInDays(newValue as number));
         }}
       />
     </div>

@@ -1,11 +1,10 @@
-import { DistrictsByState, checkState, selectDistrictList, uncheckState } from './districtListSlice';
-import { FormControlLabel } from '@material-ui/core';
-import { Panel, PanelGroup } from 'rsuite';
-import { useDispatch, useSelector } from 'react-redux';
+import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
-import DistrictSelector from './DistrictSelector';
 import React, { Dispatch } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from './DistrictList.module.css';
+import { checkState, DistrictsByState, selectDistrictList, uncheckState } from './districtListSlice';
+import DistrictSelector from './DistrictSelector';
 
 let dispatch: Dispatch<unknown>;
 let checkedDistricts: { [fileName: string]: undefined };
@@ -41,25 +40,29 @@ const renderHeader = (state: string) => {
   );
 };
 
-const renderState = (state: string, key: number) => {
-  const districtsForState = districtsByState[state];
-  return (
-    <Panel key={key} eventKey={key} header={renderHeader(state)}>
-      {districtsForState.map(renderDistrict)}
-    </Panel>
-  );
-};
-
 const DistrictList: React.FunctionComponent = () => {
   dispatch = useDispatch();
+  const handleChange = (panel: string) => (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
+    setExpanded(isExpanded ? panel : false);
+  };
+
+  const renderState = (state: string) => {
+    const districtsForState = districtsByState[state];
+    return (
+      <Accordion key={state} expanded={expanded === state} onChange={handleChange(state)} TransitionProps={{ unmountOnExit: true }} className={styles.districtList}>
+        <AccordionSummary>{renderHeader(state)}</AccordionSummary>
+        <AccordionDetails>
+          <FormGroup>{districtsForState.map(renderDistrict)}</FormGroup>
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
+
+  const [expanded, setExpanded] = React.useState<string | false>(false);
   const districtListState = useSelector(selectDistrictList);
   checkedDistricts = districtListState.checkedDistricts;
   districtsByState = districtListState.districtsByState;
-  return (
-    <PanelGroup accordion bordered className={styles.districtList} defaultActiveKey={1}>
-      {Object.keys(districtsByState).map(renderState)}
-    </PanelGroup>
-  );
+  return <React.Fragment>{Object.keys(districtsByState).map(renderState)}</React.Fragment>;
 };
 
 export default React.memo(DistrictList);

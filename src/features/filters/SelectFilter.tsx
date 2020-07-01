@@ -1,7 +1,7 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { useDispatch } from 'react-redux';
 
 interface SelectItem {
   label: string;

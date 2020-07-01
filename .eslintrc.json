@@ -8,15 +8,15 @@
   },
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/explicit-module-boundary-types": "off",
-    "sort-imports-es6-autofix/sort-imports-es6": [
-      2,
-      {
-        "ignoreCase": false,
-        "ignoreMemberSort": false,
-        "memberSyntaxSortOrder": ["none", "all", "multiple", "single"]
-      }
-    ]
+    "@typescript-eslint/explicit-module-boundary-types": "off"
+    // "sort-imports-es6-autofix/sort-imports-es6": [
+    //   2,
+    //   {
+    //     "ignoreCase": false,
+    //     "ignoreMemberSort": false,
+    //     "memberSyntaxSortOrder": ["none", "all", "multiple", "single"]
+    //   }
+    // ]
   },
   "settings": {
     "react": {

@@ -4,6 +4,9 @@
   "private": true,
   "dependencies": {
     "@freder/piecewise": "^0.7.0",
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^5.0.0-alpha.1",
     "@reduxjs/toolkit": "^1.4.0",
     "@testing-library/jest-dom": "^5.11.0",
     "@testing-library/react": "^10.4.3",
@@ -30,7 +33,6 @@
     "react-promise-tracker": "^2.1.0",
     "react-redux": "^7.2.0",
     "react-scripts": "3.4.1",
-    "rsuite": "^4.7.5",
     "topojson-client": "^3.1.0",
     "typescript": "^3.9.5"
   },

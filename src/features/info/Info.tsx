@@ -1,10 +1,10 @@
-import { FeatureProperties } from '../../interfaces';
-import { selectInfo } from './infoSlice';
-import { useSelector } from 'react-redux';
-import MoneyUtils from '../../utils/moneyUtils';
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { FeatureProperties } from '../../interfaces';
+import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import styles from './Info.module.css';
+import { selectInfo } from './infoSlice';
 
 const Info: React.FunctionComponent = () => {
   const info = useSelector(selectInfo).currentInfo;
@@ -22,8 +22,8 @@ const Info: React.FunctionComponent = () => {
     );
   return info ? (
     <div className={styles.info}>
-      <h6>{info.name}</h6>
-      {info.postCode && <div>Post Code: {info.postCode}</div>}
+      <h3>{info.name}</h3>
+      {info.postCode && <div>Post Code: {StringUtils.padPostCode(info.postCode)}</div>}
       <div>District: {StringUtils.removePostfix(info.fileName)}</div>
       {renderAdditionalInfo(info)}
     </div>

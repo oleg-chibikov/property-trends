@@ -1,14 +1,17 @@
-import { PostCodeFileInfo } from '../interfaces';
-import { trackPromise } from 'react-promise-tracker';
 import axios, { CancelTokenSource } from 'axios';
 import debounce from 'debounce-async';
+import { trackPromise } from 'react-promise-tracker';
+import { PostCodeFileInfo } from '../interfaces';
 
 let cancellationTokenSource: CancelTokenSource | undefined;
 
 const fetchDistrictInfo = async (searchPattern: string) => {
   const url = process.env.REACT_APP_PRICES_API_URL + `Districts/${searchPattern}`;
   console.log(`Searching for suburbs: ${url}...`);
-
+  // function sleep(time: any) {
+  //   return new Promise((resolve) => setTimeout(resolve, time));
+  // }
+  // await sleep(1000);
   if (cancellationTokenSource) {
     cancellationTokenSource.cancel();
   }

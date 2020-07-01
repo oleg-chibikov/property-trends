@@ -1,31 +1,27 @@
-import { CompoundLayer, CustomLayer, EventArgs, FeatureInfo, FeatureProperties, RealEstateResponse, SuburbKey, WithFeatures } from '../../interfaces';
-import { FiltersState, changePostCodes, selectFilters } from '../filters/filtersSlice';
-import { GeoJSON, ZoomControl } from 'react-leaflet';
-import { addFeature, highlightFeature, removeFeature, setFeatureColor, unhighlightFeature } from '../featureList/featureListSlice';
-import { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
-import { clearInfo, setInfo } from '../info/infoSlice';
-import { selectDistrictList } from '../districtList/districtListSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { usePromiseTracker } from 'react-promise-tracker';
-import ColorUtils from '../../utils/colorUtils';
-import Control from 'react-leaflet-control';
-import CurrentLocation from '../currentLocation/CurrentLocation';
-import FeatureList from '../featureList/FeatureList';
-import Info from '../info/Info';
 import L, { LatLngBounds, Map, StyleFunction } from 'leaflet';
-import Legend from '../legend/Legend';
-import Loader from 'react-loader-spinner';
-import MoneyUtils from '../../utils/moneyUtils';
 import PropTypes from 'prop-types';
 import React, { Dispatch, useCallback, useEffect, useMemo } from 'react';
-import ShowAll from '../showAll/ShowAll';
-import StringUtils from '../../utils/stringUtils';
+import { GeoJSON, ZoomControl } from 'react-leaflet';
+import Control from 'react-leaflet-control';
+import Loader from 'react-loader-spinner';
+import { usePromiseTracker } from 'react-promise-tracker';
+import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
 import fetchPriceDataDebounced, { priceDataSearchPromiseTrackerArea } from '../../backendRequests/priceDataSearch';
-
-interface FeatureMapProps {
-  leafletMap: Map;
-}
+import { CompoundLayer, CustomLayer, EventArgs, FeatureInfo, FeatureProperties, RealEstateResponse, SuburbKey, WithFeatures, WithMap } from '../../interfaces';
+import ColorUtils from '../../utils/colorUtils';
+import MoneyUtils from '../../utils/moneyUtils';
+import StringUtils from '../../utils/stringUtils';
+import CurrentLocation from '../currentLocation/CurrentLocation';
+import { selectDistrictList } from '../districtList/districtListSlice';
+import FeatureList from '../featureList/FeatureList';
+import { addFeature, highlightFeature, removeFeature, setFeatureColor, unhighlightFeature } from '../featureList/featureListSlice';
+import { changePostCodes, FiltersState, selectFilters } from '../filters/filtersSlice';
+import Info from '../info/Info';
+import { clearInfo, setInfo } from '../info/infoSlice';
+import Legend from '../legend/Legend';
+import { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
+import ShowAll from '../showAll/ShowAll';
 
 let mapElement: Map | undefined;
 let bounds: LatLngBounds | undefined;
@@ -263,9 +259,9 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         const suburbId = getSuburbId(name, postCode);
         properties.name = name;
         properties.suburbId = suburbId;
-        properties.popupContent = `<h6>
-          ${name} ${postCode}
-        </h6>
+        properties.popupContent = `<h3>
+          ${name} ${StringUtils.padPostCode(postCode)}
+        </h3>
         <div>${StringUtils.removePostfix(fileName)}</div>`;
 
         // Setting prices for new features when prices are already fetched and new layer is added
@@ -329,7 +325,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
   showAll();
 };
 
-const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) => {
+const FeatureMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   dispatch = useDispatch();
   const geojsonRef = useCallback((node) => {
@@ -381,7 +377,7 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) =>
       <React.Fragment>
         <GeoJSON style={getFeatureStyle} ref={geojsonRef} data={[]} onEachFeature={onEachFeature} />
         <Control position="topleft">
-          <FeatureList onItemMouseOver={highlightFeatureById} onItemMouseOut={unhighlightFeatureById} onItemClick={zoomToFeatureById} />
+          <FeatureList leafletMap={leafletMap} onItemMouseOver={highlightFeatureById} onItemMouseOut={unhighlightFeatureById} onItemClick={zoomToFeatureById} />
         </Control>
         <Control position="bottomleft">{renderLegendOrLoading()}</Control>
         <Control position="topright">
@@ -396,7 +392,7 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) =>
         <ZoomControl position="bottomright" />
       </React.Fragment>
     ),
-    [geojsonRef, renderLegendOrLoading]
+    [geojsonRef, renderLegendOrLoading, leafletMap]
   );
 };
 
