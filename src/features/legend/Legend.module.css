@@ -22,6 +22,6 @@
   vertical-align: middle;
 }
 .legendContainer > div.highlighted {
-  background-color: yellow !important;
+  background-color: #f3f36887 !important;
   color: black !important;
 }

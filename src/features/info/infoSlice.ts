@@ -1,5 +1,5 @@
 import { FeatureProperties } from './../../interfaces';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
 interface InfoState {

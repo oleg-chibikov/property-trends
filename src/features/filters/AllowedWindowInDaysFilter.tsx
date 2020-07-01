@@ -1,7 +1,7 @@
-import React from 'react';
-import { changeAllowedWindowInDays, selectAllowedWindowInDays } from './filtersSlice';
-import { useSelector, useDispatch } from 'react-redux';
 import { Slider } from 'rsuite';
+import { changeAllowedWindowInDays, selectAllowedWindowInDays } from './filtersSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 
 const Filters: React.FunctionComponent = () => {
   const dispatch = useDispatch();

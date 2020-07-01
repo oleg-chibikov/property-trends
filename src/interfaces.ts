@@ -74,3 +74,11 @@ export interface WithFeatures extends GeoJSON.GeoJsonObject {
 export interface PricesToColors {
   [intervalMinPrice: number]: PriceIntrevalInfo;
 }
+
+export interface PostCodeFileInfo {
+  state: string;
+  outerDistrict: string;
+  innerDistrict: string;
+  locality: string;
+  postCode: number;
+}

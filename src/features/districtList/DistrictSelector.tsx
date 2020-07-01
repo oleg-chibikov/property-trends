@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+import { FormControlLabel } from '@material-ui/core';
 import { checkDistrict, uncheckDistrict } from './districtListSlice';
+import { useDispatch } from 'react-redux';
+import Checkbox from '@material-ui/core/Checkbox';
+import PropTypes from 'prop-types';
+import React from 'react';
 import StringUtils from '../../utils/stringUtils';
 
 interface IDistrictSelectorProps {
@@ -11,27 +13,23 @@ interface IDistrictSelectorProps {
 
 const DistrictSelector: React.FunctionComponent<IDistrictSelectorProps> = ({ name, checked }) => {
   const dispatch = useDispatch();
-  const [isChecked, setIsChecked] = useState<boolean>(checked);
-  useEffect(() => {
-    if (checked) {
-      dispatch(checkDistrict(name));
-    }
-  }, [checked, dispatch, name]);
   return (
     <div>
-      <input
-        type="checkbox"
-        checked={isChecked}
-        onChange={() => {
-          setIsChecked(!isChecked);
-          if (isChecked) {
-            dispatch(uncheckDistrict(name));
-          } else {
-            dispatch(checkDistrict(name));
-          }
-        }}
-      />{' '}
-      {StringUtils.removePostfix(name.substr(name.indexOf(' - ') + 3))}
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              if (event.target.checked) {
+                dispatch(checkDistrict(name));
+              } else {
+                dispatch(uncheckDistrict(name));
+              }
+            }}
+          />
+        }
+        label={StringUtils.removePostfix(name.substr(name.indexOf(' - ') + 3))}
+      />
     </div>
   );
 };

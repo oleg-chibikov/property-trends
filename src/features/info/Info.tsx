@@ -1,10 +1,10 @@
-import React from 'react';
-import styles from './Info.module.css';
+import { FeatureProperties } from '../../interfaces';
 import { selectInfo } from './infoSlice';
 import { useSelector } from 'react-redux';
 import MoneyUtils from '../../utils/moneyUtils';
-import { FeatureProperties } from '../../interfaces';
+import React from 'react';
 import StringUtils from '../../utils/stringUtils';
+import styles from './Info.module.css';
 
 const Info: React.FunctionComponent = () => {
   const info = useSelector(selectInfo).currentInfo;

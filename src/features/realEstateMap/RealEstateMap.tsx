@@ -1,9 +1,9 @@
-import React, { useCallback, useState } from 'react';
 import './RealEstateMap.module.css';
-import { Map, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import FeatureMap from './FeatureMap';
 import { BoxZoomControl } from 'react-leaflet-box-zoom';
+import { Map, TileLayer } from 'react-leaflet';
+import FeatureMap from './FeatureMap';
+import React, { useCallback, useState } from 'react';
 
 const RealEstateMap: React.FunctionComponent = () => {
   const [map, setMap] = useState<Map>();

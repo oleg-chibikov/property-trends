@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../../app/store';
 import { FeatureInfo } from '../../interfaces';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { RootState } from '../../app/store';
 
 interface HighlightFeatureParams {
   suburbId: string;

@@ -1,8 +1,8 @@
+import { LegendEntryEventHandlers } from '../../interfaces';
+import MoneyUtils from '../../utils/moneyUtils';
+import PropTypes from 'prop-types';
 import React from 'react';
 import styles from './Legend.module.css';
-import MoneyUtils from '../../utils/moneyUtils';
-import { LegendEntryEventHandlers } from '../../interfaces';
-import PropTypes from 'prop-types';
 
 interface LegendEntry {
   index: number;

@@ -1,7 +1,7 @@
 .features {
   background-color: rgb(39, 39, 39);
   padding: 20px;
-  height: 700px;
+  max-height: 700px;
   overflow-y: auto;
   scroll-behavior: smooth;
 }
@@ -12,10 +12,6 @@
 }
 
 .feature.highlighted {
-  background-color: white !important;
-  color: black !important;
-}
-
-.feature.colorized {
+  background-color: #f3f36887 !important;
   color: black !important;
 }

@@ -1,10 +1,10 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import { FeatureEntryEventHandlers } from '../../interfaces';
 import { selectFeatures } from './featureListSlice';
-import styles from './FeatureList.module.css';
+import { useSelector } from 'react-redux';
 import FeatureEntry from './FeatureEntry';
 import PropTypes from 'prop-types';
-import { FeatureEntryEventHandlers } from '../../interfaces';
+import React from 'react';
+import styles from './FeatureList.module.css';
 
 const FeatureList: React.FunctionComponent<FeatureEntryEventHandlers> = (props) => {
   const features = useSelector(selectFeatures);

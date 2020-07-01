@@ -1,34 +1,38 @@
-import React, { useState } from 'react';
-import { RangeSlider, Slider } from 'rsuite';
-import { ValueType } from 'rsuite/lib/RangeSlider';
+import { Grid, Slider, Switch } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 
 interface RangeFilterProps {
   isRangeByDefault?: boolean;
   label: string;
-  value: ValueType;
+  value: number | number[];
   min: number;
   max: number;
-  onChange: (value: ValueType) => void;
+  onChange: (value: number | number[]) => void;
 }
 
 const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefault, label, value, onChange, min, max }) => {
   const [isRange, setIsRange] = useState<boolean>(isRangeByDefault || false);
   return (
     <div>
-      {label}: <input type="checkbox" checked={isRangeByDefault} onClick={() => setIsRange(!isRange)} /> Range{' '}
-      {isRange ? (
-        <RangeSlider min={min} max={max} defaultValue={value} onChange={onChange} />
-      ) : (
-        <Slider
-          min={1}
-          max={7}
-          defaultValue={value[0]}
-          onChange={(value: number) => {
-            onChange([value, value]);
-          }}
-        />
-      )}
+      {label}:{' '}
+      <Grid component="label" container alignItems="center" spacing={1}>
+        <Grid item>Off</Grid>
+        <Grid item>
+          <Switch checked={isRange} onChange={() => setIsRange(!isRange)} />
+        </Grid>
+        <Grid item>On</Grid>
+      </Grid>
+      <Slider
+        min={min}
+        max={max}
+        defaultValue={value}
+        valueLabelDisplay="auto"
+        onChange={(event: unknown, newValue: number | number[]) => {
+          //  onChange(newValue);
+        }}
+      />
+      )
     </div>
   );
 };

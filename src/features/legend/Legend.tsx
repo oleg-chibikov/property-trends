@@ -1,10 +1,10 @@
+import { LegendEntryEventHandlers } from '../../interfaces';
+import { selectPricesToColors } from './legendSlice';
+import { useSelector } from 'react-redux';
+import LegendEntry from './LegendEntry';
+import PropTypes from 'prop-types';
 import React from 'react';
 import styles from './Legend.module.css';
-import { useSelector } from 'react-redux';
-import { selectPricesToColors } from './legendSlice';
-import { LegendEntryEventHandlers } from '../../interfaces';
-import PropTypes from 'prop-types';
-import LegendEntry from './LegendEntry';
 
 const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemMouseOver, onItemMouseOut }) => {
   const pricesToColors = useSelector(selectPricesToColors);

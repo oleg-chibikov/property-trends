@@ -1,0 +1,41 @@
+.rs-panel-heading,
+.rs-panel-collapsible > .rs-panel-heading::before {
+  color: white !important;
+}
+
+.rs-panel-body > h5 {
+  margin-bottom: 10px;
+}
+
+.rs-panel-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.rs-slider {
+  margin: 10px 0 !important;
+}
+
+.rs-btn-toggle:not(.rs-btn-toggle-checked) {
+  background-color: rgb(36, 36, 36) !important;
+}
+.rs-checkbox {
+  padding: 5px 0 !important;
+}
+.rs-checkbox-wrapper {
+  left: 0 !important;
+  top: 0 !important;
+}
+.rs-checkbox-checker {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 26px !important;
+  min-height: 0 !important;
+}
+.rs-panel-heading {
+  padding: 5px !important;
+}
+
+.rs-panel-heading::before {
+  top: 10px !important;
+}

@@ -1,25 +1,16 @@
-import React, { ChangeEvent } from 'react';
 import { changeConstructionStatus, selectConstructionStatus } from './filtersSlice';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import React from 'react';
+import SelectFilter from './SelectFilter';
 
 const ConstructionStatusFilter: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
-  const constructionStatus = useSelector(selectConstructionStatus);
-  return (
-    <div>
-      Construction status:{' '}
-      <select
-        value={constructionStatus}
-        onChange={(event: ChangeEvent<HTMLSelectElement>) => {
-          dispatch(changeConstructionStatus(event.target.value));
-        }}
-      >
-        <option value="">Any</option>
-        <option value="new">New</option>
-        <option value="established">Established</option>
-      </select>
-    </div>
-  );
+  const defaultValue = useSelector(selectConstructionStatus);
+  const data = [
+    { label: 'Any', value: 'any' },
+    { label: 'New', value: 'new' },
+    { label: 'Established', value: 'established' },
+  ];
+  return <SelectFilter defaultValue={defaultValue} name="Status" data={data} onChange={changeConstructionStatus} />;
 };
 
 export default React.memo(ConstructionStatusFilter);

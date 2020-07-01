@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../../app/store';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { PricesToColors } from '../../interfaces';
+import { RootState } from '../../app/store';
 
 interface LegendState {
   pricesToColors: PricesToColors;

@@ -1,13 +1,13 @@
+import { FeatureEntryEventHandlers, FeatureInfo } from '../../interfaces';
+import PropTypes from 'prop-types';
 import React from 'react';
 import styles from './FeatureList.module.css';
-import PropTypes from 'prop-types';
-import { FeatureEntryEventHandlers, FeatureInfo } from '../../interfaces';
 
 interface FeatureEntryProps extends FeatureEntryEventHandlers, FeatureInfo {}
 
 const FeatureEntry: React.FunctionComponent<FeatureEntryProps> = ({ name, suburbId, isHighlighted, color, onItemMouseOver, onItemMouseOut, onItemClick }) => (
   <div
-    style={{ backgroundColor: color }}
+    style={{ backgroundColor: color + '4D' }} // addional value means opacity https://gist.github.com/lopspower/03fb1cc0ac9f32ef38f4
     onMouseOver={() => onItemMouseOver(suburbId)}
     onMouseOut={() => onItemMouseOut(suburbId)}
     onClick={() => onItemClick(suburbId)}

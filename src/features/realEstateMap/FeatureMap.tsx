@@ -1,28 +1,28 @@
-import React, { useCallback, useEffect, Dispatch, useMemo } from 'react';
+import { CompoundLayer, CustomLayer, EventArgs, FeatureInfo, FeatureProperties, RealEstateResponse, SuburbKey, WithFeatures } from '../../interfaces';
+import { FiltersState, changePostCodes, selectFilters } from '../filters/filtersSlice';
 import { GeoJSON, ZoomControl } from 'react-leaflet';
-import L, { StyleFunction, Map, LatLngBounds } from 'leaflet';
-import Info from '../info/Info';
-import { useDispatch, useSelector } from 'react-redux';
-import { addFeature, removeFeature, highlightFeature, unhighlightFeature, setFeatureColor } from '../featureList/featureListSlice';
-import Legend from '../legend/Legend';
-import Control from 'react-leaflet-control';
-import FeatureList from '../featureList/FeatureList';
-import StringUtils from '../../utils/stringUtils';
-import axios, { CancelTokenSource } from 'axios';
-import PropTypes from 'prop-types';
-import { setInfo, clearInfo } from '../info/infoSlice';
-import ShowAll from '../showAll/ShowAll';
-import CurrentLocation from '../currentLocation/CurrentLocation';
-import MoneyUtils from '../../utils/moneyUtils';
-import { selectDistrictList } from '../districtList/districtListSlice';
-import { selectFilters, changePostCodes, FiltersState } from '../filters/filtersSlice';
+import { addFeature, highlightFeature, removeFeature, setFeatureColor, unhighlightFeature } from '../featureList/featureListSlice';
 import { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
-import * as topojson from 'topojson-client';
-import { RealEstateResponse, CustomLayer, CompoundLayer, EventArgs, FeatureProperties, WithFeatures, SuburbKey, FeatureInfo } from '../../interfaces';
-import debounce from 'debounce-async';
+import { clearInfo, setInfo } from '../info/infoSlice';
+import { selectDistrictList } from '../districtList/districtListSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { usePromiseTracker } from 'react-promise-tracker';
 import ColorUtils from '../../utils/colorUtils';
-import { trackPromise, usePromiseTracker } from 'react-promise-tracker';
+import Control from 'react-leaflet-control';
+import CurrentLocation from '../currentLocation/CurrentLocation';
+import FeatureList from '../featureList/FeatureList';
+import Info from '../info/Info';
+import L, { LatLngBounds, Map, StyleFunction } from 'leaflet';
+import Legend from '../legend/Legend';
 import Loader from 'react-loader-spinner';
+import MoneyUtils from '../../utils/moneyUtils';
+import PropTypes from 'prop-types';
+import React, { Dispatch, useCallback, useEffect, useMemo } from 'react';
+import ShowAll from '../showAll/ShowAll';
+import StringUtils from '../../utils/stringUtils';
+import fetchPolygonData from '../../backendRequests/polygonRetrieval';
+import fetchPriceDataDebounced, { priceDataSearchPromiseTrackerArea } from '../../backendRequests/priceDataSearch';
+
 interface FeatureMapProps {
   leafletMap: Map;
 }
@@ -30,7 +30,7 @@ interface FeatureMapProps {
 let mapElement: Map | undefined;
 let bounds: LatLngBounds | undefined;
 let geoJsonElement: GeoJSON;
-let dispatch: Dispatch<unknown> | undefined;
+let dispatch: Dispatch<unknown>;
 let priceDataBySuburbId: { [suburbId: string]: RealEstateResponse } | undefined = undefined;
 let suburbIdsByPriceInterval: { [price: number]: string[] } = {};
 const currentlyCheckedDistricts: { [fileName: string]: undefined } = {};
@@ -38,8 +38,6 @@ const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
 const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
 
 const colors = ColorUtils.generateColors(15);
-
-let cancellationTokenSource: CancelTokenSource | undefined;
 
 const getSuburbId = (name: string, postCode: number) => StringUtils.removeNonAlphaNumberic(name).toLowerCase() + '_' + postCode;
 
@@ -76,14 +74,12 @@ const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
   }
 
   const properties = layer.feature.properties;
-  if (properties && dispatch) {
-    const copy = { ...properties };
-    dispatch(setInfo(copy));
-    const suburbId = properties.suburbId;
-    dispatch(highlightFeature({ suburbId: suburbId, scroll: scroll }));
-    if (properties.priceData?.priceIntrevalInfo) {
-      dispatch(highlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
-    }
+  const copy = { ...properties };
+  dispatch(setInfo(copy));
+  const suburbId = properties.suburbId;
+  dispatch(highlightFeature({ suburbId: suburbId, scroll: scroll }));
+  if (properties.priceData?.priceIntrevalInfo) {
+    dispatch(highlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
   }
 };
 
@@ -104,13 +100,11 @@ const applyByPriceInterval = (intervalMinPrice: number, func: (layer: CustomLaye
 const unhighlightFeatureOnMap = (layer: CustomLayer) => {
   geoJsonElement?.leafletElement.resetStyle(layer);
   const properties = layer.feature.properties;
-  if (properties && dispatch) {
-    const suburbId = properties.suburbId;
-    dispatch(clearInfo());
-    dispatch(unhighlightFeature(suburbId));
-    if (properties.priceData?.priceIntrevalInfo) {
-      dispatch(unhighlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
-    }
+  const suburbId = properties.suburbId;
+  dispatch(clearInfo());
+  dispatch(unhighlightFeature(suburbId));
+  if (properties.priceData?.priceIntrevalInfo) {
+    dispatch(unhighlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
   }
 };
 
@@ -132,7 +126,11 @@ const setPricePopupContent = (layer: CustomLayer, properties: FeatureProperties)
 
   const priceDataForFeature = properties.priceData;
   if (priceDataForFeature) {
-    setPopupContent(layer, `${properties.popupContent}<div>${StringUtils.removePostfix(properties.fileName)}</div><div>${MoneyUtils.format(priceDataForFeature.medianPrice)}</div>`);
+    setPopupContent(
+      layer,
+      `${properties.popupContent}
+    <div>${MoneyUtils.format(priceDataForFeature.medianPrice)}</div>`
+    );
   } else {
     setPopupContent(layer, properties.popupContent);
   }
@@ -151,7 +149,7 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
   } else {
     opacity = 0;
   }
-  if (dispatch && color) {
+  if (color) {
     dispatch(setFeatureColor({ suburbId: properties.suburbId, color: color }));
   }
 
@@ -171,45 +169,7 @@ const applyStyleToLayer = (layer: CustomLayer) => {
   layer.setStyle(getFeatureStyle(feature));
 };
 
-const fetchPriceData = async (filters: FiltersState) => {
-  const getMinValue = (value: [number, number]) => {
-    return value[0];
-  };
-
-  const getMaxValue = (value: [number, number]) => {
-    return value[1];
-  };
-
-  const bedroomsMin = getMinValue(filters.bedrooms);
-  const bedroomsMax = getMaxValue(filters.bedrooms);
-  const bathroomsMin = getMinValue(filters.bathrooms);
-  const bathroomsMax = getMaxValue(filters.bathrooms);
-  const parkingSpacesMin = getMinValue(filters.parkingSpaces);
-  const parkingSpacesMax = getMaxValue(filters.parkingSpaces);
-  const isRent = filters.dealType === 'rent';
-  let data: RealEstateResponse[];
-  const url =
-    process.env.REACT_APP_PRICES_API_URL +
-    `RealEstate?isRent=${isRent}&propertyTypes=${filters.propertyType}&constructionStatus=${filters.constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${filters.mainPriceOnly}&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
-  console.log(`Fetching ${url}...`);
-  if (cancellationTokenSource) {
-    cancellationTokenSource.cancel();
-  }
-  const CancelToken = axios.CancelToken;
-  // create the source
-  cancellationTokenSource = CancelToken.source();
-  try {
-    const priceDataResponse = await axios.post<RealEstateResponse[]>(url, filters.postCodes, { cancelToken: cancellationTokenSource.token });
-    data = priceDataResponse.data;
-  } catch (err) {
-    if (axios.isCancel(err)) {
-      console.log(`Request ${url} cancelled`);
-    } else {
-      console.error('Cannot get prices: ' + err);
-    }
-    return;
-  }
-  console.log('Got prices');
+const applyPriceData = (data: RealEstateResponse[]) => {
   for (const priceData of data) {
     const suburbId = getSuburbId(priceData.locality, priceData.postCode);
     priceData.suburbId = suburbId;
@@ -218,9 +178,7 @@ const fetchPriceData = async (filters: FiltersState) => {
   const { pricesToColors, suburbsByPrice } = ColorUtils.calculatePricesToColors(data, colors);
   suburbIdsByPriceInterval = suburbsByPrice;
 
-  if (dispatch) {
-    dispatch(changePricesToColors(pricesToColors));
-  }
+  dispatch(changePricesToColors(pricesToColors));
 
   console.log('Caclulated colors');
 
@@ -252,7 +210,12 @@ const fetchPriceData = async (filters: FiltersState) => {
   }
 };
 
-const fetchPriceDataDebounced = debounce(async (filters: FiltersState) => await trackPromise(fetchPriceData(filters)), 400);
+const fetchAndApplyPriceData = async (filters: FiltersState) => {
+  const data = await fetchPriceDataDebounced(filters);
+  if (data.length) {
+    applyPriceData(data);
+  }
+};
 
 const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeatureProperties>, layer: CustomLayer) => {
   const properties = feature.properties;
@@ -272,14 +235,12 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   const suburbId = properties.suburbId;
   layersBySuburbId[suburbId] = layer;
 
-  if (dispatch) {
-    dispatch(
-      addFeature({
-        name: properties.name,
-        suburbId: suburbId,
-      } as FeatureInfo)
-    );
-  }
+  dispatch(
+    addFeature({
+      name: properties.name,
+      suburbId: suburbId,
+    } as FeatureInfo)
+  );
 
   setPricePopupContent(layer, properties);
   // if priceData is fetched - the necessary properties and the style should be applied;
@@ -304,15 +265,12 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         properties.suburbId = suburbId;
         properties.popupContent = `<h6>
           ${name} ${postCode}
-        </h6>`;
+        </h6>
+        <div>${StringUtils.removePostfix(fileName)}</div>`;
 
         // Setting prices for new features when prices are already fetched and new layer is added
         setFeaturePriceProperties(properties);
       }
-    };
-
-    const fetchPolygonData = async (fileName: string) => {
-      return (await axios.get<TopoJSON.Topology<TopoJSON.Objects<GeoJSON.GeoJsonProperties>> | GeoJSON.GeoJsonObject>(process.env.PUBLIC_URL + '/geo/' + fileName)).data;
     };
 
     const applyPolygonData = (data: GeoJSON.GeoJsonObject | GeoJSON.GeoJsonObject[]) => {
@@ -326,17 +284,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         continue;
       }
 
-      const response = await fetchPolygonData(fileName);
-      console.log('Got polygons for ' + fileName);
-      const data: WithFeatures[] = [];
-      if (response.type === 'Topology') {
-        for (const key in response.objects) {
-          const geojsonData = topojson.feature(response, response.objects[key]);
-          data.push(geojsonData as WithFeatures);
-        }
-      } else {
-        data.push(response as WithFeatures);
-      }
+      const data = await fetchPolygonData(fileName);
 
       for (const withFeatures of data) {
         addInfoToFeatures(withFeatures, fileName);
@@ -347,14 +295,12 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
       console.log('Added ' + fileName);
     }
 
-    if (dispatch) {
-      const suburbKeys = Object.keys(layersBySuburbId).map((suburbId) => {
-        const properties = layersBySuburbId[suburbId].feature.properties;
-        return { postCode: properties.postCode, locality: properties.name } as SuburbKey;
-      });
+    const suburbKeys = Object.keys(layersBySuburbId).map((suburbId) => {
+      const properties = layersBySuburbId[suburbId].feature.properties;
+      return { postCode: properties.postCode, locality: properties.name } as SuburbKey;
+    });
 
-      dispatch(changePostCodes(suburbKeys));
-    }
+    dispatch(changePostCodes(suburbKeys));
   };
 
   const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: undefined }) => {
@@ -364,11 +310,9 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         for (const layer of innerLayers) {
           const compoundLayer = geoJsonElement?.leafletElement.removeLayer(layer);
           bounds = compoundLayer.getBounds();
-          const properties = layer.feature?.properties;
-          if (dispatch && properties) {
-            dispatch(removeFeature(properties.suburbId));
-            // console.log('Deleted feature ' + properties.name);
-          }
+          const properties = layer.feature.properties;
+          dispatch(removeFeature(properties.suburbId));
+          // console.log('Deleted feature ' + properties.name);
         }
 
         for (const layer of layersByFileName[fileName]) {
@@ -402,10 +346,10 @@ const FeatureMap: React.FunctionComponent<FeatureMapProps> = ({ leafletMap }) =>
   }, [districtList]);
 
   useEffect(() => {
-    fetchPriceDataDebounced(filters);
+    fetchAndApplyPriceData(filters);
   }, [filters]);
 
-  const { promiseInProgress } = usePromiseTracker();
+  const { promiseInProgress } = usePromiseTracker({ area: priceDataSearchPromiseTrackerArea, delay: 0 });
 
   const renderLegendOrLoading = useCallback(() => {
     if (promiseInProgress) {

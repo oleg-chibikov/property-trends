@@ -1,19 +1,16 @@
-import React, { ChangeEvent } from 'react';
 import { changeDealType, selectDealType } from './filtersSlice';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import React from 'react';
+import SelectFilter from './SelectFilter';
 
 const DealTypesFilter: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
-  const dealType = useSelector(selectDealType);
-  return (
-    <div>
-      Deal type:{' '}
-      <select value={dealType} onChange={(event: ChangeEvent<HTMLSelectElement>) => dispatch(changeDealType(event.target.value))}>
-        <option value="buy">Buy</option>
-        <option value="rent">Rent</option>
-      </select>
-    </div>
-  );
+  const defaultValue = useSelector(selectDealType);
+
+  const data = [
+    { label: 'Buy', value: 'buy' },
+    { label: 'Rent', value: 'rent' },
+  ];
+  return <SelectFilter defaultValue={defaultValue} name="Deal Type" data={data} onChange={changeDealType} />;
 };
 
 export default React.memo(DealTypesFilter);

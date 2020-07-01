@@ -1,6 +1,6 @@
-import { RealEstateResponse, PricesToColors } from '../interfaces';
-import MathUtils from './mathUtils';
+import { PricesToColors, RealEstateResponse } from '../interfaces';
 import { RGB, createColors, rgbHex } from 'color-map';
+import MathUtils from './mathUtils';
 import piecewise from '@freder/piecewise';
 
 export default class ColorUtils {

@@ -1,15 +1,15 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { SuburbKey } from '../../interfaces';
 
-const defaultRange: [number, number] = [0, 7];
+const defaultRange: number[] = [0, 7];
 
 export interface FiltersState {
   dealType: string;
   propertyType: string;
-  bedrooms: [number, number];
-  bathrooms: [number, number];
-  parkingSpaces: [number, number];
+  bedrooms: number | number[];
+  bathrooms: number | number[];
+  parkingSpaces: number | number[];
   constructionStatus: string;
   allowedWindowInDays: number;
   mainPriceOnly: boolean;
@@ -22,7 +22,7 @@ const initialState: FiltersState = {
   bedrooms: [2, 2],
   bathrooms: defaultRange,
   parkingSpaces: defaultRange,
-  constructionStatus: '',
+  constructionStatus: 'any',
   allowedWindowInDays: 7,
   mainPriceOnly: false,
   postCodes: [],
@@ -38,13 +38,13 @@ export const FiltersSlice = createSlice({
     changeDealType: (state, action: PayloadAction<string>) => {
       state.dealType = action.payload;
     },
-    changeBedrooms: (state, action: PayloadAction<[number, number]>) => {
+    changeBedrooms: (state, action: PayloadAction<number | number[]>) => {
       state.bedrooms = action.payload;
     },
-    changeBathrooms: (state, action: PayloadAction<[number, number]>) => {
+    changeBathrooms: (state, action: PayloadAction<number | number[]>) => {
       state.bathrooms = action.payload;
     },
-    changeParkingSpaces: (state, action: PayloadAction<[number, number]>) => {
+    changeParkingSpaces: (state, action: PayloadAction<number | number[]>) => {
       state.parkingSpaces = action.payload;
     },
     changeMainPriceOnly: (state, action: PayloadAction<boolean>) => {
