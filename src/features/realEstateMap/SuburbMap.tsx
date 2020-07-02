@@ -210,13 +210,8 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
   }
   const properties = feature.properties;
   const color = properties.priceData?.priceIntrevalInfo?.color;
-  const propertiesCount = properties.priceData?.count;
-  let opacity: number;
-  if (propertiesCount) {
-    opacity = propertiesCount < 2 ? 0.2 : propertiesCount < 5 ? 0.3 : propertiesCount < 10 ? 0.4 : propertiesCount < 15 ? 0.5 : propertiesCount < 20 ? 0.6 : propertiesCount < 25 ? 0.7 : propertiesCount < 30 ? 0.8 : 0.9;
-  } else {
-    opacity = 0;
-  }
+  const propertyCount = properties.priceData?.count;
+  const opacity: number = ColorUtils.getOpacityByPropertyCount(propertyCount);
   if (color) {
     dispatch(setSuburbColor({ suburbId: properties.suburbId, color: color }));
   }

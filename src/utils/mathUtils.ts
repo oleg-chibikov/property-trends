@@ -39,6 +39,8 @@ export default class MathUtils {
     return a * linearValue * linearValue + b * linearValue + c;
   };
 
+  static linearToLinear = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
+
   static closestMinimal = (needle: number, haystack: number[]) => {
     let i = 0;
     while (haystack[++i] < needle);

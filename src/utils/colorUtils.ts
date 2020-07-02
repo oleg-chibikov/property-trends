@@ -203,4 +203,8 @@ export default class ColorUtils {
 
     return { pricesToColors, suburbsByPrice };
   };
+
+  static getOpacityByPropertyCount = (propertyCount: number | undefined) => {
+    return MathUtils.linearToLinear(propertyCount || 0, 0, 15, 0.4, 0.9);
+  };
 }
