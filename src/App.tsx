@@ -79,11 +79,9 @@ const App = () => {
 
 export default App;
 
-// TODO: load suburbs at the center of current viewport (difficult).
-// By default show suburbs around user's location.
-// Suburbs list - color only when highlighted. do not expand.
-// Mobile layout.
-// Rent to Sell dynamics.
+// TODO: load suburbs at the center of current viewport (difficult)
+// By default show suburbs around user's location
+// Mobile layout
+// Rent to Sell dynamics
 // Change of price dynamics (red - incresed comaring to past month/week, green - decreased, gray - no change)
 // Themes
-// Sort regions - selected first.

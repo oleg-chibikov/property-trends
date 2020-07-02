@@ -12,10 +12,13 @@
   padding: 3px;
 }
 
+.suburbList > div.unhighlighted {
+  background-color: unset !important;
+}
+
 .suburbList > div.highlighted {
   border-color: tomato !important;
   border-width: 3px !important;
   border-style: double !important;
-  padding: 20px;
-  font-size: large;
+  font-size: larger;
 }

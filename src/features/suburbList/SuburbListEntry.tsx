@@ -12,7 +12,7 @@ const SuburbListEntry: React.FunctionComponent<FeatureEntryProps> = ({ name, sub
     onMouseOut={() => onItemMouseOut(suburbId)}
     onClick={() => onItemClick(suburbId)}
     id={'suburb' + suburbId}
-    className={[isHighlighted && styles.highlighted, color && styles.colorized].filter((e) => !!e).join(' ')}
+    className={[isHighlighted ? styles.highlighted : styles.unhighlighted, color && styles.colorized].filter((e) => !!e).join(' ')}
   >
     {name}
   </div>
