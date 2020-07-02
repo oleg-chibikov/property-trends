@@ -28,7 +28,11 @@ const themeDark = createMuiTheme({
     },
     MuiFormGroup: {
       root: {
-        maxHeight: '200px',
+        maxHeight: '110px',
+        '& .MuiCheckbox-root': {
+          marginRight: '5px',
+          padding: '2px',
+        },
       },
     },
     // MuiFormLabel: {
