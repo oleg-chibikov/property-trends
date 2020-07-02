@@ -1,0 +1,17 @@
+.suburbList {
+  background-color: rgb(39, 39, 39);
+  padding: 20px;
+  max-height: 700px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.suburbList > div {
+  color: white;
+  cursor: pointer;
+}
+
+.suburbList > div.highlighted {
+  background-color: #f3f36887 !important;
+  color: black !important;
+}

@@ -1,15 +1,15 @@
-import { Action, ThunkAction, configureStore } from '@reduxjs/toolkit';
+import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import counterReducer from '../features/counter/counterSlice';
-import featureListReducer from '../features/featureList/featureListSlice';
+import reducer from '../features/districtList/districtListSlice';
 import filtersReducer from '../features/filters/filtersSlice';
 import infoReducer from '../features/info/infoSlice';
 import legendReducer from '../features/legend/legendSlice';
-import reducer from '../features/districtList/districtListSlice';
+import featureListReducer from '../features/suburbList/suburbListSlice';
 
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
-    featureList: featureListReducer,
+    SuburbList: featureListReducer,
     info: infoReducer,
     districtList: reducer,
     filters: filtersReducer,
