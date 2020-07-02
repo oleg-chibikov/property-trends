@@ -10,7 +10,7 @@ let dispatch: Dispatch<unknown>;
 let checkedDistricts: { [fileName: string]: undefined };
 let districtsByState: DistrictsByState;
 
-const renderDistrict = (district: string) => <DistrictSelector key={district} checked={district in checkedDistricts} name={district} />;
+const renderDistrict = (district: string, checked: boolean) => <DistrictSelector key={district} checked={checked} name={district} />;
 
 const renderHeader = (state: string) => {
   const districtsForState = districtsByState[state];
@@ -47,12 +47,17 @@ const DistrictList: React.FunctionComponent = () => {
   };
 
   const renderState = (state: string) => {
-    const districtsForState = districtsByState[state];
+    const districtsForState = districtsByState[state]
+      .map((el) => ({
+        district: el,
+        checked: el in checkedDistricts,
+      }))
+      .sort((x, y) => (x.checked === y.checked ? 0 : x.checked ? -1 : 1));
     return (
       <Accordion key={state} expanded={expanded === state} onChange={handleChange(state)} TransitionProps={{ unmountOnExit: true }} className={styles.districtList}>
         <AccordionSummary>{renderHeader(state)}</AccordionSummary>
         <AccordionDetails>
-          <FormGroup>{districtsForState.map(renderDistrict)}</FormGroup>
+          <FormGroup>{districtsForState.map((el) => renderDistrict(el.district, el.checked))}</FormGroup>
         </AccordionDetails>
       </Accordion>
     );

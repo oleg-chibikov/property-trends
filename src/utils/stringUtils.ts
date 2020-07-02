@@ -1,6 +1,6 @@
 export default class StringUtils {
-  static toTitleCase = (phrase: string) => {
-    return phrase
+  static toTitleCase = (str: string) => {
+    return str
       .toLowerCase()
       .split(' ')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -16,4 +16,6 @@ export default class StringUtils {
     const pad = '0000';
     return pad.substring(0, pad.length - str.length) + str;
   };
+
+  static getSuburbId = (locality: string, postCode: number) => StringUtils.removeNonAlphaNumberic(locality).toLowerCase() + '_' + postCode;
 }

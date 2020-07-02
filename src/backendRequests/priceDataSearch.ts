@@ -1,10 +1,8 @@
-import axios, { CancelTokenSource } from 'axios';
+import axios from 'axios';
 import debounce from 'debounce-async';
 import { trackPromise } from 'react-promise-tracker';
 import { FiltersState } from '../features/filters/filtersSlice';
 import { RealEstateResponse } from '../interfaces';
-
-let cancellationTokenSource: CancelTokenSource | undefined;
 
 const fetchPriceData = async (filters: FiltersState) => {
   if (!filters.postCodes.length) {
@@ -33,14 +31,14 @@ const fetchPriceData = async (filters: FiltersState) => {
       filters.mainPriceOnly || false
     }&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
   console.log(`Fetching ${url}...`);
-  if (cancellationTokenSource) {
-    cancellationTokenSource.cancel();
-  }
+
   const CancelToken = axios.CancelToken;
-  cancellationTokenSource = CancelToken.source();
+  let source = CancelToken.source();
+  source && source.cancel('Operation canceled due to new request.');
+  source = axios.CancelToken.source();
 
   return await axios
-    .post<RealEstateResponse[]>(url, filters.postCodes, { cancelToken: cancellationTokenSource.token })
+    .post<RealEstateResponse[]>(url, filters.postCodes, { cancelToken: source.token })
     .then((priceDataResponse) => {
       const data = priceDataResponse.data;
       console.log('Got prices');

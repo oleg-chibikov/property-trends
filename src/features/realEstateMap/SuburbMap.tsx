@@ -3,12 +3,10 @@ import PropTypes from 'prop-types';
 import React, { Dispatch, useCallback, useEffect, useMemo } from 'react';
 import { GeoJSON, ZoomControl } from 'react-leaflet';
 import Control from 'react-leaflet-control';
-import Loader from 'react-loader-spinner';
-import { usePromiseTracker } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
-import fetchPriceDataDebounced, { priceDataSearchPromiseTrackerArea } from '../../backendRequests/priceDataSearch';
-import { CompoundLayer, CustomLayer, EventArgs, FeatureInfo, FeatureProperties, RealEstateResponse, SuburbKey, WithFeatures, WithMap } from '../../interfaces';
+import fetchPriceDataDebounced from '../../backendRequests/priceDataSearch';
+import { CompoundLayer, CustomLayer, EventArgs, FeatureProperties, RealEstateResponse, SuburbInfo, SuburbKey, WithFeatures, WithMap } from '../../interfaces';
 import ColorUtils from '../../utils/colorUtils';
 import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
@@ -19,9 +17,10 @@ import Info from '../info/Info';
 import { clearInfo, setInfo } from '../info/infoSlice';
 import Legend from '../legend/Legend';
 import { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
+import { selectHighlightedSuburb, selectSelectedSuburb } from '../search/searchBoxSlice';
 import ShowAll from '../showAll/ShowAll';
 import SuburbList from '../suburbList/SuburbList';
-import { addFeature, highlightFeature, removeFeature, setFeatureColor, unhighlightFeature } from '../suburbList/suburbListSlice';
+import { addSuburb, highlightSuburb, removeSuburb, scrollToSuburb, setSuburbColor, unhighlightSuburb } from '../suburbList/suburbListSlice';
 
 let mapElement: Map | undefined;
 let bounds: LatLngBounds | undefined;
@@ -32,10 +31,28 @@ let suburbIdsByPriceInterval: { [price: number]: string[] } = {};
 const currentlyCheckedDistricts: { [fileName: string]: undefined } = {};
 const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
 const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
+let searchBoxSelectedSuburbId: string | undefined;
+let searchBoxHighlightedSuburbId: string | undefined;
 
 const colors = ColorUtils.generateColors(15);
 
-const getSuburbId = (name: string, postCode: number) => StringUtils.removeNonAlphaNumberic(name).toLowerCase() + '_' + postCode;
+const highlightAll = (layer: CustomLayer) => {
+  const properties = layer.feature.properties;
+  const suburbId = properties.suburbId;
+  highlightLayerOnMap(layer);
+  showInfo(properties);
+  highlightSuburbInLegend(properties);
+  highlightSuburbInList(suburbId);
+};
+
+const unhighlightAll = (layer: CustomLayer) => {
+  const properties = layer.feature.properties;
+  const suburbId = properties.suburbId;
+  unhighlightLayerOnMap(layer);
+  hideInfo();
+  unhighlightSuburbInList(suburbId);
+  unhighlightSuburbInLegend(properties);
+};
 
 const showAll = () => {
   if (bounds && mapElement && bounds.isValid()) {
@@ -47,16 +64,96 @@ const showLocation = (coords: Coordinates) => {
   mapElement?.setView([coords.latitude, coords.longitude], 11);
 };
 
-const zoomToFeatureOnMap = (layer: CustomLayer) => {
+const zoomToLayerOnMap = (layer: CustomLayer) => {
   mapElement?.fitBounds(layer.getBounds());
 };
 
-const zoomToFeatureById = (suburbId: string) => {
+const onSuburbListClick = (suburbId: string) => {
   const layer = layersBySuburbId[suburbId];
-  layer && zoomToFeatureOnMap(layer);
+  layer && zoomToLayerOnMap(layer);
 };
 
-const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
+const onSuburbListMouseOver = (suburbId: string) => {
+  const layer = layersBySuburbId[suburbId];
+  layer && highlightAll(layer);
+};
+
+const onSuburbListMouseOut = (suburbId: string) => {
+  const layer = layersBySuburbId[suburbId];
+  layer && unhighlightAll(layer);
+};
+
+const onLegendEntryMouseOver = (intervalMinPrice: number) => {
+  applyByPriceInterval(intervalMinPrice, (suburbId) => {
+    const layer = layersBySuburbId[suburbId];
+    layer && highlightAll(layer);
+  });
+};
+
+const onLegendEntryMouseOut = (intervalMinPrice: number) => {
+  applyByPriceInterval(intervalMinPrice, (suburbId) => {
+    const layer = layersBySuburbId[suburbId];
+    layer && unhighlightAll(layer);
+  });
+};
+
+const onSearchBoxHighlightedStatusChange = (suburbId: string | undefined, previousSuburbId: string | undefined) => {
+  if (suburbId) {
+    const layer = layersBySuburbId[suburbId];
+    layer && highlightAll(layer);
+  } else if (previousSuburbId) {
+    const layer = layersBySuburbId[previousSuburbId];
+    layer && unhighlightAll(layer);
+  }
+};
+
+const onSearchBoxSelectedItemChange = (suburbId: string | undefined) => {
+  if (suburbId) {
+    const layer = layersBySuburbId[suburbId];
+    if (layer) {
+      zoomToLayerOnMap(layer);
+      highlightAll(layer);
+      scrollToSuburbInList(suburbId);
+      return true;
+    }
+  }
+  return false;
+};
+
+const showInfo = (properties: FeatureProperties) => {
+  const copy = { ...properties };
+  dispatch(setInfo(copy));
+};
+
+const hideInfo = () => {
+  dispatch(clearInfo());
+};
+
+const scrollToSuburbInList = (suburbId: string) => {
+  dispatch(scrollToSuburb(suburbId));
+};
+
+const highlightSuburbInList = (suburbId: string) => {
+  dispatch(highlightSuburb(suburbId));
+};
+
+const unhighlightSuburbInList = (suburbId: string) => {
+  dispatch(unhighlightSuburb(suburbId));
+};
+
+const highlightSuburbInLegend = (properties: FeatureProperties) => {
+  if (properties.priceData?.priceIntrevalInfo) {
+    dispatch(highlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
+  }
+};
+
+const unhighlightSuburbInLegend = (properties: FeatureProperties) => {
+  if (properties.priceData?.priceIntrevalInfo) {
+    dispatch(unhighlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
+  }
+};
+
+const highlightLayerOnMap = (layer: CustomLayer) => {
   layer.setStyle({
     weight: 3,
     color: 'black',
@@ -68,44 +165,19 @@ const highlightFeatureOnMap = (layer: CustomLayer, scroll: boolean) => {
   if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
     layer.bringToFront();
   }
-
-  const properties = layer.feature.properties;
-  const copy = { ...properties };
-  dispatch(setInfo(copy));
-  const suburbId = properties.suburbId;
-  dispatch(highlightFeature({ suburbId: suburbId, scroll: scroll }));
-  if (properties.priceData?.priceIntrevalInfo) {
-    dispatch(highlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
-  }
 };
 
-const highlightFeatureById = (suburbId: string) => {
-  highlightFeatureOnMap(layersBySuburbId[suburbId], false);
+const unhighlightLayerOnMap = (layer: CustomLayer) => {
+  geoJsonElement?.leafletElement.resetStyle(layer);
 };
 
-const applyByPriceInterval = (intervalMinPrice: number, func: (layer: CustomLayer) => void) => {
+const applyByPriceInterval = (intervalMinPrice: number, func: (suburbId: string) => void) => {
   const suburbIds = suburbIdsByPriceInterval[intervalMinPrice];
   if (suburbIds) {
     for (const suburbId of suburbIds) {
-      const layer = layersBySuburbId[suburbId];
-      layer && func(layer);
+      func(suburbId);
     }
   }
-};
-
-const unhighlightFeatureOnMap = (layer: CustomLayer) => {
-  geoJsonElement?.leafletElement.resetStyle(layer);
-  const properties = layer.feature.properties;
-  const suburbId = properties.suburbId;
-  dispatch(clearInfo());
-  dispatch(unhighlightFeature(suburbId));
-  if (properties.priceData?.priceIntrevalInfo) {
-    dispatch(unhighlightLegendEntry(properties.priceData.priceIntrevalInfo.intervalMinPrice));
-  }
-};
-
-const unhighlightFeatureById = (suburbId: string) => {
-  unhighlightFeatureOnMap(layersBySuburbId[suburbId]);
 };
 
 const setFeaturePriceProperties = (properties: FeatureProperties) => {
@@ -146,7 +218,7 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
     opacity = 0;
   }
   if (color) {
-    dispatch(setFeatureColor({ suburbId: properties.suburbId, color: color }));
+    dispatch(setSuburbColor({ suburbId: properties.suburbId, color: color }));
   }
 
   // console.log('price for ' + feature?.properties.name + ': ' + medianPrice || 'not set');
@@ -166,8 +238,13 @@ const applyStyleToLayer = (layer: CustomLayer) => {
 };
 
 const applyPriceData = (data: RealEstateResponse[]) => {
+  if (!data.length) {
+    // clear the legend
+    dispatch(changePricesToColors({}));
+    return;
+  }
   for (const priceData of data) {
-    const suburbId = getSuburbId(priceData.locality, priceData.postCode);
+    const suburbId = StringUtils.getSuburbId(priceData.locality, priceData.postCode);
     priceData.suburbId = suburbId;
   }
 
@@ -203,25 +280,36 @@ const applyPriceData = (data: RealEstateResponse[]) => {
     setFeaturePriceProperties(properties);
     applyStyleToLayer(layer);
     setPricePopupContent(layer, properties);
+    if (suburbId === searchBoxSelectedSuburbId) {
+      highlightLayerOnMap(layer);
+    }
   }
 };
 
 const fetchAndApplyPriceData = async (filters: FiltersState) => {
   const data = await fetchPriceDataDebounced(filters);
-  if (data.length) {
-    applyPriceData(data);
-  }
+  applyPriceData(data);
 };
 
 const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeatureProperties>, layer: CustomLayer) => {
   const properties = feature.properties;
 
   layer.on({
-    mouseover: (e: EventArgs<CustomLayer>) => highlightFeatureOnMap(e.target, true),
-    mouseout: (e: EventArgs<CustomLayer>) => unhighlightFeatureOnMap(e.target),
+    mouseover: (e: EventArgs<CustomLayer>) => {
+      const layer = e.target;
+      highlightAll(layer);
+      const properties = layer.feature.properties;
+      const suburbId = properties.suburbId;
+      scrollToSuburbInList(suburbId);
+      highlightSuburbInLegend(properties);
+    },
+    mouseout: (e: EventArgs<CustomLayer>) => {
+      const layer = e.target;
+      unhighlightAll(layer);
+    },
     click: (e: EventArgs<CustomLayer>) => {
       const layer = e.target;
-      zoomToFeatureOnMap(layer);
+      zoomToLayerOnMap(layer);
     },
   });
 
@@ -232,10 +320,10 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   layersBySuburbId[suburbId] = layer;
 
   dispatch(
-    addFeature({
+    addSuburb({
       name: properties.name,
       suburbId: suburbId,
-    } as FeatureInfo)
+    } as SuburbInfo)
   );
 
   setPricePopupContent(layer, properties);
@@ -256,7 +344,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
         const postCode = parseInt(properties.description);
         properties.postCode = postCode;
-        const suburbId = getSuburbId(name, postCode);
+        const suburbId = StringUtils.getSuburbId(name, postCode);
         properties.name = name;
         properties.suburbId = suburbId;
         properties.popupContent = `<h3>
@@ -307,7 +395,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
           const compoundLayer = geoJsonElement?.leafletElement.removeLayer(layer);
           bounds = compoundLayer.getBounds();
           const properties = layer.feature.properties;
-          dispatch(removeFeature(properties.suburbId));
+          dispatch(removeSuburb(properties.suburbId));
           // console.log('Deleted feature ' + properties.name);
         }
 
@@ -322,77 +410,63 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
   };
   removeUncheckedLayers(checkedDistricts);
   await addCheckedLayers(checkedDistricts);
-  showAll();
+  if (!onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId)) {
+    showAll();
+  }
 };
 
 const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   dispatch = useDispatch();
-  const geojsonRef = useCallback((node) => {
-    if (node !== null) {
-      //use state to load (and display in GEOJson tag) all polygons that are already here
-      geoJsonElement = node;
-    }
-  }, []);
   const districtList = useSelector(selectDistrictList);
   const filters = useSelector(selectFilters);
-
+  const previousSearchBoxHighlightedSuburbId = searchBoxHighlightedSuburbId;
+  const previousSearchBoxSelectedSuburbId = searchBoxSelectedSuburbId;
+  searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);
+  searchBoxHighlightedSuburbId = useSelector(selectHighlightedSuburb);
   useEffect(() => {
     processCheckedDistricts(districtList.checkedDistricts);
   }, [districtList]);
-
   useEffect(() => {
     fetchAndApplyPriceData(filters);
   }, [filters]);
-
-  const { promiseInProgress } = usePromiseTracker({ area: priceDataSearchPromiseTrackerArea, delay: 0 });
-
-  const renderLegendOrLoading = useCallback(() => {
-    if (promiseInProgress) {
-      return (
-        <div className="spinner">
-          <Loader type="TailSpin" color="#292929" height={70} width={70} />
-        </div>
-      );
-    } else {
-      return (
-        <Legend
-          onItemMouseOver={(intervalMinPrice) =>
-            applyByPriceInterval(intervalMinPrice, (layer) => {
-              highlightFeatureOnMap(layer, false);
-            })
-          }
-          onItemMouseOut={(intervalMinPrice) =>
-            applyByPriceInterval(intervalMinPrice, (layer) => {
-              unhighlightFeatureOnMap(layer);
-            })
-          }
-        />
-      );
+  const geojsonRef = useCallback((node) => {
+    if (node !== null) {
+      // use state to load (and display in GEOJson tag) all polygons that are already here
+      geoJsonElement = node;
     }
-  }, [promiseInProgress]);
+  }, []);
+
+  if (searchBoxHighlightedSuburbId !== previousSearchBoxHighlightedSuburbId) {
+    onSearchBoxHighlightedStatusChange(searchBoxHighlightedSuburbId, previousSearchBoxHighlightedSuburbId);
+  }
+  if (searchBoxSelectedSuburbId !== previousSearchBoxSelectedSuburbId) {
+    onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId);
+  }
 
   return useMemo(
     () => (
       <React.Fragment>
         <GeoJSON style={getFeatureStyle} ref={geojsonRef} data={[]} onEachFeature={onEachFeature} />
         <Control position="topleft">
-          <SuburbList leafletMap={leafletMap} onItemMouseOver={highlightFeatureById} onItemMouseOut={unhighlightFeatureById} onItemClick={zoomToFeatureById} />
+          <SuburbList leafletMap={leafletMap} onItemMouseOver={onSuburbListMouseOver} onItemMouseOut={onSuburbListMouseOut} onItemClick={onSuburbListClick} />
         </Control>
-        <Control position="bottomleft">{renderLegendOrLoading()}</Control>
+        <Control position="bottomleft">
+          <Legend onItemMouseOver={onLegendEntryMouseOver} onItemMouseOut={onLegendEntryMouseOut} />
+        </Control>
         <Control position="topright">
           <Info />
         </Control>
         <Control position="bottomright">
           <div className="leaflet-bar">
             <ShowAll onClick={showAll} />
-            <CurrentLocation onLocationFound={(coords) => showLocation(coords)} />
+            <CurrentLocation onLocationFound={showLocation} />
           </div>
         </Control>
         <ZoomControl position="bottomright" />
       </React.Fragment>
     ),
-    [geojsonRef, renderLegendOrLoading, leafletMap]
+    [geojsonRef, leafletMap]
   );
 };
 

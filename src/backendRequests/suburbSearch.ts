@@ -1,24 +1,22 @@
-import axios, { CancelTokenSource } from 'axios';
+import axios from 'axios';
 import debounce from 'debounce-async';
 import { trackPromise } from 'react-promise-tracker';
 import { PostCodeFileInfo } from '../interfaces';
 
-let cancellationTokenSource: CancelTokenSource | undefined;
-
 const fetchDistrictInfo = async (searchPattern: string) => {
+  if (!searchPattern && !searchPattern.length) {
+    return [];
+  }
   const url = process.env.REACT_APP_PRICES_API_URL + `Districts/${searchPattern}`;
   console.log(`Searching for suburbs: ${url}...`);
-  // function sleep(time: any) {
-  //   return new Promise((resolve) => setTimeout(resolve, time));
-  // }
-  // await sleep(1000);
-  if (cancellationTokenSource) {
-    cancellationTokenSource.cancel();
-  }
+
   const CancelToken = axios.CancelToken;
-  cancellationTokenSource = CancelToken.source();
+  let source = CancelToken.source();
+  source && source.cancel('Operation canceled due to new request.');
+  source = axios.CancelToken.source();
+
   return await axios
-    .get<PostCodeFileInfo[]>(url, { cancelToken: cancellationTokenSource.token })
+    .get<PostCodeFileInfo[]>(url, { cancelToken: source.token })
     .then((priceDataResponse) => {
       const data = priceDataResponse.data;
       console.log('Got suburb search results');

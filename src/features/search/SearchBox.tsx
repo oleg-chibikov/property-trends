@@ -1,12 +1,17 @@
 import { CircularProgress, Grid, TextField, Typography } from '@material-ui/core';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import Autocomplete, { AutocompleteChangeReason } from '@material-ui/lab/Autocomplete';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
+import { useDispatch } from 'react-redux';
 import fetchDistrictInfoDebounced, { suburbSearchPromiseTrackerArea } from '../../backendRequests/suburbSearch';
 import { PostCodeFileInfo } from '../../interfaces';
 import StringUtils from '../../utils/stringUtils';
+import { checkDistrictOnly } from '../districtList/districtListSlice';
 import styles from './SearchBox.module.css';
+import { highlightSuburb, selectSuburb, unhighlightSuburb } from './searchBoxSlice';
 
 const SearchBox: React.FunctionComponent = () => {
   const [searchPattern, setSearchPattern] = useState<string>();
@@ -14,12 +19,18 @@ const SearchBox: React.FunctionComponent = () => {
   const { promiseInProgress } = usePromiseTracker({ area: suburbSearchPromiseTrackerArea, delay: 0 });
 
   const setDataAsync = useCallback(async () => {
-    setData(await fetchDistrictInfoDebounced(searchPattern));
+    try {
+      setData(await fetchDistrictInfoDebounced(searchPattern));
+    } catch {
+      // debounce error
+    }
   }, [searchPattern]);
 
   useEffect(() => {
     setDataAsync();
   }, [setDataAsync]);
+
+  const dispatch = useDispatch();
 
   return (
     <Autocomplete
@@ -34,7 +45,6 @@ const SearchBox: React.FunctionComponent = () => {
             if (!value || value.length < 3) {
               return;
             }
-            console.log('Searching ' + value);
             return setSearchPattern(value as string);
           }}
           margin="normal"
@@ -50,24 +60,48 @@ const SearchBox: React.FunctionComponent = () => {
           }}
         />
       )}
+      onChange={(event: ChangeEvent<unknown>, value: string | PostCodeFileInfo | null, reason: AutocompleteChangeReason) => {
+        if (typeof value === 'object' && value !== null) {
+          const suburbId = StringUtils.getSuburbId(value.locality, value.postCode);
+          dispatch(selectSuburb(suburbId));
+          dispatch(checkDistrictOnly(value.state + ' - ' + value.outerDistrict + '.simplified.json'));
+        }
+      }}
       className={styles.searchBox}
       options={data.sort((a, b) => -b.state.localeCompare(a.state))}
       groupBy={(option) => option.state}
       getOptionSelected={(option, value) => option.locality === value.locality}
       getOptionLabel={(option) => option.locality + ' ' + StringUtils.padPostCode(option.postCode)}
-      renderOption={(option) => {
+      renderOption={(option, { inputValue }) => {
+        const matches = match(option.locality, inputValue);
+        const parts = parse(option.locality, matches);
+        const suburbId = StringUtils.getSuburbId(option.locality, option.postCode);
         return (
-          <Grid container alignItems="center">
-            <Grid item>
-              <LocationOnIcon />
+          <div
+            onMouseOver={() => {
+              dispatch(highlightSuburb(suburbId));
+            }}
+            onMouseOut={() => {
+              dispatch(unhighlightSuburb());
+            }}
+          >
+            <Grid container alignItems="center">
+              <Grid item>
+                <LocationOnIcon />
+              </Grid>
+              <Grid item xs>
+                {parts.map((part, index) => (
+                  <span key={index} style={{ fontWeight: part.highlight ? 700 : 400 }}>
+                    {part.text}
+                  </span>
+                ))}{' '}
+                {StringUtils.padPostCode(option.postCode)}
+                <Typography variant="body2" color="textSecondary">
+                  {option.outerDistrict}
+                </Typography>
+              </Grid>
             </Grid>
-            <Grid item xs>
-              {option.locality} {StringUtils.padPostCode(option.postCode)}
-              <Typography variant="body2" color="textSecondary">
-                {option.outerDistrict}
-              </Typography>
-            </Grid>
-          </Grid>
+          </div>
         );
       }}
     />

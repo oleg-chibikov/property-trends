@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
 export interface DistrictsByState {
@@ -74,7 +74,23 @@ export const districtlistSlice = createSlice({
       }
     },
     checkDistrict: (state, action: PayloadAction<string>) => {
+      if (action.payload in state.checkedDistricts) {
+        return;
+      }
       state.checkedDistricts[action.payload] = undefined;
+    },
+    checkDistrictOnly: (state, action: PayloadAction<string>) => {
+      let exists = false;
+      for (const district of Object.keys(state.checkedDistricts)) {
+        if (district !== action.payload) {
+          delete state.checkedDistricts[district];
+        } else {
+          exists = true;
+        }
+      }
+      if (!exists) {
+        state.checkedDistricts[action.payload] = undefined;
+      }
     },
     uncheckDistrict: (state, action: PayloadAction<string>) => {
       delete state.checkedDistricts[action.payload];
@@ -82,7 +98,7 @@ export const districtlistSlice = createSlice({
   },
 });
 
-export const { checkDistrict, uncheckDistrict, checkState, uncheckState } = districtlistSlice.actions;
+export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState } = districtlistSlice.actions;
 
 export const selectDistrictList = (state: RootState) => state.districtList;
 

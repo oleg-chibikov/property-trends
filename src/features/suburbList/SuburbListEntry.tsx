@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { FeatureEntryEventHandlers, FeatureInfo } from '../../interfaces';
+import { SuburbInfo, SuburbListEntryEventHandlers } from '../../interfaces';
 import styles from './SuburbList.module.css';
 
-interface FeatureEntryProps extends FeatureEntryEventHandlers, FeatureInfo {}
+interface FeatureEntryProps extends SuburbListEntryEventHandlers, SuburbInfo {}
 
 const SuburbListEntry: React.FunctionComponent<FeatureEntryProps> = ({ name, suburbId, isHighlighted, color, onItemMouseOver, onItemMouseOut, onItemClick }) => (
   <div

@@ -1,13 +1,20 @@
-import { LegendEntryEventHandlers } from '../../interfaces';
-import { selectPricesToColors } from './legendSlice';
-import { useSelector } from 'react-redux';
-import LegendEntry from './LegendEntry';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { usePromiseTracker } from 'react-promise-tracker';
+import { useSelector } from 'react-redux';
+import { priceDataSearchPromiseTrackerArea } from '../../backendRequests/priceDataSearch';
+import { LegendEntryEventHandlers } from '../../interfaces';
+import Spinner from '../spinner/Spinner';
 import styles from './Legend.module.css';
+import LegendEntry from './LegendEntry';
+import { selectPricesToColors } from './legendSlice';
 
 const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemMouseOver, onItemMouseOut }) => {
+  const priceDataSearchPromiseTracker = usePromiseTracker({ area: priceDataSearchPromiseTrackerArea, delay: 0 });
   const pricesToColors = useSelector(selectPricesToColors);
+  if (priceDataSearchPromiseTracker.promiseInProgress) {
+    return <Spinner />;
+  }
   const keys = Object.keys(pricesToColors).map(Number);
   return (
     <div className={styles.legendContainer}>

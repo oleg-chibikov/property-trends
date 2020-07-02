@@ -33,7 +33,7 @@ export interface EventArgs<T> {
   target: T;
 }
 
-export interface FeatureInfo {
+export interface SuburbInfo {
   name: string;
   suburbId: string;
   isHighlighted?: boolean;
@@ -50,7 +50,7 @@ export interface LegendEntryEventHandlers {
   onItemMouseOut: (subIntervalMinPrice: number) => void;
 }
 
-export interface FeatureEntryEventHandlers {
+export interface SuburbListEntryEventHandlers {
   onItemMouseOver: (suburbId: string) => void;
   onItemMouseOut: (suburbId: string) => void;
   onItemClick: (suburbId: string) => void;

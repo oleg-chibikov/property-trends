@@ -1,65 +1,65 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
-import { FeatureInfo } from '../../interfaces';
+import { SuburbInfo } from '../../interfaces';
 
-interface HighlightFeatureParams {
+interface HighlightSuburbParams {
   suburbId: string;
   scroll: boolean;
 }
 
-interface FeatureListState {
-  features: { [suburbId: string]: FeatureInfo };
+interface SuburbListState {
+  suburbs: { [suburbId: string]: SuburbInfo };
+  scrollToSuburb: string | undefined;
 }
 
-const initialState: FeatureListState = {
-  features: {},
+const initialState: SuburbListState = {
+  suburbs: {},
+  scrollToSuburb: undefined,
 };
 
-export const featureListSlice = createSlice({
+export const suburbListSlice = createSlice({
   name: 'SuburbList',
   initialState,
   reducers: {
-    addFeature: (state, action: PayloadAction<FeatureInfo>) => {
-      state.features[action.payload.suburbId] = action.payload;
+    addSuburb: (state, action: PayloadAction<SuburbInfo>) => {
+      state.suburbs[action.payload.suburbId] = action.payload;
     },
-    removeFeature: (state, action: PayloadAction<string>) => {
-      delete state.features[action.payload];
+    removeSuburb: (state, action: PayloadAction<string>) => {
+      delete state.suburbs[action.payload];
     },
-    highlightFeature: (state, action: PayloadAction<HighlightFeatureParams>) => {
-      const feature = state.features[action.payload.suburbId];
-      if (!feature) {
+    highlightSuburb: (state, action: PayloadAction<string>) => {
+      const suburbId = action.payload;
+      const suburb = state.suburbs[suburbId];
+      if (!suburb) {
         return;
       }
-      feature.isHighlighted = true;
-      if (action.payload.scroll) {
-        const scrollIntoView = () => {
-          const el = document.querySelector('#suburb' + action.payload.suburbId);
-          if (el) {
-            el.scrollIntoView({ block: 'end', behavior: 'auto' });
-          }
-        };
-        scrollIntoView();
-      }
+      suburb.isHighlighted = true;
     },
-    unhighlightFeature: (state, action: PayloadAction<string>) => {
-      const feature = state.features[action.payload];
-      if (!feature) {
+    unhighlightSuburb: (state, action: PayloadAction<string>) => {
+      const suburbId = action.payload;
+      const suburb = state.suburbs[suburbId];
+      if (!suburb) {
         return;
       }
-      feature.isHighlighted = false;
+      suburb.isHighlighted = false;
+      state.scrollToSuburb = undefined;
     },
-    setFeatureColor: (state, action: PayloadAction<{ suburbId: string; color: string }>) => {
-      const feature = state.features[action.payload.suburbId];
-      if (!feature) {
+    setSuburbColor: (state, action: PayloadAction<{ suburbId: string; color: string }>) => {
+      const suburb = state.suburbs[action.payload.suburbId];
+      if (!suburb) {
         return;
       }
-      feature.color = action.payload.color;
+      suburb.color = action.payload.color;
+    },
+    scrollToSuburb: (state, action: PayloadAction<string>) => {
+      state.scrollToSuburb = action.payload;
     },
   },
 });
 
-export const { addFeature, removeFeature, highlightFeature, unhighlightFeature, setFeatureColor } = featureListSlice.actions;
+export const { addSuburb, removeSuburb, highlightSuburb, unhighlightSuburb, setSuburbColor, scrollToSuburb } = suburbListSlice.actions;
 
-export const selectFeatures = (state: RootState) => state.SuburbList.features;
+export const selectSuburbs = (state: RootState) => state.SuburbList.suburbs;
+export const selectScrollToSuburb = (state: RootState) => state.SuburbList.scrollToSuburb;
 
-export default featureListSlice.reducer;
+export default suburbListSlice.reducer;

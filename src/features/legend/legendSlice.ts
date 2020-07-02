@@ -1,6 +1,6 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { PricesToColors } from '../../interfaces';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import { PricesToColors } from '../../interfaces';
 
 interface LegendState {
   pricesToColors: PricesToColors;
@@ -10,7 +10,7 @@ const initialState: LegendState = {
   pricesToColors: {},
 };
 
-export const LegendSlice = createSlice({
+export const legendSlice = createSlice({
   name: 'Legend',
   initialState,
   reducers: {
@@ -26,8 +26,8 @@ export const LegendSlice = createSlice({
   },
 });
 
-export const { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } = LegendSlice.actions;
+export const { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } = legendSlice.actions;
 
 export const selectPricesToColors = (state: RootState) => state.legend.pricesToColors;
 
-export default LegendSlice.reducer;
+export default legendSlice.reducer;
