@@ -3,6 +3,7 @@ import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import React from 'react';
 import styles from './App.module.css';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
+import SearchBox from './features/search/SearchBox';
 import Sidebar from './features/sidebar/Sidebar';
 
 const themeDark = createMuiTheme({
@@ -66,7 +67,13 @@ const App = () => {
     <MuiThemeProvider theme={themeDark}>
       <CssBaseline />{' '}
       <div className={styles.container}>
-        <header>Australian Property Trends</header>
+        <header>
+          <div className={styles.left}>Australian Property Trends</div>
+          <div className={styles.center}>
+            <SearchBox />
+          </div>
+          <div className={styles.right}></div>
+        </header>
         <div className={styles.map}>
           <RealEstateMap />
         </div>
