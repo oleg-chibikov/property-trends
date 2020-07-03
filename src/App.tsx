@@ -30,9 +30,9 @@ const themeDark = createMuiTheme({
     },
     MuiAccordion: {
       root: {
-        '& .MuiCheckbox-root': {
-          marginRight: '5px',
-          padding: '2px',
+        '&.innerAccordion .MuiCheckbox-root': {
+          marginRight: '0.3rem',
+          padding: '0.1rem',
         },
         backgroundColor: '#262626',
       },

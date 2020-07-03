@@ -18,10 +18,16 @@ export const legendSlice = createSlice({
       state.pricesToColors = action.payload;
     },
     highlightLegendEntry: (state, action: PayloadAction<number>) => {
-      state.pricesToColors[action.payload].isHighlighted = true;
+      const legendEntry = state.pricesToColors[action.payload];
+      if (legendEntry) {
+        legendEntry.isHighlighted = true;
+      }
     },
     unhighlightLegendEntry: (state, action: PayloadAction<number>) => {
-      state.pricesToColors[action.payload].isHighlighted = false;
+      const legendEntry = state.pricesToColors[action.payload];
+      if (legendEntry) {
+        legendEntry.isHighlighted = false;
+      }
     },
   },
 });

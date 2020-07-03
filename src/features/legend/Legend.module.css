@@ -1,19 +1,19 @@
 .legendContainer {
-  padding: 2px;
+  padding: 0.1rem;
   color: #555;
   background-color: white;
 }
 .legendContainer > div {
-  line-height: 18px;
+  line-height: 1rem;
   white-space: nowrap;
-  padding: 2px;
+  padding: 0.1rem;
   cursor: pointer;
 }
 .legendContainer > div > div {
   display: inline-block;
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
   opacity: 0.7;
   vertical-align: middle;
 }
@@ -26,8 +26,14 @@
   color: black !important;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 0) {
   .legendContainer {
     visibility: hidden;
+  }
+}
+
+@media (min-width: 1024px) {
+  .legendContainer {
+    visibility: visible;
   }
 }

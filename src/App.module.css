@@ -2,15 +2,7 @@
   display: grid;
   height: 100%;
   min-height: 100%;
-
-  grid-template-areas:
-    'header header header'
-    'nav content side'
-    'footer footer footer';
-
-  grid-template-columns: 200px 1fr 200px;
-  grid-template-rows: auto 1fr auto;
-  grid-gap: 10px;
+  grid-gap: 1rem;
 
   height: 100vh;
 }
@@ -31,12 +23,11 @@ header .left {
 header .center {
   width: 100%;
   margin-left: 1rem;
-  margin-right: 0.5rem;
+  margin-right: 1rem;
 }
 
 nav {
   grid-area: nav;
-  margin-left: 0.5rem;
 }
 
 main {
@@ -52,7 +43,6 @@ main > div {
 
 aside {
   grid-area: side;
-  margin-right: 0.5rem;
 }
 
 footer {
@@ -60,7 +50,7 @@ footer {
   margin: 0.5rem 1rem;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 0) {
   .container {
     grid-template-areas:
       'header'
@@ -89,7 +79,34 @@ footer {
   header .left {
     display: none;
   }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    grid-template-areas:
+      'header header header'
+      'nav content side'
+      'footer footer footer';
+
+    grid-template-columns: 14rem 1fr 14rem;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  aside {
+    margin: 0;
+    margin-right: 0.5rem;
+  }
+
+  nav {
+    margin: 0;
+    margin-left: 0.5rem;
+  }
+
+  header .left {
+    display: block;
+  }
+
   header .center {
-    margin-right: 1rem;
+    margin-right: 0.5rem;
   }
 }

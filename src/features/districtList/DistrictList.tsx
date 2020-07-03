@@ -55,7 +55,7 @@ const DistrictList: React.FunctionComponent = () => {
       }))
       .sort((x, y) => (x.checked === y.checked ? 0 : x.checked ? -1 : 1));
     return (
-      <Accordion square key={state} expanded={innerExpanded === state} onChange={handleInnerChange(state)} TransitionProps={{ unmountOnExit: true }} className={styles.districtList}>
+      <Accordion square key={state} expanded={innerExpanded === state} onChange={handleInnerChange(state)} TransitionProps={{ unmountOnExit: true }} className={'innerAccordion ' + styles.districtList}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>{renderHeader(state)}</AccordionSummary>
         <AccordionDetails className="innerAccordionDetails">
           <FormGroup>{districtsForState.map((el) => renderDistrict(el.district, el.checked))}</FormGroup>
@@ -64,7 +64,7 @@ const DistrictList: React.FunctionComponent = () => {
     );
   };
 
-  const isDesktop = useMediaQuery('(min-width:768px)');
+  const isDesktop = useMediaQuery('(min-width:1440px)');
   const [innerExpanded, setInnerExpanded] = React.useState<string | false>(false);
   const [expanded, setExpanded] = React.useState<boolean>(isDesktop);
   useEffect(() => {

@@ -5,13 +5,13 @@
 
 /* Works on Chrome/Edge/Safari */
 *::-webkit-scrollbar {
-  width: 12px;
+  width: 0.7rem;
 }
 *::-webkit-scrollbar-track {
   background: rgb(36, 36, 36);
 }
 *::-webkit-scrollbar-thumb {
   background-color: white;
-  border-radius: 20px;
-  border: 3px solid rgb(36, 36, 36);
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgb(36, 36, 36);
 }

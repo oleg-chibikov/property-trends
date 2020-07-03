@@ -12,7 +12,7 @@ import ParkingSpacesFilter from './ParkingSpacesFilter';
 import PropertyTypesFilter from './PropertyTypesFilter';
 
 const Filters: React.FunctionComponent = () => {
-  const isDesktop = useMediaQuery('(min-width:768px)');
+  const isDesktop = useMediaQuery('(min-width:1440px)');
   const [expanded, setExpanded] = React.useState<boolean>(isDesktop);
   useEffect(() => {
     setExpanded(isDesktop);
