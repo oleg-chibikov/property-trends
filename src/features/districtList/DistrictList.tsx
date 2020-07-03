@@ -1,6 +1,7 @@
-import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup } from '@material-ui/core';
+import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, useMediaQuery } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
-import React, { Dispatch } from 'react';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import React, { Dispatch, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from './DistrictList.module.css';
 import { checkState, DistrictsByState, selectDistrictList, uncheckState } from './districtListSlice';
@@ -42,8 +43,8 @@ const renderHeader = (state: string) => {
 
 const DistrictList: React.FunctionComponent = () => {
   dispatch = useDispatch();
-  const handleChange = (panel: string) => (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
-    setExpanded(isExpanded ? panel : false);
+  const handleInnerChange = (panel: string) => (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
+    setInnerExpanded(isExpanded ? panel : false);
   };
 
   const renderState = (state: string) => {
@@ -54,20 +55,37 @@ const DistrictList: React.FunctionComponent = () => {
       }))
       .sort((x, y) => (x.checked === y.checked ? 0 : x.checked ? -1 : 1));
     return (
-      <Accordion key={state} expanded={expanded === state} onChange={handleChange(state)} TransitionProps={{ unmountOnExit: true }} className={styles.districtList}>
-        <AccordionSummary>{renderHeader(state)}</AccordionSummary>
-        <AccordionDetails>
+      <Accordion square key={state} expanded={innerExpanded === state} onChange={handleInnerChange(state)} TransitionProps={{ unmountOnExit: true }} className={styles.districtList}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>{renderHeader(state)}</AccordionSummary>
+        <AccordionDetails className="innerAccordionDetails">
           <FormGroup>{districtsForState.map((el) => renderDistrict(el.district, el.checked))}</FormGroup>
         </AccordionDetails>
       </Accordion>
     );
   };
 
-  const [expanded, setExpanded] = React.useState<string | false>(false);
+  const isDesktop = useMediaQuery('(min-width:768px)');
+  const [innerExpanded, setInnerExpanded] = React.useState<string | false>(false);
+  const [expanded, setExpanded] = React.useState<boolean>(isDesktop);
+  useEffect(() => {
+    setExpanded(isDesktop);
+  }, [setExpanded, isDesktop]);
+
+  const handleChange = (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
+    setExpanded(isExpanded);
+  };
+
   const districtListState = useSelector(selectDistrictList);
   checkedDistricts = districtListState.checkedDistricts;
   districtsByState = districtListState.districtsByState;
-  return <React.Fragment>{Object.keys(districtsByState).map(renderState)}</React.Fragment>;
+  return (
+    <Accordion square expanded={expanded} onChange={handleChange}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>Districts</AccordionSummary>
+      <AccordionDetails>
+        <FormGroup>{Object.keys(districtsByState).map(renderState)}</FormGroup>
+      </AccordionDetails>
+    </Accordion>
+  );
 };
 
 export default React.memo(DistrictList);

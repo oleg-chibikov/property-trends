@@ -22,3 +22,9 @@
   border-style: double !important;
   font-size: larger;
 }
+
+@media (max-width: 768px) {
+  .suburbList {
+    visibility: hidden;
+  }
+}

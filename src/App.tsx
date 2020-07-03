@@ -2,9 +2,10 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 import React from 'react';
 import styles from './App.module.css';
+import DistrictList from './features/districtList/DistrictList';
+import Filters from './features/filters/Filters';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
 import SearchBox from './features/search/SearchBox';
-import Sidebar from './features/sidebar/Sidebar';
 
 const themeDark = createMuiTheme({
   palette: {
@@ -27,13 +28,29 @@ const themeDark = createMuiTheme({
         width: '100%',
       },
     },
-    MuiFormGroup: {
+    MuiAccordion: {
       root: {
-        maxHeight: '110px',
         '& .MuiCheckbox-root': {
           marginRight: '5px',
           padding: '2px',
         },
+        backgroundColor: '#262626',
+      },
+    },
+    MuiAccordionDetails: {
+      root: {
+        '&.innerAccordionDetails': {
+          maxHeight: '20rem',
+          overflow: 'auto',
+          '& .MuiFormGroup-root': {
+            width: '100%',
+            padding: '0 0.8rem',
+          },
+        },
+        '& .MuiFormGroup-root': {
+          width: '100%',
+        },
+        padding: '0.5rem',
       },
     },
     // MuiFormLabel: {
@@ -65,20 +82,24 @@ const themeDark = createMuiTheme({
 const App = () => {
   return (
     <MuiThemeProvider theme={themeDark}>
-      <CssBaseline />{' '}
+      <CssBaseline />
       <div className={styles.container}>
         <header>
-          <div className={styles.left}>Australian Property Trends</div>
+          <div className={styles.left}>APT</div>
           <div className={styles.center}>
             <SearchBox />
           </div>
-          <div className={styles.right}></div>
         </header>
-        <div className={styles.map}>
+        <nav>
+          <Filters />
+        </nav>
+        <main>
           <RealEstateMap />
-        </div>
-        <Sidebar />
-        <footer>Map</footer>
+        </main>
+        <aside>
+          <DistrictList />
+        </aside>
+        <footer>Australian Property Trends 2020</footer>
       </div>
     </MuiThemeProvider>
   );

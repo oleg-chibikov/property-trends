@@ -1,13 +1,3 @@
-.districtList {
-  margin-top: auto;
-  overflow-y: auto;
-  max-height: 1500px;
-}
-
 .districtList > div {
   font-size: small;
-}
-
-.districtList > div > input {
-  margin-right: 10px;
 }

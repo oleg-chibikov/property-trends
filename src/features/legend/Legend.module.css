@@ -25,3 +25,9 @@
   background-color: #f3f36887 !important;
   color: black !important;
 }
+
+@media (max-width: 768px) {
+  .legendContainer {
+    visibility: hidden;
+  }
+}

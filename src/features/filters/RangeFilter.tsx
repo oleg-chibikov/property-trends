@@ -17,15 +17,17 @@ const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefau
   return (
     <div>
       {label}: <Switch size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
-      <Slider
-        min={min}
-        max={max}
-        value={valueCopy}
-        valueLabelDisplay="auto"
-        onChange={(event: unknown, newValue: number | number[]) => {
-          onChange(newValue);
-        }}
-      />
+      <div className="slider">
+        <Slider
+          min={min}
+          max={max}
+          value={valueCopy}
+          valueLabelDisplay="auto"
+          onChange={(event: unknown, newValue: number | number[]) => {
+            onChange(newValue);
+          }}
+        />
+      </div>
     </div>
   );
 };
