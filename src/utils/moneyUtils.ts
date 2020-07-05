@@ -3,9 +3,14 @@ export default class MoneyUtils {
     style: 'currency',
     currency: 'AUD',
     minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
 
-  static format = (num: number) => {
-    return MoneyUtils.formatter.format(num);
+  static format = (value: number) => {
+    const postfix = value > 1000 ? 'k' : '';
+    if (value > 1000) {
+      value = Math.round(value / 1000);
+    }
+    return MoneyUtils.formatter.format(value) + postfix;
   };
 }

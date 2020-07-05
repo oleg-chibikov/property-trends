@@ -2,8 +2,7 @@
   display: grid;
   height: 100%;
   min-height: 100%;
-  grid-gap: 1rem;
-
+  grid-gap: 0;
   height: 100vh;
 }
 header {
@@ -22,12 +21,7 @@ header .left {
 
 header .center {
   width: 100%;
-  margin-left: 1rem;
-  margin-right: 1rem;
-}
-
-nav {
-  grid-area: nav;
+  margin: 0 0.5rem;
 }
 
 main {
@@ -41,16 +35,32 @@ main > div {
   height: 100%;
 }
 
+nav {
+  overflow-y: auto;
+  overflow-x: hidden;
+  grid-area: nav;
+  margin: 0 0.5rem;
+}
+
 aside {
+  overflow-y: auto;
+  overflow-x: hidden;
   grid-area: side;
+  margin: 0 0.5rem;
 }
 
 footer {
   grid-area: footer;
-  margin: 0.5rem 1rem;
+  margin: 0.5rem;
 }
 
 @media (min-width: 0) {
+  header .left {
+    display: none;
+  }
+}
+
+@media (min-width: 0) and (orientation: portrait) {
   .container {
     grid-template-areas:
       'header'
@@ -68,16 +78,27 @@ footer {
       auto; /* Footer */
   }
 
-  aside {
-    margin: 0 1rem;
+  nav,
+  aside,
+  header .center {
+    margin: 0;
   }
+}
 
-  nav {
-    margin: 0 1rem;
-  }
+@media (min-width: 0) and (orientation: landscape) {
+  .container {
+    grid-template-areas:
+      'header content'
+      'nav content'
+      'side content'
+      'footer content';
 
-  header .left {
-    display: none;
+    grid-template-columns: 16rem 1fr;
+    grid-template-rows:
+      auto /* Header */
+      auto /* Nav */
+      1fr /* Sidebar */
+      auto; /* Footer */
   }
 }
 
@@ -88,18 +109,8 @@ footer {
       'nav content side'
       'footer footer footer';
 
-    grid-template-columns: 14rem 1fr 14rem;
+    grid-template-columns: 22rem 1fr 22rem;
     grid-template-rows: auto 1fr auto;
-  }
-
-  aside {
-    margin: 0;
-    margin-right: 0.5rem;
-  }
-
-  nav {
-    margin: 0;
-    margin-left: 0.5rem;
   }
 
   header .left {
@@ -108,5 +119,10 @@ footer {
 
   header .center {
     margin-right: 0.5rem;
+  }
+
+  nav,
+  aside {
+    margin: 0 0.5rem;
   }
 }

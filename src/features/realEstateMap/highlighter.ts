@@ -5,28 +5,35 @@ import { CustomLayer, FeatureProperties } from '../../interfaces';
 import { clearInfo, setInfo } from '../info/infoSlice';
 import { highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
 import { highlightSuburb, unhighlightSuburb } from '../suburbList/suburbListSlice';
-
 class Highlighter {
   private dispatch: Dispatch<any>;
   private geoJsonElement: GeoJSON;
+  private currentlyHighlightedLayers: { [suburbId: string]: CustomLayer } = {};
+
   constructor(dispatch: Dispatch<any>, geoJsonElement: GeoJSON) {
     this.dispatch = dispatch;
     this.geoJsonElement = geoJsonElement;
   }
 
-  highlightAll = (layer: CustomLayer) => {
+  highlightLayer = (layer: CustomLayer, cleanup = true) => {
     if (!layer) {
       return;
     }
+
+    if (cleanup) {
+      this.cleanupPreviousHighlight();
+    }
+
     const properties = layer.feature.properties;
     const suburbId = properties.suburbId;
     this.highlightLayerOnMap(layer);
     this.showInfo(properties);
     this.highlightSuburbInLegend(properties);
     this.highlightSuburbInList(suburbId);
+    this.currentlyHighlightedLayers[suburbId] = layer;
   };
 
-  unhighlightAll = (layer: CustomLayer) => {
+  unhighlightLayer = (layer: CustomLayer) => {
     if (!layer) {
       return;
     }
@@ -36,6 +43,14 @@ class Highlighter {
     this.hideInfo();
     this.unhighlightSuburbInList(suburbId);
     this.unhighlightSuburbInLegend(properties);
+    delete this.currentlyHighlightedLayers[suburbId];
+  };
+
+  cleanupPreviousHighlight = () => {
+    for (const highlightedLayer of Object.keys(this.currentlyHighlightedLayers)) {
+      this.unhighlightLayer(this.currentlyHighlightedLayers[highlightedLayer]);
+    }
+    this.currentlyHighlightedLayers = {};
   };
 
   private showInfo = (properties: FeatureProperties) => {

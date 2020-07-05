@@ -43,35 +43,39 @@ class SuburbMapEventHandler {
     this.mapElement?.fitBounds(layer.getBounds());
   };
 
-  onSuburbListClick = (suburbId: string) => {
-    this.zoomToLayerOnMap(this.layersBySuburbId[suburbId]);
+  onSuburbListEntryClick = (suburbId: string) => {
+    const layer = this.layersBySuburbId[suburbId];
+    this.zoomToLayerOnMap(layer);
+    this.highlighter.highlightLayer(layer);
+    this.scrollToSuburbInList(suburbId);
   };
 
-  onSuburbListMouseOver = (suburbId: string) => {
-    this.highlighter.highlightAll(this.layersBySuburbId[suburbId]);
+  onSuburbListEntryMouseOver = (suburbId: string) => {
+    this.highlighter.highlightLayer(this.layersBySuburbId[suburbId]);
   };
 
-  onSuburbListMouseOut = (suburbId: string) => {
-    this.highlighter.unhighlightAll(this.layersBySuburbId[suburbId]);
+  onSuburbListEntryMouseOut = (suburbId: string) => {
+    this.highlighter.unhighlightLayer(this.layersBySuburbId[suburbId]);
   };
 
-  onLegendEntryMouseOver = (intervalMinPrice: number) => {
+  onLegendEntryClick = (intervalMinPrice: number) => {
+    this.highlighter.cleanupPreviousHighlight();
     this.applyByPriceInterval(intervalMinPrice, (suburbId) => {
-      this.highlighter.highlightAll(this.layersBySuburbId[suburbId]);
+      this.highlighter.highlightLayer(this.layersBySuburbId[suburbId], false);
     });
   };
 
   onLegendEntryMouseOut = (intervalMinPrice: number) => {
     this.applyByPriceInterval(intervalMinPrice, (suburbId) => {
-      this.highlighter.unhighlightAll(this.layersBySuburbId[suburbId]);
+      this.highlighter.unhighlightLayer(this.layersBySuburbId[suburbId]);
     });
   };
 
   onSearchBoxHighlightedStatusChange = (suburbId: string | undefined, previousSuburbId: string | undefined) => {
     if (suburbId) {
-      this.highlighter.highlightAll(this.layersBySuburbId[suburbId]);
+      this.highlighter.highlightLayer(this.layersBySuburbId[suburbId]);
     } else if (previousSuburbId) {
-      this.highlighter.unhighlightAll(this.layersBySuburbId[previousSuburbId]);
+      this.highlighter.unhighlightLayer(this.layersBySuburbId[previousSuburbId]);
     }
   };
 
@@ -80,7 +84,7 @@ class SuburbMapEventHandler {
       const layer = this.layersBySuburbId[suburbId];
       if (layer) {
         this.zoomToLayerOnMap(layer);
-        this.highlighter.highlightAll(layer);
+        this.highlighter.highlightLayer(layer);
         this.scrollToSuburbInList(suburbId);
         return true;
       }
@@ -90,7 +94,7 @@ class SuburbMapEventHandler {
 
   onLayerMouseOver = (e: EventArgs<CustomLayer>) => {
     const layer = e.target;
-    this.highlighter.highlightAll(layer);
+    this.highlighter.highlightLayer(layer);
     const properties = layer.feature.properties;
     const suburbId = properties.suburbId;
     this.scrollToSuburbInList(suburbId);
@@ -98,12 +102,14 @@ class SuburbMapEventHandler {
 
   onLayerMouseOut = (e: EventArgs<CustomLayer>) => {
     const layer = e.target;
-    this.highlighter.unhighlightAll(layer);
+    this.highlighter.unhighlightLayer(layer);
   };
 
   onLayerClick = (e: EventArgs<CustomLayer>) => {
     const layer = e.target;
     this.zoomToLayerOnMap(layer);
+    this.highlighter.highlightLayer(layer);
+    this.scrollToSuburbInList(layer.feature.properties.suburbId);
   };
 
   private applyByPriceInterval = (intervalMinPrice: number, func: (suburbId: string) => void) => {

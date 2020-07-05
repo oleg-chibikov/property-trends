@@ -69,3 +69,8 @@ html {
 .slider {
   padding: 0 0.4rem;
 }
+
+.suburb-tooltip {
+  background: #d8d8d870;
+  border: none;
+}

@@ -1,5 +1,6 @@
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
+import { createMuiTheme, MuiThemeProvider, responsiveFontSizes } from '@material-ui/core/styles';
+import createBreakpoints from '@material-ui/core/styles/createBreakpoints';
 import React from 'react';
 import styles from './App.module.css';
 import DistrictList from './features/districtList/DistrictList';
@@ -7,77 +8,140 @@ import Filters from './features/filters/Filters';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
 import SearchBox from './features/search/SearchBox';
 
-const themeDark = createMuiTheme({
-  palette: {
-    type: 'dark',
-    primary: {
-      main: '#a22a11',
-    },
-    secondary: {
-      main: '#d32f2f',
-    },
-  },
-  overrides: {
-    MuiFormControlLabel: {
-      label: {
-        fontSize: '0.7rem',
+const pxToRem = (value: number) => `${value / 16}rem`;
+
+const breakpoints = createBreakpoints({});
+
+breakpoints.values.sm = 640;
+breakpoints.values.md = 1024;
+breakpoints.values.lg = 1440;
+
+const themeDark = responsiveFontSizes(
+  createMuiTheme({
+    breakpoints: breakpoints,
+    palette: {
+      type: 'dark',
+      primary: {
+        main: '#a22a11',
+      },
+      secondary: {
+        main: '#d32f2f',
       },
     },
-    MuiFormControl: {
-      root: {
-        width: '100%',
-      },
-    },
-    MuiAccordion: {
-      root: {
-        '&.innerAccordion .MuiCheckbox-root': {
-          marginRight: '0.3rem',
-          padding: '0.1rem',
+    overrides: {
+      MuiSvgIcon: {
+        root: {
+          verticalAlign: 'bottom',
         },
-        backgroundColor: '#262626',
       },
-    },
-    MuiAccordionDetails: {
-      root: {
-        '&.innerAccordionDetails': {
-          maxHeight: '20rem',
-          overflow: 'auto',
-          '& .MuiFormGroup-root': {
-            width: '100%',
-            padding: '0 0.8rem',
+      MuiTypography: {
+        body1: {
+          fontSize: pxToRem(12),
+          [breakpoints.up('md')]: {
+            fontSize: pxToRem(13),
+          },
+          [breakpoints.up('lg')]: {
+            fontSize: pxToRem(14),
           },
         },
-        '& .MuiFormGroup-root': {
+        body2: {
+          fontSize: pxToRem(11),
+          [breakpoints.up('md')]: {
+            fontSize: pxToRem(12),
+          },
+          [breakpoints.up('lg')]: {
+            fontSize: pxToRem(13),
+          },
+        },
+      },
+      MuiFormControl: {
+        root: {
           width: '100%',
         },
-        padding: '0.5rem',
+        marginNormal: {
+          marginTop: '0.3rem',
+          marginBottom: 0,
+          [breakpoints.up('lg')]: {
+            marginBottom: '0.5rem',
+          },
+        },
       },
-    },
-    // MuiFormLabel: {
-    //   root: {
-    //     '&$focused': {
-    //       color: 'tomato',
-    //       fontWeight: 'bold',
-    //     },
-    //   },
+      MuiSlider: {
+        markLabel: {
+          fontSize: pxToRem(8),
+          [breakpoints.up('md')]: {
+            fontSize: pxToRem(9),
+          },
+          [breakpoints.up('lg')]: {
+            fontSize: pxToRem(10),
+          },
+        },
+        marked: {
+          marginBottom: 0,
+        },
+      },
+      MuiSelect: {
+        root: {
+          padding: '0.5rem',
+          [breakpoints.up('md')]: {
+            padding: '0.6rem',
+          },
+          [breakpoints.up('lg')]: {
+            padding: '0.7rem',
+          },
+        },
+      },
+      MuiAccordion: {
+        root: {
+          '&.innerAccordion .MuiCheckbox-root': {
+            marginRight: '0.3rem',
+            padding: '0.1rem',
+          },
+          backgroundColor: '#262626',
+        },
+      },
+      MuiAccordionDetails: {
+        root: {
+          '&.innerAccordionDetails': {
+            maxHeight: '20rem',
+            overflow: 'auto',
+            '& .MuiFormGroup-root': {
+              width: '100%',
+              padding: '0 0.8rem',
+            },
+          },
+          '& .MuiFormGroup-root': {
+            width: '100%',
+          },
+          padding: '0.5rem',
+        },
+      },
+      // MuiFormLabel: {
+      //   root: {
+      //     '&$focused': {
+      //       color: 'tomato',
+      //       fontWeight: 'bold',
+      //     },
+      //   },
 
-    //   focused: {},
-    // },
-    // MuiOutlinedInput: {
-    //   root: {
-    //     '& $notchedOutline': {
-    //       borderColor: 'white',
-    //     },
-    //     '&:hover $notchedOutline': {
-    //       borderColor: 'cyan',
-    //     },
-    //     '&$focused $notchedOutline': {
-    //       borderColor: 'tomato',
-    //     },
-    //   },
-    // },
-  },
-});
+      //   focused: {},
+      // },
+      // MuiOutlinedInput: {
+      //   root: {
+      //     '& $notchedOutline': {
+      //       borderColor: 'white',
+      //     },
+      //     '&:hover $notchedOutline': {
+      //       borderColor: 'cyan',
+      //     },
+      //     '&$focused $notchedOutline': {
+      //       borderColor: 'tomato',
+      //     },
+      //   },
+      // },
+    },
+  })
+);
 
 const App = () => {
   return (
@@ -109,7 +173,8 @@ export default App;
 
 // TODO: load suburbs at the center of current viewport (difficult)
 // By default show suburbs around user's location
-// Mobile layout
 // Rent to Sell dynamics
 // Change of price dynamics (red - incresed comaring to past month/week, green - decreased, gray - no change)
 // Themes
+// Filters - show what is selected
+// smaller legend for mobile?

@@ -4,4 +4,6 @@ export default class ArrayUtils {
       obj[item[keyField]] = item;
       return obj;
     }, {});
+
+  static clear = (array: any[]) => array.splice(0, array.length);
 }

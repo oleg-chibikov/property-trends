@@ -1,4 +1,4 @@
-import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
+import { FormControl, InputLabel, MenuItem, Select, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useDispatch } from 'react-redux';
@@ -21,7 +21,9 @@ const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaul
   return (
     <div>
       <FormControl variant="outlined">
-        <InputLabel shrink>{name}</InputLabel>
+        <InputLabel shrink>
+          <Typography variant="body2">{name}</Typography>
+        </InputLabel>
         <Select
           label={name}
           displayEmpty
@@ -32,7 +34,7 @@ const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaul
         >
           {data.map((el) => (
             <MenuItem key={el.value} value={el.value}>
-              {el.label}
+              <Typography variant="body1">{el.label}</Typography>
             </MenuItem>
           ))}
         </Select>

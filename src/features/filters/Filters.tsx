@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, FormGroup, useMediaQuery } from '@material-ui/core';
+import { Accordion, AccordionDetails, AccordionSummary, FormGroup, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React, { useEffect } from 'react';
 import AllowedWindowInDaysFilter from './AllowedWindowInDaysFilter';
@@ -10,9 +10,11 @@ import styles from './Filters.module.css';
 import MainPriceOnlyFilter from './MainPriceOnlyFilter';
 import ParkingSpacesFilter from './ParkingSpacesFilter';
 import PropertyTypesFilter from './PropertyTypesFilter';
+import SelectedFilters from './SelectedFilters';
 
 const Filters: React.FunctionComponent = () => {
-  const isDesktop = useMediaQuery('(min-width:1440px)');
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [expanded, setExpanded] = React.useState<boolean>(isDesktop);
   useEffect(() => {
     setExpanded(isDesktop);
@@ -23,7 +25,12 @@ const Filters: React.FunctionComponent = () => {
   };
   return (
     <Accordion square expanded={expanded} onChange={handleChange}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>Filters</AccordionSummary>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography variant="caption">
+          Filters
+          <SelectedFilters />
+        </Typography>
+      </AccordionSummary>
       <AccordionDetails>
         <FormGroup className={styles.filters}>
           <PropertyTypesFilter />

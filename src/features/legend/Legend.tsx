@@ -9,7 +9,7 @@ import styles from './Legend.module.css';
 import LegendEntry from './LegendEntry';
 import { selectPricesToColors } from './legendSlice';
 
-const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemMouseOver, onItemMouseOut }) => {
+const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemClick: onItemMouseOver, onItemMouseOut }) => {
   const priceDataSearchPromiseTracker = usePromiseTracker({ area: priceDataSearchPromiseTrackerArea, delay: 0 });
   const pricesToColors = useSelector(selectPricesToColors);
   if (priceDataSearchPromiseTracker.promiseInProgress) {
@@ -30,7 +30,7 @@ const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemMouse
             suburbCount={currentPriceIntervalInfo.suburbCount}
             isHighlighted={currentPriceIntervalInfo.isHighlighted || false}
             index={index}
-            onItemMouseOver={onItemMouseOver}
+            onItemClick={onItemMouseOver}
             onItemMouseOut={onItemMouseOut}
           />
         );
@@ -40,7 +40,7 @@ const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemMouse
 };
 
 Legend.propTypes = {
-  onItemMouseOver: PropTypes.func.isRequired,
+  onItemClick: PropTypes.func.isRequired,
   onItemMouseOut: PropTypes.func.isRequired,
 };
 

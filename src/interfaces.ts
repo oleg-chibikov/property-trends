@@ -21,7 +21,6 @@ export interface RealEstateResponse {
 }
 
 export interface CustomLayer extends Polygon<FeatureProperties> {
-  popupContent: string;
   feature: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon, FeatureProperties>;
 }
 
@@ -46,7 +45,7 @@ export interface SuburbKey {
 }
 
 export interface LegendEntryEventHandlers {
-  onItemMouseOver: (subIntervalMinPrice: number) => void;
+  onItemClick: (subIntervalMinPrice: number) => void;
   onItemMouseOut: (subIntervalMinPrice: number) => void;
 }
 
@@ -60,7 +59,7 @@ export interface FeatureProperties {
   fileName: string;
   name: string;
   Name?: string;
-  popupContent: string;
+  tooltipContent: string;
   suburbId: string;
   priceData?: RealEstateResponse;
   description: string;

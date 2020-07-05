@@ -1,6 +1,9 @@
+import Apartment from '@material-ui/icons/Apartment';
+import Home from '@material-ui/icons/Home';
 import { LatLngBounds, Map, StyleFunction } from 'leaflet';
 import PropTypes from 'prop-types';
 import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'react';
+import { renderToString } from 'react-dom/server';
 import { GeoJSON, ZoomControl } from 'react-leaflet';
 import Control from 'react-leaflet-control';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,8 +24,12 @@ import ShowAll from '../showAll/ShowAll';
 import SuburbList from '../suburbList/SuburbList';
 import { addSuburb, removeSuburb, setSuburbColor } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
+import MapConstants from './mapConstants';
 import SuburbMapEventHandler from './suburbMapEventHandler';
 
+let isApartment: boolean;
+const apartmentHtml = renderToString(<Apartment />);
+const houseHtml = renderToString(<Home />);
 let highlighter: Highlighter;
 let eventHandler: SuburbMapEventHandler;
 let mapElement: Map;
@@ -44,21 +51,18 @@ const setFeaturePriceProperties = (properties: FeatureProperties) => {
   }
 };
 
-const setPricePopupContent = (layer: CustomLayer, properties: FeatureProperties) => {
-  const setPopupContent = (layer: CustomLayer, popupContent: string) => {
-    layer.setPopupContent(popupContent);
-    layer.popupContent = popupContent;
-  };
-
+const setLayerPopupAndTooltip = (layer: CustomLayer, properties: FeatureProperties) => {
+  const name = properties.name;
   const priceDataForFeature = properties.priceData;
+  const formattedPostCode = StringUtils.padPostCode(properties.postCode);
+  const district = StringUtils.removePostfix(properties.fileName);
   if (priceDataForFeature) {
-    setPopupContent(
-      layer,
-      `${properties.popupContent}
-    <div>${MoneyUtils.format(priceDataForFeature.medianPrice)}</div>`
-    );
+    const formattedPrice = MoneyUtils.format(priceDataForFeature.medianPrice);
+    layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div><div>${formattedPrice}</div>`);
+    layer.setTooltipContent(`<h4>${name} ${formattedPostCode}</h4><div>${formattedPrice} - ${priceDataForFeature.count} ${isApartment ? apartmentHtml : houseHtml}<div>`);
   } else {
-    setPopupContent(layer, properties.popupContent);
+    layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div>`);
+    layer.setTooltipContent(`<div>${name} ${formattedPostCode}</div>`);
   }
 };
 
@@ -132,9 +136,9 @@ const applyPriceData = (data: RealEstateResponse[]) => {
     // Setting price properties for existing features when the prices are fetched
     setFeaturePriceProperties(properties);
     applyStyleToLayer(layer);
-    setPricePopupContent(layer, properties);
+    setLayerPopupAndTooltip(layer, properties);
     if (suburbId === searchBoxSelectedSuburbId) {
-      highlighter.highlightAll(layer);
+      highlighter.highlightLayer(layer);
     }
   }
 };
@@ -166,13 +170,22 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
     } as SuburbInfo)
   );
 
-  setPricePopupContent(layer, properties);
   // if priceData is fetched - the necessary properties and the style should be applied;
   if (priceDataBySuburbId) {
     applyStyleToLayer(layer);
   }
 
-  layer.bindPopup(properties.popupContent);
+  layer.bindPopup('');
+  layer.bindTooltip('', { permanent: true, direction: 'center', className: 'suburb-tooltip' });
+  setLayerPopupAndTooltip(layer, properties);
+  // for some reason it doesn't work without setTimeout
+  setTimeout(() => {
+    if (mapElement.getZoom() >= MapConstants.tooltipZoom) {
+      layer.openTooltip();
+    } else {
+      layer.closeTooltip();
+    }
+  }, 0);
 };
 
 const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: undefined }) => {
@@ -187,10 +200,6 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
         const suburbId = StringUtils.getSuburbId(name, postCode);
         properties.name = name;
         properties.suburbId = suburbId;
-        properties.popupContent = `<h3>
-          ${name} ${StringUtils.padPostCode(postCode)}
-        </h3>
-        <div>${StringUtils.removePostfix(fileName)}</div>`;
 
         // Setting prices for new features when prices are already fetched and new layer is added
         setFeaturePriceProperties(properties);
@@ -239,7 +248,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
           // console.log('Deleted feature ' + properties.name);
         }
 
-        for (const layer of layersByFileName[fileName]) {
+        for (const layer of innerLayers) {
           delete layersBySuburbId[layer.feature.properties.suburbId];
         }
         delete layersByFileName[fileName];
@@ -261,6 +270,7 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   dispatch = useDispatch();
   const districtList = useSelector(selectDistrictList);
   const filters = useSelector(selectFilters);
+  isApartment = filters.propertyType === 'apartment';
   const previousSearchBoxHighlightedSuburbId = searchBoxHighlightedSuburbId;
   const previousSearchBoxSelectedSuburbId = searchBoxSelectedSuburbId;
   searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);
@@ -295,9 +305,9 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
       <React.Fragment>
         <GeoJSON style={getFeatureStyle} ref={geojsonRef} data={[]} onEachFeature={onEachFeature} />
         <Control position="topleft">
-          {handler && <SuburbList leafletMap={leafletMap} onItemMouseOver={handler.onSuburbListMouseOver} onItemMouseOut={handler.onSuburbListMouseOut} onItemClick={handler.onSuburbListClick} />}
+          {handler && <SuburbList leafletMap={leafletMap} onItemMouseOver={handler.onSuburbListEntryMouseOver} onItemMouseOut={handler.onSuburbListEntryMouseOut} onItemClick={handler.onSuburbListEntryClick} />}
         </Control>
-        <Control position="bottomleft">{handler && <Legend onItemMouseOver={handler.onLegendEntryMouseOver} onItemMouseOut={handler.onLegendEntryMouseOut} />}</Control>
+        <Control position="bottomleft">{handler && <Legend onItemClick={handler.onLegendEntryClick} onItemMouseOut={handler.onLegendEntryMouseOut} />}</Control>
         <Control position="topright">
           <Info />
         </Control>

@@ -34,6 +34,7 @@ const SearchBox: React.FunctionComponent = () => {
 
   return (
     <Autocomplete
+      placeholder="Search suburbs/post codes…"
       freeSolo
       renderInput={(params) => (
         <TextField
@@ -90,12 +91,14 @@ const SearchBox: React.FunctionComponent = () => {
                 <LocationOnIcon />
               </Grid>
               <Grid item xs>
-                {parts.map((part, index) => (
-                  <span key={index} style={{ fontWeight: part.highlight ? 700 : 400 }}>
-                    {part.text}
-                  </span>
-                ))}{' '}
-                {StringUtils.padPostCode(option.postCode)}
+                <Typography variant="body1">
+                  {parts.map((part, index) => (
+                    <span key={index} style={{ fontWeight: part.highlight ? 700 : 400 }}>
+                      {part.text}
+                    </span>
+                  ))}{' '}
+                  {StringUtils.padPostCode(option.postCode)}
+                </Typography>
                 <Typography variant="body2" color="textSecondary">
                   {option.outerDistrict}
                 </Typography>

@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, useMediaQuery } from '@material-ui/core';
+import { Accordion, AccordionDetails, AccordionSummary, FormControlLabel, FormGroup, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React, { Dispatch, useEffect } from 'react';
@@ -56,15 +56,20 @@ const DistrictList: React.FunctionComponent = () => {
       .sort((x, y) => (x.checked === y.checked ? 0 : x.checked ? -1 : 1));
     return (
       <Accordion square key={state} expanded={innerExpanded === state} onChange={handleInnerChange(state)} TransitionProps={{ unmountOnExit: true }} className={'innerAccordion ' + styles.districtList}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>{renderHeader(state)}</AccordionSummary>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="body1">{renderHeader(state)}</Typography>
+        </AccordionSummary>
         <AccordionDetails className="innerAccordionDetails">
-          <FormGroup>{districtsForState.map((el) => renderDistrict(el.district, el.checked))}</FormGroup>
+          <Typography variant="body2">
+            <FormGroup>{districtsForState.map((el) => renderDistrict(el.district, el.checked))}</FormGroup>
+          </Typography>
         </AccordionDetails>
       </Accordion>
     );
   };
 
-  const isDesktop = useMediaQuery('(min-width:1440px)');
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [innerExpanded, setInnerExpanded] = React.useState<string | false>(false);
   const [expanded, setExpanded] = React.useState<boolean>(isDesktop);
   useEffect(() => {
@@ -80,7 +85,9 @@ const DistrictList: React.FunctionComponent = () => {
   districtsByState = districtListState.districtsByState;
   return (
     <Accordion square expanded={expanded} onChange={handleChange}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>Districts</AccordionSummary>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography variant="caption">Districts</Typography>
+      </AccordionSummary>
       <AccordionDetails>
         <FormGroup>{Object.keys(districtsByState).map(renderState)}</FormGroup>
       </AccordionDetails>
