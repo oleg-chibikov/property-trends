@@ -5,8 +5,15 @@ export interface DistrictsByState {
   [state: string]: string[];
 }
 
+interface StateByDistrict {
+  [state: string]: string;
+}
+
+const stateByDistrict: StateByDistrict = {};
+
 interface DistrictListState {
   checkedDistricts: { [fileName: string]: undefined };
+  checkedStates: { [state: string]: number };
   districtsByState: DistrictsByState;
 }
 
@@ -31,75 +38,92 @@ const defaultDistrictsByState: { [state: string]: string[] } = {
 const districtString = process.env.GEO_FILES || '';
 const districts = districtString.split('|');
 for (const district of districts) {
-  const state = district.substr(0, district.indexOf(' - '));
-  const districtsForState = initialDistrictsByState[state] || [];
+  const politicalState = district.substr(0, district.indexOf(' - '));
+  const districtsForState = initialDistrictsByState[politicalState] || [];
   districtsForState.push(district);
-  initialDistrictsByState[state] = districtsForState;
+  initialDistrictsByState[politicalState] = districtsForState;
+  stateByDistrict[district] = politicalState;
 }
 
-const selectState = (state: DistrictListState, stateName: string) => {
-  const defaultDistrictsForState = defaultDistrictsByState[stateName];
-  for (const district of state.districtsByState[stateName]) {
+const selectState = (state: DistrictListState, politicalState: string) => {
+  const defaultDistrictsForState = defaultDistrictsByState[politicalState];
+  state.checkedStates[politicalState] = 0;
+  for (const district of state.districtsByState[politicalState]) {
     if (defaultDistrictsForState) {
       for (const defaultDistrict of defaultDistrictsForState) {
         if (district.indexOf(defaultDistrict) > -1) {
           state.checkedDistricts[district] = undefined;
+          state.checkedStates[politicalState]++;
           break;
         }
       }
     } else {
       state.checkedDistricts[district] = undefined;
+      state.checkedStates[politicalState]++;
     }
   }
 };
 
 const initialState: DistrictListState = {
-  checkedDistricts: { 'NSW - Sydney - Eastern Suburbs.simplified.json': undefined },
+  checkedDistricts: {},
+  checkedStates: {},
   districtsByState: initialDistrictsByState,
 };
 
 selectState(initialState, 'NSW');
+
+const clear = (state: DistrictListState) => {
+  state.checkedDistricts = {};
+  state.checkedStates = {};
+};
 
 export const districtlistSlice = createSlice({
   name: 'DistrictList',
   initialState,
   reducers: {
     checkState: (state, action: PayloadAction<string>) => {
-      state.checkedDistricts = {};
+      clear(state);
       selectState(state, action.payload);
     },
     uncheckState: (state, action: PayloadAction<string>) => {
-      for (const district of state.districtsByState[action.payload]) {
+      const politicalState = action.payload;
+      delete state.checkedStates[politicalState];
+      for (const district of state.districtsByState[politicalState]) {
         delete state.checkedDistricts[district];
       }
     },
     checkDistrict: (state, action: PayloadAction<string>) => {
-      if (action.payload in state.checkedDistricts) {
+      const district = action.payload;
+      if (district in state.checkedDistricts) {
         return;
       }
-      state.checkedDistricts[action.payload] = undefined;
+      const politicalState = stateByDistrict[district];
+      state.checkedDistricts[district] = undefined;
+      state.checkedStates[politicalState]++;
     },
     checkDistrictOnly: (state, action: PayloadAction<string>) => {
-      let exists = false;
-      for (const district of Object.keys(state.checkedDistricts)) {
-        if (district !== action.payload) {
-          delete state.checkedDistricts[district];
-        } else {
-          exists = true;
-        }
-      }
-      if (!exists) {
-        state.checkedDistricts[action.payload] = undefined;
-      }
+      clear(state);
+      const district = action.payload;
+      const politicalState = stateByDistrict[district];
+      state.checkedDistricts[district] = undefined;
+      state.checkedStates[politicalState]++;
     },
     uncheckDistrict: (state, action: PayloadAction<string>) => {
-      delete state.checkedDistricts[action.payload];
+      const district = action.payload;
+      const politicalState = stateByDistrict[district];
+      delete state.checkedDistricts[district];
+      state.checkedStates[politicalState]--;
+      if (state.checkedStates[politicalState] <= 0) {
+        delete state.checkedStates[politicalState];
+      }
     },
   },
 });
 
 export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState } = districtlistSlice.actions;
 
-export const selectDistrictList = (state: RootState) => state.districtList;
+export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
+export const selectDistrictsByState = (state: RootState) => state.districtList.districtsByState;
+export const selectCheckedStates = (state: RootState) => state.districtList.checkedStates;
 
 export default districtlistSlice.reducer;

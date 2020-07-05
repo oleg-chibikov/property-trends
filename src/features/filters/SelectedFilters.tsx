@@ -7,7 +7,6 @@ import Home from '@material-ui/icons/Home';
 import SingleBed from '@material-ui/icons/SingleBed';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import styles from './Filters.module.css';
 import { selectFilters } from './filtersSlice';
 
 const SelectedFilters: React.FunctionComponent = () => {
@@ -32,7 +31,7 @@ const SelectedFilters: React.FunctionComponent = () => {
     labels.push({ label: parkingSpaces, icon: <DirectionsCar /> });
   }
   return (
-    <div className={styles.selectedFilters}>
+    <div className="chipCollection">
       {labels.map(({ label, icon }, index) => (
         <Chip key={index} variant="outlined" size="small" color="primary" icon={icon} label={label} />
       ))}

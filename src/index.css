@@ -74,3 +74,12 @@ html {
   background: #d8d8d870;
   border: none;
 }
+
+.chipCollection {
+  display: inline;
+  margin-left: 0.5rem;
+}
+
+.chipCollection > div:not(:last-child) {
+  margin-right: 0.3rem;
+}

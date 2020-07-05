@@ -4,24 +4,20 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React, { Dispatch, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from './DistrictList.module.css';
-import { checkState, DistrictsByState, selectDistrictList, uncheckState } from './districtListSlice';
+import { checkState, DistrictsByState, selectCheckedDistricts, selectCheckedStates, selectDistrictsByState, uncheckState } from './districtListSlice';
 import DistrictSelector from './DistrictSelector';
+import SelectedStates from './SelectedStates';
 
 let dispatch: Dispatch<unknown>;
 let checkedDistricts: { [fileName: string]: undefined };
+let checkedStates: { [state: string]: number };
 let districtsByState: DistrictsByState;
 
 const renderDistrict = (district: string, checked: boolean) => <DistrictSelector key={district} checked={checked} name={district} />;
 
 const renderHeader = (state: string) => {
-  const districtsForState = districtsByState[state];
-  let checked = false;
-  for (const district of districtsForState) {
-    if (district in checkedDistricts) {
-      checked = true;
-      break;
-    }
-  }
+  const checkedDistrictsCount = checkedStates[state] || 0;
+  const checked = checkedDistrictsCount > 0;
   return (
     <FormControlLabel
       control={
@@ -36,7 +32,7 @@ const renderHeader = (state: string) => {
           }}
         />
       }
-      label={state}
+      label={`${state} (${checkedDistrictsCount})`}
     />
   );
 };
@@ -80,13 +76,16 @@ const DistrictList: React.FunctionComponent = () => {
     setExpanded(isExpanded);
   };
 
-  const districtListState = useSelector(selectDistrictList);
-  checkedDistricts = districtListState.checkedDistricts;
-  districtsByState = districtListState.districtsByState;
+  checkedDistricts = useSelector(selectCheckedDistricts);
+  districtsByState = useSelector(selectDistrictsByState);
+  checkedStates = useSelector(selectCheckedStates);
   return (
     <Accordion square expanded={expanded} onChange={handleChange}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant="caption">Districts</Typography>
+        <Typography variant="caption">
+          Districts
+          <SelectedStates />
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <FormGroup>{Object.keys(districtsByState).map(renderState)}</FormGroup>

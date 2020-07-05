@@ -14,7 +14,7 @@ import ColorUtils from '../../utils/colorUtils';
 import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import CurrentLocation from '../currentLocation/CurrentLocation';
-import { selectDistrictList } from '../districtList/districtListSlice';
+import { selectCheckedDistricts } from '../districtList/districtListSlice';
 import { changePostCodes, FiltersState, selectFilters } from '../filters/filtersSlice';
 import Info from '../info/Info';
 import Legend from '../legend/Legend';
@@ -268,7 +268,7 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   const [handler, setHandler] = useState<SuburbMapEventHandler>();
   dispatch = useDispatch();
-  const districtList = useSelector(selectDistrictList);
+  const checkedDistricts = useSelector(selectCheckedDistricts);
   const filters = useSelector(selectFilters);
   isApartment = filters.propertyType === 'apartment';
   const previousSearchBoxHighlightedSuburbId = searchBoxHighlightedSuburbId;
@@ -276,8 +276,8 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);
   searchBoxHighlightedSuburbId = useSelector(selectHighlightedSuburb);
   useEffect(() => {
-    processCheckedDistricts(districtList.checkedDistricts);
-  }, [districtList]);
+    processCheckedDistricts(checkedDistricts);
+  }, [checkedDistricts]);
   useEffect(() => {
     fetchAndApplyPriceData(filters);
   }, [filters]);
