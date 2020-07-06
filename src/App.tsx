@@ -176,3 +176,4 @@ export default App;
 // Rent to Sell dynamics
 // Change of price dynamics (red - incresed comaring to past month/week, green - decreased, gray - no change)
 // Themes
+// Property add form

@@ -1,4 +1,4 @@
-import { Slider, Switch, Typography } from '@material-ui/core';
+import { Slider, Switch, Tooltip, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
@@ -22,9 +22,11 @@ const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefau
   const valueCopy = isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
   return (
     <div>
-      <Typography variant="body1">
-        {label}: <Switch size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
-      </Typography>
+      <Tooltip title="Use range selection">
+        <Typography variant="body1">
+          {label}: <Switch size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
+        </Typography>
+      </Tooltip>
       <div className="slider">
         <Slider
           min={min}

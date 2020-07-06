@@ -4,7 +4,9 @@
   min-height: 100%;
   grid-gap: 0;
   height: 100vh;
+  background-color: #262626;
 }
+
 header {
   grid-area: header;
   font-size: large;
@@ -111,6 +113,7 @@ footer {
 
     grid-template-columns: 22rem 1fr 22rem;
     grid-template-rows: auto 1fr auto;
+    background-color: unset;
   }
 
   header .left {

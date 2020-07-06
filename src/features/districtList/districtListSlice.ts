@@ -99,12 +99,16 @@ export const districtlistSlice = createSlice({
       }
       const politicalState = stateByDistrict[district];
       state.checkedDistricts[district] = undefined;
+      if (!state.checkedStates[politicalState]) {
+        state.checkedStates[politicalState] = 0;
+      }
       state.checkedStates[politicalState]++;
     },
     checkDistrictOnly: (state, action: PayloadAction<string>) => {
       clear(state);
       const district = action.payload;
       const politicalState = stateByDistrict[district];
+      state.checkedStates[politicalState] = 0;
       state.checkedDistricts[district] = undefined;
       state.checkedStates[politicalState]++;
     },
