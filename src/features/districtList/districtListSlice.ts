@@ -15,6 +15,8 @@ interface DistrictListState {
   checkedDistricts: { [fileName: string]: undefined };
   checkedStates: { [state: string]: number };
   districtsByState: DistrictsByState;
+  expanded: boolean;
+  expandedState: string | false;
 }
 
 const initialDistrictsByState: { [state: string]: string[] } = {};
@@ -48,6 +50,7 @@ for (const district of districts) {
 const selectState = (state: DistrictListState, politicalState: string) => {
   const defaultDistrictsForState = defaultDistrictsByState[politicalState];
   state.checkedStates[politicalState] = 0;
+  state.expandedState = politicalState;
   for (const district of state.districtsByState[politicalState]) {
     if (defaultDistrictsForState) {
       for (const defaultDistrict of defaultDistrictsForState) {
@@ -68,6 +71,8 @@ const initialState: DistrictListState = {
   checkedDistricts: {},
   checkedStates: {},
   districtsByState: initialDistrictsByState,
+  expanded: false,
+  expandedState: false,
 };
 
 selectState(initialState, 'NSW');
@@ -121,13 +126,24 @@ export const districtlistSlice = createSlice({
         delete state.checkedStates[politicalState];
       }
     },
+    toggleExpanded: (state) => {
+      state.expanded = !state.expanded;
+    },
+    setExpanded: (state, action: PayloadAction<boolean>) => {
+      state.expanded = action.payload;
+    },
+    setExpandedState: (state, action: PayloadAction<string | false>) => {
+      state.expandedState = action.payload;
+    },
   },
 });
 
-export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState } = districtlistSlice.actions;
+export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState, toggleExpanded, setExpanded, setExpandedState } = districtlistSlice.actions;
 
 export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
 export const selectDistrictsByState = (state: RootState) => state.districtList.districtsByState;
 export const selectCheckedStates = (state: RootState) => state.districtList.checkedStates;
+export const selectExpanded = (state: RootState) => state.districtList.expanded;
+export const selectExpandedState = (state: RootState) => state.districtList.expandedState;
 
 export default districtlistSlice.reducer;

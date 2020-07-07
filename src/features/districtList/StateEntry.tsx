@@ -2,9 +2,9 @@ import { Accordion, AccordionDetails, AccordionSummary, FormGroup, Typography } 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from './DistrictList.module.css';
-import { selectCheckedDistricts, selectDistrictsByState } from './districtListSlice';
+import { selectCheckedDistricts, selectDistrictsByState, selectExpandedState, setExpandedState } from './districtListSlice';
 import DistrictSelector from './DistrictSelector';
 import StateEntryHeader from './StateEntryHeader';
 
@@ -13,11 +13,11 @@ interface StateEntryProps {
 }
 
 const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state }) => {
+  const dispatch = useDispatch();
+  const expandedState = useSelector(selectExpandedState);
   const handleInnerChange = (panel: string) => (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
-    setInnerExpanded(isExpanded ? panel : false);
+    dispatch(setExpandedState(isExpanded ? panel : false));
   };
-
-  const [innerExpanded, setInnerExpanded] = React.useState<string | false>(false);
 
   const checkedDistricts = useSelector(selectCheckedDistricts);
   const districtsByState = useSelector(selectDistrictsByState);
@@ -28,7 +28,7 @@ const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state }) => {
     }))
     .sort((x, y) => (x.checked === y.checked ? 0 : x.checked ? -1 : 1));
   return (
-    <Accordion square key={state} expanded={innerExpanded === state} onChange={handleInnerChange(state)} TransitionProps={{ unmountOnExit: true }} className={'innerAccordion ' + styles.districtList}>
+    <Accordion square key={state} expanded={expandedState === state} onChange={handleInnerChange(state)} TransitionProps={{ unmountOnExit: true }} className={'innerAccordion ' + styles.districtList}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="body1">
           <StateEntryHeader state={state} />

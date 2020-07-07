@@ -43,3 +43,20 @@ html {
 .chipCollection > div:not(:last-child) {
   margin-right: 0.3rem;
 }
+
+.drawerWrapper {
+  margin: 1rem;
+  white-space: nowrap;
+}
+
+.iconWrapper {
+  display: flex;
+}
+
+.iconWrapper.left {
+  justify-content: flex-end;
+}
+
+.iconWrapper.right {
+  justify-content: flex-start;
+}

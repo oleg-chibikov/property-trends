@@ -15,7 +15,7 @@ import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import CurrentLocation from '../currentLocation/CurrentLocation';
 import { selectCheckedDistricts } from '../districtList/districtListSlice';
-import { changePostCodes, FiltersState, selectFilters } from '../filters/filtersSlice';
+import { changePostCodes, MapFilters, selectFilters } from '../filters/filtersSlice';
 import Info from '../info/Info';
 import Legend from '../legend/Legend';
 import { changePricesToColors } from '../legend/legendSlice';
@@ -143,7 +143,7 @@ const applyPriceData = (data: RealEstateResponse[]) => {
   }
 };
 
-const fetchAndApplyPriceData = async (filters: FiltersState) => {
+const fetchAndApplyPriceData = async (filters: MapFilters) => {
   const data = await fetchPriceDataDebounced(filters);
   applyPriceData(data);
 };

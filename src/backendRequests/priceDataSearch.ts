@@ -1,10 +1,10 @@
 import axios from 'axios';
 import debounce from 'debounce-async';
 import { trackPromise } from 'react-promise-tracker';
-import { FiltersState } from '../features/filters/filtersSlice';
+import { MapFilters } from '../features/filters/filtersSlice';
 import { RealEstateResponse } from '../interfaces';
 
-const fetchPriceData = async (filters: FiltersState) => {
+const fetchPriceData = async (filters: MapFilters) => {
   if (!filters.postCodes.length) {
     return [];
   }
@@ -60,7 +60,7 @@ const fetchPriceData = async (filters: FiltersState) => {
 
 export const priceDataSearchPromiseTrackerArea = 'price';
 
-const withPromiseTracking = async (filters: FiltersState) => await trackPromise(fetchPriceData(filters), priceDataSearchPromiseTrackerArea);
+const withPromiseTracking = async (filters: MapFilters) => await trackPromise(fetchPriceData(filters), priceDataSearchPromiseTrackerArea);
 
 const fetchPriceDataDebounced = debounce(withPromiseTracking, 400);
 

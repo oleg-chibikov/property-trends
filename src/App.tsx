@@ -3,8 +3,10 @@ import { createMuiTheme, MuiThemeProvider, responsiveFontSizes } from '@material
 import createBreakpoints from '@material-ui/core/styles/createBreakpoints';
 import React from 'react';
 import styles from './App.module.css';
-import DistrictList from './features/districtList/DistrictList';
-import Filters from './features/filters/Filters';
+import DistrictListButton from './features/districtList/DistrictListButton';
+import DistrictListWithDrawer from './features/districtList/DistrictListWithDrawer';
+import FiltersButton from './features/filters/FiltersButton';
+import FiltersWithDrawer from './features/filters/FiltersWithDrawer';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
 import SearchBox from './features/search/SearchBox';
 
@@ -114,6 +116,7 @@ const themeDark = responsiveFontSizes(
           '&.innerAccordionDetails': {
             maxHeight: '20rem',
             overflow: 'auto',
+            whiteSpace: 'break-spaces',
             '& .MuiFormGroup-root': {
               width: '100%',
               padding: '0 0.8rem',
@@ -156,23 +159,25 @@ const App = () => {
   return (
     <MuiThemeProvider theme={themeDark}>
       <CssBaseline />
-      <div className={styles.container}>
-        <header>
-          <div className={styles.left}>APT</div>
-          <div className={styles.center}>
-            <SearchBox />
-          </div>
-        </header>
-        <nav>
-          <Filters />
-        </nav>
-        <main>
-          <RealEstateMap />
-        </main>
-        <aside>
-          <DistrictList />
-        </aside>
-        <footer>Australian Property Trends 2020</footer>
+      <div className={styles.wrapper}>
+        <FiltersWithDrawer />
+        <div className={styles.container}>
+          <header>
+            <div className={styles.left}>APT</div>
+            <div className={styles.right}>
+              <SearchBox />
+            </div>
+          </header>
+          <nav>
+            <FiltersButton />
+            <DistrictListButton />
+          </nav>
+          <main>
+            <RealEstateMap />
+          </main>
+          <footer>Australian Property Trends 2020</footer>
+        </div>
+        <DistrictListWithDrawer />
       </div>
     </MuiThemeProvider>
   );
