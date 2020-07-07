@@ -11,11 +11,13 @@ interface SliderFilterProps {
   max: number;
   marks: boolean | Mark[];
   onChange: (value: number | number[]) => void;
+  convertValue?: (value: number | number[]) => number | number[] | undefined;
 }
 
-const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label, value, onChange, min, max }) => {
+const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ convertValue, marks, label, value, onChange, min, max }) => {
   const dispatch = useDispatch();
   const [localValue, setLocalValue] = useState<number | number[]>(value);
+  const valueCopy = convertValue ? convertValue(localValue) : localValue;
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   return (
@@ -25,7 +27,7 @@ const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label
         <Slider
           min={min}
           max={max}
-          value={localValue}
+          value={valueCopy}
           valueLabelDisplay="auto"
           marks={marks}
           onChange={(event: unknown, newValue: number | number[]) => {
@@ -50,6 +52,7 @@ SliderFilter.propTypes = {
   max: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
   marks: PropTypes.any.isRequired,
+  convertValue: PropTypes.func,
 };
 
 export default React.memo(SliderFilter);

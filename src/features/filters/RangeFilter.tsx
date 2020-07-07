@@ -18,13 +18,13 @@ const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefau
   for (let i = min; i <= max; i++) {
     marks.push({ value: i, label: i.toString() + (i === max ? '+' : '') });
   }
-  const valueCopy = isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
   return (
     <SliderFilter
       min={min}
       max={max}
       onChange={onChange}
-      value={valueCopy}
+      value={value}
+      convertValue={(value) => (isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value)}
       marks={marks}
       label={
         <Tooltip title="Use range selection">
