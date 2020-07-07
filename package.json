@@ -44,7 +44,9 @@
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "run": "serve -s build -l 4000",
+    "deploy": "surge --domain https://property-trends.surge.sh --project build",
     "build-and-run": "run-s build run",
+    "build-and-deploy": "run-s build deploy",
     "lint:fix": "eslint --fix ./src/**/*.{ts,tsx}"
   },
   "eslintConfig": {
