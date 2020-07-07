@@ -14,8 +14,8 @@ const DistrictListButton: React.FunctionComponent = () => {
   return (
     <div>
       <Typography component="div" variant="caption">
-        <Button onClick={toggleDrawer}>Districts</Button>
         <SelectedStates />
+        <Button onClick={toggleDrawer}>Districts</Button>
       </Typography>
     </div>
   );
