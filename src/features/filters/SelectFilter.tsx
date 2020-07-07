@@ -1,7 +1,8 @@
-import { FormControl, InputLabel, MenuItem, Select, Typography } from '@material-ui/core';
+import { FormControl, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { setExpanded } from './filtersSlice';
 
 interface SelectItem {
   label: string;
@@ -17,6 +18,8 @@ interface SelectFilterProps {
 
 const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaultValue, onChange, name }) => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
 
   return (
     <div>
@@ -30,6 +33,9 @@ const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaul
           value={defaultValue}
           onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
             dispatch(onChange(event.target.value as string));
+            if (!isDesktop) {
+              dispatch(setExpanded(false));
+            }
           }}
         >
           {data.map((el) => (

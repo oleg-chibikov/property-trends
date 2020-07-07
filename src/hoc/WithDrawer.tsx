@@ -3,7 +3,7 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { ActionCreatorWithoutPayload, ActionCreatorWithPayload } from '@reduxjs/toolkit';
 import clsx from 'clsx';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../app/store';
 
@@ -45,9 +45,9 @@ const withDrawer = <P extends DrawerComponentProps>(Component: React.ComponentTy
     dispatch(props.setExpanded(isDesktop));
   }, [dispatch, props, isDesktop]);
 
-  const toggleDrawer = () => {
+  const toggleDrawer = useCallback(() => {
     dispatch(props.toggleExpanded());
-  };
+  }, [dispatch, props]);
 
   const button = props.anchor === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
   return (

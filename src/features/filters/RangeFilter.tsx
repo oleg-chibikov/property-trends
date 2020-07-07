@@ -1,6 +1,7 @@
-import { Slider, Switch, Tooltip, Typography } from '@material-ui/core';
+import { Switch, Tooltip } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
+import SliderFilter from './SliderFilter';
 
 interface RangeFilterProps {
   isRangeByDefault?: boolean;
@@ -12,34 +13,27 @@ interface RangeFilterProps {
 }
 
 const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefault, label, value, onChange, min, max }) => {
+  const [isRange, setIsRange] = useState<boolean>(isRangeByDefault || false);
   const marks: { value: number; label: string }[] = [];
-
   for (let i = min; i <= max; i++) {
     marks.push({ value: i, label: i.toString() + (i === max ? '+' : '') });
   }
-
-  const [isRange, setIsRange] = useState<boolean>(isRangeByDefault || false);
   const valueCopy = isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
   return (
-    <div>
-      <Tooltip title="Use range selection">
-        <Typography variant="body1">
-          {label}: <Switch size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
-        </Typography>
-      </Tooltip>
-      <div className="slider">
-        <Slider
-          min={min}
-          max={max}
-          value={valueCopy}
-          valueLabelDisplay="auto"
-          marks={marks}
-          onChange={(event: unknown, newValue: number | number[]) => {
-            onChange(newValue);
-          }}
-        />
-      </div>
-    </div>
+    <SliderFilter
+      min={min}
+      max={max}
+      onChange={onChange}
+      value={valueCopy}
+      marks={marks}
+      label={
+        <Tooltip title="Use range selection">
+          <span>
+            {label}: <Switch size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
+          </span>
+        </Tooltip>
+      }
+    />
   );
 };
 
