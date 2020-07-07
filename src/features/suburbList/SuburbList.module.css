@@ -25,12 +25,12 @@
 
 @media (min-width: 0) {
   .suburbList {
-    visibility: hidden;
+    display: none;
   }
 }
 
 @media (min-width: 1024px) {
   .suburbList {
-    visibility: visible;
+    display: block;
   }
 }

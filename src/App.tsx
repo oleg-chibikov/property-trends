@@ -53,6 +53,15 @@ const themeDark = responsiveFontSizes(
             fontSize: pxToRem(13),
           },
         },
+        subtitle1: {
+          fontSize: pxToRem(7),
+          [breakpoints.up('md')]: {
+            fontSize: pxToRem(10),
+          },
+          [breakpoints.up('lg')]: {
+            fontSize: pxToRem(12),
+          },
+        },
       },
       MuiFormControl: {
         root: {

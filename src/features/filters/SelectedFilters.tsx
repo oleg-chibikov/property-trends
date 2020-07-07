@@ -18,7 +18,7 @@ const SelectedFilters: React.FunctionComponent = () => {
     { label: filters.dealType === 'buy' ? 'Buy' : 'Rent', icon: <AttachMoney /> },
     { label: filters.propertyType === 'apartment' ? 'A' : 'H', icon: filters.propertyType === 'apartment' ? <Apartment /> : <Home /> },
   ];
-  const bedrooms = getNumberOrRange(1, filters.bedrooms);
+  const bedrooms = getNumberOrRange(0, filters.bedrooms);
   const bathrooms = getNumberOrRange(0, filters.bathrooms);
   const parkingSpaces = getNumberOrRange(0, filters.parkingSpaces);
   if (bedrooms) {

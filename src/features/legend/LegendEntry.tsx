@@ -20,8 +20,8 @@ const Legend: React.FunctionComponent<LegendEntryProps> = ({ onItemClick: onItem
   return (
     <div className={isHighlighted ? styles.highlighted : ''} onClick={() => onItemMouseOver(price)} onMouseOut={() => onItemMouseOut(price)}>
       <div style={{ backgroundColor: color }} />
-      <Typography variant="body2" component="span">
-        {index + 1} - {MoneyUtils.format(price)} - {nextPrice ? MoneyUtils.format(nextPrice) : '...'} ({suburbCount})
+      <Typography variant="subtitle1" component="span">
+        {MoneyUtils.format(price)} - {nextPrice ? MoneyUtils.format(nextPrice) : '...'} ({suburbCount})
       </Typography>
     </div>
   );

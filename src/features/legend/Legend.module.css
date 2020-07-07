@@ -4,15 +4,12 @@
   background-color: white;
 }
 .legendContainer > div {
-  line-height: 1rem;
   white-space: nowrap;
-  padding: 0.1rem;
+  padding: 0;
   cursor: pointer;
 }
 .legendContainer > div > div {
   display: inline-block;
-  width: 1rem;
-  height: 1rem;
   margin-right: 0.5rem;
   opacity: 0.7;
   vertical-align: middle;
@@ -27,13 +24,31 @@
 }
 
 @media (min-width: 0) {
-  .legendContainer {
-    visibility: hidden;
+  /* .legendContainer {
+    display: none;
+  } */
+
+  .legendContainer > div {
+    line-height: 0.1rem;
+  }
+
+  .legendContainer > div > div {
+    width: 0.5rem;
+    height: 0.5rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .legendContainer {
-    visibility: visible;
+  /* .legendContainer {
+    display: unset;
+  } */
+
+  .legendContainer > div > div {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .legendContainer > div {
+    line-height: 1rem;
   }
 }

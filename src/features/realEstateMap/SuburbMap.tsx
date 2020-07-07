@@ -4,7 +4,7 @@ import { LatLngBounds, Map, StyleFunction } from 'leaflet';
 import PropTypes from 'prop-types';
 import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'react';
 import { renderToString } from 'react-dom/server';
-import { GeoJSON, ZoomControl } from 'react-leaflet';
+import { GeoJSON } from 'react-leaflet';
 import Control from 'react-leaflet-control';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
@@ -55,13 +55,13 @@ const setLayerPopupAndTooltip = (layer: CustomLayer, properties: FeatureProperti
   const name = properties.name;
   const priceDataForFeature = properties.priceData;
   const formattedPostCode = StringUtils.padPostCode(properties.postCode);
-  const district = StringUtils.removePostfix(properties.fileName);
+  // const district = StringUtils.removePostfix(properties.fileName);
   if (priceDataForFeature) {
     const formattedPrice = MoneyUtils.format(priceDataForFeature.medianPrice);
-    layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div><div>${formattedPrice}</div>`);
+    // layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div><div>${formattedPrice}</div>`);
     layer.setTooltipContent(`<h4>${name} ${formattedPostCode}</h4><div>${formattedPrice} - ${priceDataForFeature.count} ${isApartment ? apartmentHtml : houseHtml}<div>`);
   } else {
-    layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div>`);
+    // layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div>`);
     layer.setTooltipContent(`<div>${name} ${formattedPostCode}</div>`);
   }
 };
@@ -175,7 +175,7 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
     applyStyleToLayer(layer);
   }
 
-  layer.bindPopup('');
+  // layer.bindPopup('');
   layer.bindTooltip('', { permanent: true, direction: 'center', className: 'suburb-tooltip' });
   setLayerPopupAndTooltip(layer, properties);
   // for some reason it doesn't work without setTimeout
@@ -313,13 +313,12 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
         </Control>
         <Control position="bottomright">
           {handler && (
-            <div className="leaflet-bar">
+            <div className="leaflet-bar location-buttons">
               <ShowAll onClick={() => handler.showBounds(bounds)} />
               <CurrentLocation onLocationFound={handler.showLocation} />
             </div>
           )}
         </Control>
-        <ZoomControl position="bottomright" />
       </React.Fragment>
     ),
     [geojsonRef, leafletMap, handler]

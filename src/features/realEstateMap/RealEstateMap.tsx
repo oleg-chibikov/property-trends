@@ -1,7 +1,7 @@
 import { Layer, LeafletEvent, Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import React, { useCallback, useState } from 'react';
-import { Map, TileLayer } from 'react-leaflet';
+import { Map, TileLayer, ZoomControl } from 'react-leaflet';
 import { BoxZoomControl } from 'react-leaflet-box-zoom';
 import MapConstants from './mapConstants';
 import './RealEstateMap.module.css';
@@ -43,10 +43,11 @@ const RealEstateMap: React.FunctionComponent = () => {
   }, []);
 
   return (
-    <Map onzoomend={onMapZoomEnd} ref={ref} zoomControl={false} inertia={true} preferCanvas={true} scrollWheelZoom={true} zoom={17} center={[-33.9613, 151.23]}>
+    <Map onzoomend={onMapZoomEnd} ref={ref} zoomControl={false} attributionControl={false} inertia={true} preferCanvas={true} scrollWheelZoom={true} zoom={17} center={[-33.9613, 151.23]}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
       {map?.leafletElement && <SuburbMap leafletMap={map.leafletElement} />}
       <BoxZoomControl position="bottomright" sticky={true} />
+      <ZoomControl position="bottomright" />
     </Map>
   );
 };

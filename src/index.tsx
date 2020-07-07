@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import App from './App';
 import { store } from './app/store';
 import './index.css';
+import './map-buttons.css';
 import './scrollbar.css';
 import * as serviceWorker from './serviceWorker';
 import './whyDidYouRender';

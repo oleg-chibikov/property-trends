@@ -9,9 +9,18 @@ const CurrentLocation: React.FunctionComponent<CurrentLocationProps> = ({ onLoca
   <button
     title="Show current location"
     onClick={() => {
-      navigator.geolocation.getCurrentPosition((e) => {
-        onLocationFound(e.coords);
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          onLocationFound(position.coords);
+        },
+        (error) => {
+          alert(error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+        }
+      );
     }}
   >
     ☉
