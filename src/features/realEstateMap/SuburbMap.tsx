@@ -8,14 +8,16 @@ import { GeoJSON } from 'react-leaflet';
 import Control from 'react-leaflet-control';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
-import fetchPriceDataDebounced from '../../backendRequests/priceDataSearch';
-import { CompoundLayer, CustomLayer, FeatureProperties, RealEstateResponse, SuburbInfo, SuburbKey, WithFeatures, WithMap } from '../../interfaces';
+import fetchPriceData from '../../backendRequests/priceDataSearch';
+import { CompoundLayer, CustomLayer, FeatureProperties, RealEstateResponse, SuburbInfo, WithFeatures, WithMap } from '../../interfaces';
 import ColorUtils from '../../utils/colorUtils';
+import DomainUtils from '../../utils/domainUtils';
+import MapUtils from '../../utils/mapUtils';
 import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import CurrentLocation from '../currentLocation/CurrentLocation';
 import { selectCheckedDistricts } from '../districtList/districtListSlice';
-import { changePostCodes, MapFilters, selectFilters } from '../filters/filtersSlice';
+import { changeDistricts, MapFilters, selectFilters } from '../filters/filtersSlice';
 import Info from '../info/Info';
 import Legend from '../legend/Legend';
 import { changePricesToColors } from '../legend/legendSlice';
@@ -51,19 +53,18 @@ const setFeaturePriceProperties = (properties: FeatureProperties) => {
   }
 };
 
-const setLayerPopupAndTooltip = (layer: CustomLayer, properties: FeatureProperties) => {
+const setLayerPopupAndTooltip = (layer: CustomLayer) => {
+  const properties = layer.feature.properties;
   const name = properties.name;
   const priceDataForFeature = properties.priceData;
-  const formattedPostCode = StringUtils.padPostCode(properties.postCode);
-  // const district = StringUtils.removePostfix(properties.fileName);
-  if (priceDataForFeature) {
-    const formattedPrice = MoneyUtils.format(priceDataForFeature.medianPrice);
-    // layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div><div>${formattedPrice}</div>`);
-    layer.setTooltipContent(`<h4>${name} ${formattedPostCode}</h4><div>${formattedPrice} - ${priceDataForFeature.count} ${isApartment ? apartmentHtml : houseHtml}<div>`);
-  } else {
-    // layer.setPopupContent(`<h3>${name} ${formattedPostCode}</h3><div>${district}</div>`);
-    layer.setTooltipContent(`<div>${name} ${formattedPostCode}</div>`);
-  }
+  const formattedPostCode = DomainUtils.padPostCode(properties.postCode);
+  // const realEstateSuburbUri = DomainUtils.getRealEstateSuburbUri(name, formattedPostCode, properties.state);
+  // const realEstateLink = `<a href='${realEstateSuburbUri}' target="_blank">${name} ${formattedPostCode}</a>`;
+  const tooltipContent = priceDataForFeature
+    ? `<h4>${name} ${formattedPostCode}</h4><div>${MoneyUtils.format(priceDataForFeature.medianPrice)} - ${priceDataForFeature.count} ${isApartment ? apartmentHtml : houseHtml}<div>`
+    : `<div>${name} ${formattedPostCode}</div>`;
+  layer.setTooltipContent(tooltipContent);
+  return tooltipContent;
 };
 
 const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
@@ -96,12 +97,11 @@ const applyStyleToLayer = (layer: CustomLayer) => {
 
 const applyPriceData = (data: RealEstateResponse[]) => {
   if (!data.length) {
-    // clear the legend
-    dispatch(changePricesToColors({}));
     return;
   }
+
   for (const priceData of data) {
-    const suburbId = StringUtils.getSuburbId(priceData.locality, priceData.postCode);
+    const suburbId = DomainUtils.getSuburbId(priceData.locality, priceData.postCode);
     priceData.suburbId = suburbId;
   }
 
@@ -130,13 +130,11 @@ const applyPriceData = (data: RealEstateResponse[]) => {
   for (const suburbId in layersBySuburbId) {
     const layer = layersBySuburbId[suburbId];
     const properties = layer.feature.properties;
-    if (properties.priceData) {
-      properties.priceData = undefined;
-    }
+
     // Setting price properties for existing features when the prices are fetched
     setFeaturePriceProperties(properties);
     applyStyleToLayer(layer);
-    setLayerPopupAndTooltip(layer, properties);
+    setLayerPopupAndTooltip(layer);
     if (suburbId === searchBoxSelectedSuburbId) {
       highlighter.highlightLayer(layer);
     }
@@ -144,7 +142,30 @@ const applyPriceData = (data: RealEstateResponse[]) => {
 };
 
 const fetchAndApplyPriceData = async (filters: MapFilters) => {
-  const data = await fetchPriceDataDebounced(filters);
+  const cleanup = () => {
+    const resetAllLayers = () => {
+      const resetPriceData = (properties: FeatureProperties) => {
+        properties.priceData = undefined;
+      };
+
+      for (const suburbId in layersBySuburbId) {
+        const layer = layersBySuburbId[suburbId];
+        const properties = layer.feature.properties;
+        resetPriceData(properties);
+        applyStyleToLayer(layer);
+        setLayerPopupAndTooltip(layer);
+      }
+    };
+
+    const cleanupLegend = () => dispatch(changePricesToColors({}));
+
+    cleanupLegend();
+    resetAllLayers();
+  };
+
+  cleanup();
+
+  const data = await fetchPriceData(filters);
   applyPriceData(data);
 };
 
@@ -155,6 +176,9 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
     mouseover: eventHandler.onLayerMouseOver,
     mouseout: eventHandler.onLayerMouseOut,
     click: eventHandler.onLayerClick,
+    mousedown: eventHandler.onLayerMouseDown,
+    mouseup: eventHandler.onLayerMouseUp,
+    dblclick: eventHandler.onLayerDoubleClick,
   });
 
   const layersForFileName = layersByFileName[properties.fileName] || [];
@@ -176,8 +200,8 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   }
 
   // layer.bindPopup('');
-  layer.bindTooltip('', { permanent: true, direction: 'center', className: 'suburb-tooltip' });
-  setLayerPopupAndTooltip(layer, properties);
+  const tooltipContent = setLayerPopupAndTooltip(layer);
+  layer.bindTooltip(tooltipContent, { permanent: true, direction: 'center', interactive: false, className: 'suburb-tooltip' });
   // for some reason it doesn't work without setTimeout
   setTimeout(() => {
     if (mapElement.getZoom() >= MapConstants.tooltipZoom) {
@@ -188,16 +212,29 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   }, 0);
 };
 
-const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: undefined }) => {
-  const addCheckedLayers = async (checkedDistricts: { [fileName: string]: undefined }) => {
+const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: string]: undefined }) => {
+  const getPricesForCheckedDistricts = () => {
+    const checkedDistrictFileNamesKeys = Object.keys(checkedDistrictFileNames);
+    if (checkedDistrictFileNamesKeys.length) {
+      const districtsToFetch = checkedDistrictFileNamesKeys.map(DomainUtils.getDistrictNameFromFileName);
+      dispatch(changeDistricts(districtsToFetch));
+    }
+  };
+
+  getPricesForCheckedDistricts();
+
+  const addCheckedLayers = async (checkedDistrictFileNames: { [fileName: string]: undefined }) => {
     const addInfoToFeatures = (data: WithFeatures, fileName: string) => {
       for (const feature of data.features) {
         const properties = feature.properties;
         properties.fileName = fileName;
+        const { state, district } = DomainUtils.getStateAndDistrictFromFileName(fileName);
+        properties.district = district;
+        properties.state = state;
         const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
         const postCode = parseInt(properties.description);
         properties.postCode = postCode;
-        const suburbId = StringUtils.getSuburbId(name, postCode);
+        const suburbId = DomainUtils.getSuburbId(name, postCode);
         properties.name = name;
         properties.suburbId = suburbId;
 
@@ -208,32 +245,25 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
 
     const applyPolygonData = (data: GeoJSON.GeoJsonObject | GeoJSON.GeoJsonObject[]) => {
       // this object contains all the layers, not just recently added
-      const compoundLayer = geoJsonElement?.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
+      const compoundLayer = geoJsonElement.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
       bounds = compoundLayer.getBounds();
     };
 
-    for (const fileName in checkedDistricts) {
-      if (fileName in currentlyCheckedDistricts) {
+    for (const districtFileName in checkedDistrictFileNames) {
+      if (districtFileName in currentlyCheckedDistricts) {
         continue;
       }
 
-      const data = await fetchPolygonData(fileName);
+      const data = await fetchPolygonData(districtFileName);
 
       for (const withFeatures of data) {
-        addInfoToFeatures(withFeatures, fileName);
+        addInfoToFeatures(withFeatures, districtFileName);
       }
 
       applyPolygonData(data);
-      currentlyCheckedDistricts[fileName] = undefined;
-      console.log('Added ' + fileName);
+      currentlyCheckedDistricts[districtFileName] = undefined;
+      console.log('Added ' + districtFileName);
     }
-
-    const suburbKeys = Object.keys(layersBySuburbId).map((suburbId) => {
-      const properties = layersBySuburbId[suburbId].feature.properties;
-      return { postCode: properties.postCode, locality: properties.name } as SuburbKey;
-    });
-
-    dispatch(changePostCodes(suburbKeys));
   };
 
   const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: undefined }) => {
@@ -241,7 +271,7 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
       if (!(fileName in checkedDistricts)) {
         const innerLayers = layersByFileName[fileName];
         for (const layer of innerLayers) {
-          const compoundLayer = geoJsonElement?.leafletElement.removeLayer(layer);
+          const compoundLayer = geoJsonElement.leafletElement.removeLayer(layer);
           bounds = compoundLayer.getBounds();
           const properties = layer.feature.properties;
           dispatch(removeSuburb(properties.suburbId));
@@ -257,27 +287,32 @@ const processCheckedDistricts = async (checkedDistricts: { [fileName: string]: u
       }
     }
   };
-  removeUncheckedLayers(checkedDistricts);
-  await addCheckedLayers(checkedDistricts);
+
+  removeUncheckedLayers(checkedDistrictFileNames);
+  await addCheckedLayers(checkedDistrictFileNames);
+  // Searchbox requires new file to be loaded - select here and show selected suburb
   if (!eventHandler.onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId)) {
     eventHandler.showBounds(bounds);
   }
+
+  MapUtils.redrawMap(mapElement);
 };
 
 const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   const [handler, setHandler] = useState<SuburbMapEventHandler>();
   dispatch = useDispatch();
-  const checkedDistricts = useSelector(selectCheckedDistricts);
+  const checkedDistrictFileNames = useSelector(selectCheckedDistricts);
   const filters = useSelector(selectFilters);
+  // This is used to display proper icon in tooltips
   isApartment = filters.propertyType === 'apartment';
-  const previousSearchBoxHighlightedSuburbId = searchBoxHighlightedSuburbId;
-  const previousSearchBoxSelectedSuburbId = searchBoxSelectedSuburbId;
   searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);
   searchBoxHighlightedSuburbId = useSelector(selectHighlightedSuburb);
+  const previousSearchBoxHighlightedSuburbId = searchBoxHighlightedSuburbId;
+  const previousSearchBoxSelectedSuburbId = searchBoxSelectedSuburbId;
   useEffect(() => {
-    processCheckedDistricts(checkedDistricts);
-  }, [checkedDistricts]);
+    processCheckedDistricts(checkedDistrictFileNames);
+  }, [checkedDistrictFileNames]);
   useEffect(() => {
     fetchAndApplyPriceData(filters);
   }, [filters]);
@@ -305,7 +340,7 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
       <React.Fragment>
         <GeoJSON style={getFeatureStyle} ref={geojsonRef} data={[]} onEachFeature={onEachFeature} />
         <Control position="topleft">
-          {handler && <SuburbList leafletMap={leafletMap} onItemMouseOver={handler.onSuburbListEntryMouseOver} onItemMouseOut={handler.onSuburbListEntryMouseOut} onItemClick={handler.onSuburbListEntryClick} />}
+          {handler && <SuburbList leafletMap={mapElement} onItemMouseOver={handler.onSuburbListEntryMouseOver} onItemMouseOut={handler.onSuburbListEntryMouseOut} onItemClick={handler.onSuburbListEntryClick} />}
         </Control>
         <Control position="bottomleft">{handler && <Legend onItemClick={handler.onLegendEntryClick} onItemMouseOut={handler.onLegendEntryMouseOut} />}</Control>
         <Control position="topright">
@@ -321,7 +356,7 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
         </Control>
       </React.Fragment>
     ),
-    [geojsonRef, leafletMap, handler]
+    [geojsonRef, handler]
   );
 };
 

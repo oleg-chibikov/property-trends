@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { Dispatch, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import fetchDistrictList from '../../backendRequests/districtListRetrieval';
 import DistrictList from './DistrictList';
-import { selectExpanded, setExpanded, toggleExpanded } from './districtListSlice';
+import { addDistrictFileNames, checkState, selectExpanded, setExpanded, toggleExpanded } from './districtListSlice';
+
+let dispatch: Dispatch<any>;
+const fetchAndApplyDistrictsList = async () => {
+  const districtList = await fetchDistrictList();
+  dispatch(addDistrictFileNames(districtList));
+  dispatch(checkState('NSW'));
+};
 
 const DistrictListWithDrawer: React.FunctionComponent = () => {
-  return <DistrictList caption="Districts" anchor="right" selectExpanded={selectExpanded} setExpanded={setExpanded} toggleExpanded={toggleExpanded} />;
+  useEffect(() => {
+    fetchAndApplyDistrictsList();
+  }, []);
+  dispatch = useDispatch();
+  return <DistrictList widthOrHeight={'20rem'} caption="Districts" anchor="right" selectExpanded={selectExpanded} setExpanded={setExpanded} toggleExpanded={toggleExpanded} />;
 };
 
 export default React.memo(DistrictListWithDrawer);

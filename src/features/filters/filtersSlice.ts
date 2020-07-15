@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
-import { SuburbKey } from '../../interfaces';
 
 const defaultRange: number[] = [0, 7];
 
@@ -18,11 +17,11 @@ export interface MapFilters {
   constructionStatus: string;
   allowedWindowInDays: number;
   mainPriceOnly: boolean;
-  postCodes: SuburbKey[];
+  districts: string[];
 }
 
 const initialState: FiltersState = {
-  filters: { propertyType: 'apartment', dealType: 'buy', bedrooms: [2, 2], bathrooms: defaultRange, parkingSpaces: defaultRange, constructionStatus: 'any', allowedWindowInDays: 7, mainPriceOnly: false, postCodes: [] },
+  filters: { propertyType: 'apartment', dealType: 'buy', bedrooms: [2, 2], bathrooms: defaultRange, parkingSpaces: defaultRange, constructionStatus: 'any', allowedWindowInDays: 7, mainPriceOnly: false, districts: [] },
   expanded: false,
 };
 
@@ -31,31 +30,47 @@ export const FiltersSlice = createSlice({
   initialState,
   reducers: {
     changePropertyType: (state, action: PayloadAction<string>) => {
-      state.filters.propertyType = action.payload;
+      if (state.filters.propertyType !== action.payload) {
+        state.filters.propertyType = action.payload;
+      }
     },
     changeDealType: (state, action: PayloadAction<string>) => {
-      state.filters.dealType = action.payload;
+      if (state.filters.dealType !== action.payload) {
+        state.filters.dealType = action.payload;
+      }
     },
     changeBedrooms: (state, action: PayloadAction<number | number[]>) => {
-      state.filters.bedrooms = action.payload;
+      if (JSON.stringify(state.filters.bedrooms) !== JSON.stringify(action.payload)) {
+        state.filters.bedrooms = action.payload;
+      }
     },
     changeBathrooms: (state, action: PayloadAction<number | number[]>) => {
-      state.filters.bathrooms = action.payload;
+      if (JSON.stringify(state.filters.bathrooms) !== JSON.stringify(action.payload)) {
+        state.filters.bathrooms = action.payload;
+      }
     },
     changeParkingSpaces: (state, action: PayloadAction<number | number[]>) => {
-      state.filters.parkingSpaces = action.payload;
+      if (JSON.stringify(state.filters.parkingSpaces) !== JSON.stringify(action.payload)) {
+        state.filters.parkingSpaces = action.payload;
+      }
     },
     changeMainPriceOnly: (state, action: PayloadAction<boolean>) => {
-      state.filters.mainPriceOnly = action.payload;
+      if (state.filters.mainPriceOnly !== action.payload) {
+        state.filters.mainPriceOnly = action.payload;
+      }
     },
     changeAllowedWindowInDays: (state, action: PayloadAction<number>) => {
-      state.filters.allowedWindowInDays = action.payload;
+      if (state.filters.allowedWindowInDays !== action.payload) {
+        state.filters.allowedWindowInDays = action.payload;
+      }
     },
     changeConstructionStatus: (state, action: PayloadAction<string>) => {
-      state.filters.constructionStatus = action.payload;
+      if (state.filters.constructionStatus !== action.payload) {
+        state.filters.constructionStatus = action.payload;
+      }
     },
-    changePostCodes: (state, action: PayloadAction<SuburbKey[]>) => {
-      state.filters.postCodes = action.payload;
+    changeDistricts: (state, action: PayloadAction<string[]>) => {
+      state.filters.districts = action.payload;
     },
     toggleExpanded: (state) => {
       state.expanded = !state.expanded;
@@ -75,7 +90,7 @@ export const {
   changeConstructionStatus,
   changeMainPriceOnly,
   changeParkingSpaces,
-  changePostCodes,
+  changeDistricts,
   toggleExpanded,
   setExpanded,
 } = FiltersSlice.actions;

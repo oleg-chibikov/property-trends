@@ -1,6 +1,8 @@
 import { LatLngBounds, Map } from 'leaflet';
 import { Dispatch } from 'react';
 import { CustomLayer, EventArgs } from '../../interfaces';
+import DomainUtils from '../../utils/domainUtils';
+import { removeSearchResult } from '../search/searchBoxSlice';
 import { scrollToSuburb } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
 
@@ -10,6 +12,7 @@ class SuburbMapEventHandler {
   private highlighter: Highlighter;
   private layersBySuburbId: { [suburbId: string]: CustomLayer };
   private suburbIdsByPriceInterval: { [price: number]: string[] } = {};
+  private layerPressTimer: number | undefined;
 
   constructor(dispatch: Dispatch<any>, mapElement: Map, highlighter: Highlighter, layersBySuburbId: { [suburbId: string]: CustomLayer }) {
     this.dispatch = dispatch;
@@ -25,7 +28,8 @@ class SuburbMapEventHandler {
   };
 
   showLocation = (coords: Coordinates) => {
-    this.mapElement?.setView([coords.latitude, coords.longitude], 11);
+    this.mapElement?.panTo([coords.latitude, coords.longitude]);
+    //this.mapElement?.setView([coords.latitude, coords.longitude], 11);
   };
 
   setSuburbIdsByPriceInterval(obj: { [price: number]: string[] }) {
@@ -60,9 +64,17 @@ class SuburbMapEventHandler {
 
   onLegendEntryClick = (intervalMinPrice: number) => {
     this.highlighter.cleanupPreviousHighlight();
+    let combinedBounds: LatLngBounds | undefined = undefined;
     this.applyByPriceInterval(intervalMinPrice, (suburbId) => {
-      this.highlighter.highlightLayer(this.layersBySuburbId[suburbId], false);
+      const layer = this.layersBySuburbId[suburbId];
+      this.highlighter.highlightLayer(layer, false);
+      if (combinedBounds) {
+        combinedBounds.extend(layer.getBounds());
+      } else {
+        combinedBounds = layer.getBounds();
+      }
     });
+    this.showBounds(combinedBounds);
   };
 
   onLegendEntryMouseOut = (intervalMinPrice: number) => {
@@ -86,6 +98,7 @@ class SuburbMapEventHandler {
         this.zoomToLayerOnMap(layer);
         this.highlighter.highlightLayer(layer);
         this.scrollToSuburbInList(suburbId);
+        this.dispatch(removeSearchResult());
         return true;
       }
     }
@@ -107,9 +120,36 @@ class SuburbMapEventHandler {
 
   onLayerClick = (e: EventArgs<CustomLayer>) => {
     const layer = e.target;
-    this.zoomToLayerOnMap(layer);
+    const properties = layer.feature.properties;
     this.highlighter.highlightLayer(layer);
-    this.scrollToSuburbInList(layer.feature.properties.suburbId);
+    this.scrollToSuburbInList(properties.suburbId);
+  };
+
+  onLayerDoubleClick = (e: EventArgs<CustomLayer>) => {
+    const layer = e.target;
+    const properties = layer.feature.properties;
+    const formattedPostcode = DomainUtils.padPostCode(properties.postCode);
+    const win = window.open(DomainUtils.getRealEstateSuburbUri(properties.name, formattedPostcode, properties.state), '_blank');
+    win?.focus();
+    (e as any).originalEvent.view.L.DomEvent.stopPropagation(e);
+  };
+
+  onLayerMouseDown = (e: EventArgs<CustomLayer>) => {
+    // const layer = e.target;
+    // const properties = layer.feature.properties;
+    // this.layerPressTimer = window.setTimeout(function () {
+    //   const formattedPostcode = DomainUtils.padPostCode(properties.postCode);
+    //   const win = window.open(DomainUtils.getRealEstateSuburbUri(properties.name, formattedPostcode, properties.state), '_blank');
+    //   win?.focus();
+    // }, 1000);
+    // return false;
+  };
+
+  onLayerMouseUp = (e: EventArgs<CustomLayer>) => {
+    // if (this.layerPressTimer) {
+    //   clearTimeout(this.layerPressTimer);
+    //   this.layerPressTimer = undefined;
+    // }
   };
 
   private applyByPriceInterval = (intervalMinPrice: number, func: (suburbId: string) => void) => {

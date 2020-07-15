@@ -4,7 +4,6 @@ export interface PriceIntrevalInfo {
   intervalMinPrice: number;
   color: string;
   suburbCount: number;
-  isHighlighted?: boolean;
 }
 
 export interface RealEstateResponse {
@@ -64,6 +63,8 @@ export interface FeatureProperties {
   priceData?: RealEstateResponse;
   description: string;
   postCode: number;
+  state: string;
+  district: string;
 }
 
 export interface WithFeatures extends GeoJSON.GeoJsonObject {

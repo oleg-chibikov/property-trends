@@ -10,7 +10,7 @@ const Filters: React.FunctionComponent = () => {
   return (
     <SliderFilter
       min={1}
-      max={365}
+      max={60}
       value={allowedWindowInDays}
       label={
         <Tooltip title="Show only the data modified within this interval">
@@ -27,12 +27,8 @@ const Filters: React.FunctionComponent = () => {
           label: '1m',
         },
         {
-          value: 180,
-          label: '6m',
-        },
-        {
-          value: 365,
-          label: '1y',
+          value: 60,
+          label: '2m',
         },
       ]}
       onChange={(newValue: number | number[]) => {

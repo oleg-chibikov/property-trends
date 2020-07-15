@@ -1,6 +1,6 @@
-import { FeatureProperties } from './../../interfaces';
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import { FeatureProperties } from './../../interfaces';
 
 interface InfoState {
   currentInfo?: FeatureProperties;
@@ -25,6 +25,6 @@ export const infoSlice = createSlice({
 
 export const { setInfo, clearInfo } = infoSlice.actions;
 
-export const selectInfo = (state: RootState) => state.info;
+export const selectInfo = (state: RootState) => state.info.currentInfo;
 
 export default infoSlice.reducer;

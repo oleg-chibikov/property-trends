@@ -7,6 +7,12 @@
   border-radius: 0.3rem;
   color: #777;
 }
-.info > h3 {
-  margin: 0.5rem 0;
+
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.header > *:last-child {
+  margin-left: auto;
 }

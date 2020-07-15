@@ -1,33 +1,37 @@
 .legendContainer {
-  padding: 0.1rem;
-  color: #555;
-  background-color: white;
+  padding: 0.5rem;
+  color: white;
+  background-color: #424242;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(8, auto);
+  grid-gap: 0 1rem;
 }
+
 .legendContainer > div {
   white-space: nowrap;
   padding: 0;
   cursor: pointer;
 }
+
 .legendContainer > div > div {
   display: inline-block;
   margin-right: 0.5rem;
   opacity: 0.7;
   vertical-align: middle;
 }
+
 .legendContainer > div > span {
   display: inline-block;
   vertical-align: middle;
 }
+
 .legendContainer > div.highlighted {
   background-color: #f3f36887 !important;
   color: black !important;
 }
 
 @media (min-width: 0) {
-  /* .legendContainer {
-    display: none;
-  } */
-
   .legendContainer > div {
     line-height: 0.1rem;
   }
@@ -39,10 +43,6 @@
 }
 
 @media (min-width: 1024px) {
-  /* .legendContainer {
-    display: unset;
-  } */
-
   .legendContainer > div > div {
     width: 1rem;
     height: 1rem;
@@ -50,5 +50,17 @@
 
   .legendContainer > div {
     line-height: 1rem;
+  }
+}
+
+@media (min-height: 0) {
+  .legendContainer {
+    grid-template-rows: repeat(5, auto);
+  }
+}
+
+@media (min-height: 500px) {
+  .legendContainer {
+    grid-template-rows: repeat(15, auto);
   }
 }

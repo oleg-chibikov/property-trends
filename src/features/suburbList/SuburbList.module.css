@@ -1,6 +1,12 @@
-.suburbList {
+.suburbListWrapper {
+  display: flex;
+  flex-direction: column;
   background-color: rgb(39, 39, 39);
   padding: 0.5rem;
+}
+
+.suburbList {
+  display: none;
   max-height: 20rem;
   overflow-y: auto;
   scroll-behavior: smooth;
@@ -23,13 +29,7 @@
   font-size: larger;
 }
 
-@media (min-width: 0) {
-  .suburbList {
-    display: none;
-  }
-}
-
-@media (min-width: 1024px) {
+@media (min-height: 850px) and (min-width: 1024px) {
   .suburbList {
     display: block;
   }

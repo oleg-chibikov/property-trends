@@ -17,6 +17,9 @@
   box-sizing: content-box;
   cursor: pointer;
   outline: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 #box-zoom-button {
@@ -42,9 +45,20 @@
 .location-buttons > a,
 #box-zoom-button {
   border-style: none !important;
-  width: 32px !important;
-  height: 32px !important;
-  line-height: 32px !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  line-height: 2.5rem !important;
+}
+
+.leaflet-bottom.leaflet-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.leaflet-bar {
+  display: flex;
+  flex-direction: column;
 }
 
 .leaflet-control-zoom > button:first-child,
@@ -66,4 +80,36 @@
   border-top-right-radius: 0 !important;
   border-bottom-left-radius: 4px !important;
   border-bottom-right-radius: 4px !important;
+}
+
+@media (max-height: 500px) {
+  .leaflet-bottom.leaflet-right {
+    flex-direction: row;
+  }
+
+  .leaflet-bar {
+    flex-direction: row;
+  }
+
+  .leaflet-control-zoom > button:first-child,
+  .leaflet-control-zoom > a:first-child,
+  .location-buttons > button:first-child,
+  .location-buttons > a:first-child {
+    border-right: 1px solid #ccc !important;
+    border-bottom: none !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+  }
+
+  .leaflet-control-zoom > button:last-child,
+  .leaflet-control-zoom > a:last-child,
+  .location-buttons > button:last-child,
+  .location-buttons > a:last-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: 4px !important;
+    border-bottom-right-radius: 4px !important;
+  }
 }

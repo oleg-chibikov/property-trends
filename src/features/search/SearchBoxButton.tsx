@@ -1,11 +1,10 @@
 import { IconButton, Typography } from '@material-ui/core';
-import TuneIcon from '@material-ui/icons/Tune';
+import SearchIcon from '@material-ui/icons/Search';
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { toggleExpanded } from './filtersSlice';
-import SelectedFilters from './SelectedFilters';
+import { toggleExpanded } from './searchBoxSlice';
 
-const FiltersButton: React.FunctionComponent = () => {
+const SearchBoxButton: React.FunctionComponent = () => {
   const dispatch = useDispatch();
 
   const toggleDrawer = () => {
@@ -15,13 +14,12 @@ const FiltersButton: React.FunctionComponent = () => {
   return (
     <Typography component="div" variant="caption">
       {
-        <IconButton title="Filters" onClick={toggleDrawer}>
-          <TuneIcon />
+        <IconButton title="Search" onClick={toggleDrawer}>
+          <SearchIcon color="secondary" />
         </IconButton>
       }
-      <SelectedFilters />
     </Typography>
   );
 };
 
-export default React.memo(FiltersButton);
+export default React.memo(SearchBoxButton);

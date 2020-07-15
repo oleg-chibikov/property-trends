@@ -1,4 +1,3 @@
-import L from 'leaflet';
 import { Dispatch } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import { CustomLayer, FeatureProperties } from '../../interfaces';
@@ -90,10 +89,6 @@ class Highlighter {
       dashArray: '',
       //fillOpacity: 0.3,
     });
-
-    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-      layer.bringToFront();
-    }
   };
 
   private unhighlightLayerOnMap = (layer: CustomLayer) => {

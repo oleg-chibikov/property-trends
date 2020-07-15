@@ -1,19 +1,21 @@
 import { Typography } from '@material-ui/core';
 import Apartment from '@material-ui/icons/Apartment';
+import CloseIcon from '@material-ui/icons/Close';
 import Home from '@material-ui/icons/Home';
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FeatureProperties } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
-import StringUtils from '../../utils/stringUtils';
 import { selectFilters } from '../filters/filtersSlice';
 import styles from './Info.module.css';
-import { selectInfo } from './infoSlice';
+import { clearInfo, selectInfo } from './infoSlice';
+import RealEstateSuburbLink from './RealEstateSuburbLink';
 
 const Info: React.FunctionComponent = () => {
-  const info = useSelector(selectInfo).currentInfo;
+  const info = useSelector(selectInfo);
   const filters = useSelector(selectFilters);
   const isApartment = filters.propertyType === 'apartment';
+  const dispatch = useDispatch();
 
   const renderAdditionalInfo = (info: FeatureProperties) =>
     info.priceData && (
@@ -31,14 +33,25 @@ const Info: React.FunctionComponent = () => {
         </div>
       </React.Fragment>
     );
-  return info ? (
+  if (!info) {
+    return null;
+  }
+  return (
     <Typography variant="body2" component="div" className={styles.info}>
-      <h4>{info.name}</h4>
-      {info.postCode && <div>Post Code: {StringUtils.padPostCode(info.postCode)}</div>}
-      <div>{StringUtils.removePostfix(info.fileName)}</div>
+      <h4 className={styles.header}>
+        <RealEstateSuburbLink {...info} />
+        <CloseIcon
+          onClick={() => {
+            dispatch(clearInfo());
+          }}
+        />
+      </h4>
+      <div>
+        {info.state} - {info.district}
+      </div>
       {renderAdditionalInfo(info)}
     </Typography>
-  ) : null;
+  );
 };
 
 export default React.memo(Info);

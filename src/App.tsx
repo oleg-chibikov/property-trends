@@ -1,6 +1,5 @@
+import { MuiThemeProvider } from '@material-ui/core';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { createMuiTheme, MuiThemeProvider, responsiveFontSizes } from '@material-ui/core/styles';
-import createBreakpoints from '@material-ui/core/styles/createBreakpoints';
 import React from 'react';
 import styles from './App.module.css';
 import DistrictListButton from './features/districtList/DistrictListButton';
@@ -8,166 +7,21 @@ import DistrictListWithDrawer from './features/districtList/DistrictListWithDraw
 import FiltersButton from './features/filters/FiltersButton';
 import FiltersWithDrawer from './features/filters/FiltersWithDrawer';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
-import SearchBox from './features/search/SearchBox';
-
-const pxToRem = (value: number) => `${value / 16}rem`;
-
-const breakpoints = createBreakpoints({});
-
-breakpoints.values.sm = 640;
-breakpoints.values.md = 1024;
-breakpoints.values.lg = 1440;
-
-const themeDark = responsiveFontSizes(
-  createMuiTheme({
-    breakpoints: breakpoints,
-    palette: {
-      type: 'dark',
-      primary: {
-        main: '#a22a11',
-      },
-      secondary: {
-        main: '#d32f2f',
-      },
-    },
-    overrides: {
-      MuiSvgIcon: {
-        root: {
-          verticalAlign: 'bottom',
-        },
-      },
-      MuiTypography: {
-        body1: {
-          fontSize: pxToRem(12),
-          [breakpoints.up('md')]: {
-            fontSize: pxToRem(13),
-          },
-          [breakpoints.up('lg')]: {
-            fontSize: pxToRem(14),
-          },
-        },
-        body2: {
-          fontSize: pxToRem(11),
-          [breakpoints.up('md')]: {
-            fontSize: pxToRem(12),
-          },
-          [breakpoints.up('lg')]: {
-            fontSize: pxToRem(13),
-          },
-        },
-        subtitle1: {
-          fontSize: pxToRem(7),
-          [breakpoints.up('md')]: {
-            fontSize: pxToRem(10),
-          },
-          [breakpoints.up('lg')]: {
-            fontSize: pxToRem(12),
-          },
-        },
-      },
-      MuiFormControl: {
-        root: {
-          width: '100%',
-        },
-        marginNormal: {
-          marginTop: '0.3rem',
-          marginBottom: 0,
-          [breakpoints.up('lg')]: {
-            marginBottom: '0.5rem',
-          },
-        },
-      },
-      MuiSlider: {
-        markLabel: {
-          fontSize: pxToRem(8),
-          [breakpoints.up('md')]: {
-            fontSize: pxToRem(9),
-          },
-          [breakpoints.up('lg')]: {
-            fontSize: pxToRem(10),
-          },
-        },
-        marked: {
-          marginBottom: 0,
-        },
-      },
-      MuiSelect: {
-        root: {
-          padding: '0.5rem',
-          [breakpoints.up('md')]: {
-            padding: '0.6rem',
-          },
-          [breakpoints.up('lg')]: {
-            padding: '0.7rem',
-          },
-        },
-      },
-      MuiAccordion: {
-        root: {
-          '&.innerAccordion .MuiCheckbox-root': {
-            marginRight: '0.3rem',
-            padding: '0.1rem',
-          },
-          backgroundColor: '#262626',
-        },
-      },
-      MuiAccordionDetails: {
-        root: {
-          '&.innerAccordionDetails': {
-            maxHeight: '20rem',
-            overflow: 'auto',
-            whiteSpace: 'break-spaces',
-            '& .MuiFormGroup-root': {
-              width: '100%',
-              padding: '0 0.8rem',
-            },
-          },
-          '& .MuiFormGroup-root': {
-            width: '100%',
-          },
-          padding: '0.5rem',
-        },
-      },
-      // MuiFormLabel: {
-      //   root: {
-      //     '&$focused': {
-      //       color: 'tomato',
-      //       fontWeight: 'bold',
-      //     },
-      //   },
-
-      //   focused: {},
-      // },
-      // MuiOutlinedInput: {
-      //   root: {
-      //     '& $notchedOutline': {
-      //       borderColor: 'white',
-      //     },
-      //     '&:hover $notchedOutline': {
-      //       borderColor: 'cyan',
-      //     },
-      //     '&$focused $notchedOutline': {
-      //       borderColor: 'tomato',
-      //     },
-      //   },
-      // },
-    },
-  })
-);
+import SearchBoxWithDrawer from './features/search/SearchBoxWithDrawer';
+import ThemeUtils from './utils/themeUtils';
 
 const App = () => {
   return (
-    <MuiThemeProvider theme={themeDark}>
+    <MuiThemeProvider theme={ThemeUtils.themeDark}>
       <CssBaseline />
+      <SearchBoxWithDrawer />
       <div className={styles.wrapper}>
         <FiltersWithDrawer />
         <div className={styles.container}>
-          <header>
+          {/* <header>
             <div className={styles.left}>APT</div>
-            <div className={styles.right}>
-              <SearchBox />
-            </div>
-          </header>
+            <div className={styles.right}>Blah</div>
+          </header> */}
           <nav>
             <FiltersButton />
             <DistrictListButton />
@@ -191,3 +45,6 @@ export default App;
 // Change of price dynamics (red - incresed comaring to past month/week, green - decreased, gray - no change)
 // Themes
 // Property add form
+// SEO - at least should be somehow found in google
+// place site and retriever on the same hosting
+// Current location - show on map as point

@@ -44,10 +44,13 @@ export default class ColorUtils {
       const minMedianPrice = getMinMedianPrice(data);
       const maxMedianPrice = getMaxMedianPrice(data);
       const totalPriceRangeSize = maxMedianPrice - minMedianPrice;
-      const priceIntervalSize = Math.round(totalPriceRangeSize / shadeCount);
+      let priceIntervalSize = Math.round(totalPriceRangeSize / shadeCount);
+      if (!priceIntervalSize) {
+        priceIntervalSize = 1;
+      }
 
       const suburbsByPriceChunks: { [needle: number]: number } = {};
-      for (let currentPriceAnchor = minMedianPrice; currentPriceAnchor <= maxMedianPrice; currentPriceAnchor += priceIntervalSize) {
+      for (let currentPriceAnchor = minMedianPrice; currentPriceAnchor < maxMedianPrice; currentPriceAnchor += priceIntervalSize) {
         suburbsByPriceChunks[currentPriceAnchor] = 0;
       }
 
@@ -205,6 +208,6 @@ export default class ColorUtils {
   };
 
   static getOpacityByPropertyCount = (propertyCount: number | undefined) => {
-    return MathUtils.linearToLinear(propertyCount || 0, 0, 15, 0.4, 0.9);
+    return MathUtils.linearToLinear(propertyCount || 0, 0, 15, 0.2, 0.8);
   };
 }

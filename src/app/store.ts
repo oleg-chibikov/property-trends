@@ -1,4 +1,5 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit';
+import currentLocationReducer from '../features/currentLocation/currentLocationSlice';
 import reducer from '../features/districtList/districtListSlice';
 import filtersReducer from '../features/filters/filtersSlice';
 import infoReducer from '../features/info/infoSlice';
@@ -14,6 +15,7 @@ export const store = configureStore({
     filters: filtersReducer,
     legend: legendReducer,
     searchBox: searchBoxReducer,
+    currentLocation: currentLocationReducer,
   },
 });
 

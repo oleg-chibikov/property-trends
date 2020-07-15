@@ -24,6 +24,7 @@ html {
   display: 'flex';
   justify-content: 'center';
   align-items: 'center';
+  margin: auto;
 }
 
 .slider {
@@ -36,27 +37,42 @@ html {
 }
 
 .chipCollection {
-  display: inline;
-  margin-left: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
 }
 
-.chipCollection > div:not(:last-child) {
-  margin-right: 0.3rem;
+.chipCollection > div {
+  margin: 0.1rem;
 }
 
 .drawerWrapper {
   margin: 1rem;
   white-space: nowrap;
-}
-
-.iconWrapper {
   display: flex;
+  align-items: stretch;
 }
 
-.iconWrapper.left {
-  justify-content: flex-end;
+.drawerWrapper.horizontal {
+  flex-direction: column;
 }
 
-.iconWrapper.right {
-  justify-content: flex-start;
+.drawerWrapper.horizontal > button {
+  margin-bottom: 1rem;
+}
+
+.drawerWrapper.vertical {
+  flex-direction: row;
+}
+
+.drawerWrapper.vertical > button {
+  flex-direction: row;
+  margin: auto;
+}
+
+.drawerWrapper.left > button {
+  margin-left: auto;
+}
+
+.drawerWrapper.right > button {
+  margin-right: auto;
 }

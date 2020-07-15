@@ -4,8 +4,8 @@ import { trackPromise } from 'react-promise-tracker';
 import { MapFilters } from '../features/filters/filtersSlice';
 import { RealEstateResponse } from '../interfaces';
 
-const fetchPriceData = async (filters: MapFilters) => {
-  if (!filters.postCodes.length) {
+const fetchData = async (filters: MapFilters) => {
+  if (!filters.districts.length) {
     return [];
   }
 
@@ -38,7 +38,7 @@ const fetchPriceData = async (filters: MapFilters) => {
   source = axios.CancelToken.source();
 
   return await axios
-    .post<RealEstateResponse[]>(url, filters.postCodes, { cancelToken: source.token })
+    .post<RealEstateResponse[]>(url, filters.districts, { cancelToken: source.token })
     .then((priceDataResponse) => {
       const data = priceDataResponse.data;
       console.log('Got prices');
@@ -60,8 +60,8 @@ const fetchPriceData = async (filters: MapFilters) => {
 
 export const priceDataSearchPromiseTrackerArea = 'price';
 
-const withPromiseTracking = async (filters: MapFilters) => await trackPromise(fetchPriceData(filters), priceDataSearchPromiseTrackerArea);
+const withPromiseTracking = async (filters: MapFilters) => await trackPromise(fetchData(filters), priceDataSearchPromiseTrackerArea);
 
-const fetchPriceDataDebounced = debounce(withPromiseTracking, 400);
+const debounced = debounce(withPromiseTracking, 400);
 
-export default fetchPriceDataDebounced;
+export default debounced;

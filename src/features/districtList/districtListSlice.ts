@@ -19,7 +19,6 @@ interface DistrictListState {
   expandedState: string | false;
 }
 
-const initialDistrictsByState: { [state: string]: string[] } = {};
 const defaultDistrictsByState: { [state: string]: string[] } = {
   NSW: [
     'Sydney - City',
@@ -37,45 +36,14 @@ const defaultDistrictsByState: { [state: string]: string[] } = {
   NT: ['Darwin'],
   VIC: ['Melbourne'],
 };
-const districtString = process.env.GEO_FILES || '';
-const districts = districtString.split('|');
-for (const district of districts) {
-  const politicalState = district.substr(0, district.indexOf(' - '));
-  const districtsForState = initialDistrictsByState[politicalState] || [];
-  districtsForState.push(district);
-  initialDistrictsByState[politicalState] = districtsForState;
-  stateByDistrict[district] = politicalState;
-}
-
-const selectState = (state: DistrictListState, politicalState: string) => {
-  const defaultDistrictsForState = defaultDistrictsByState[politicalState];
-  state.checkedStates[politicalState] = 0;
-  state.expandedState = politicalState;
-  for (const district of state.districtsByState[politicalState]) {
-    if (defaultDistrictsForState) {
-      for (const defaultDistrict of defaultDistrictsForState) {
-        if (district.indexOf(defaultDistrict) > -1) {
-          state.checkedDistricts[district] = undefined;
-          state.checkedStates[politicalState]++;
-          break;
-        }
-      }
-    } else {
-      state.checkedDistricts[district] = undefined;
-      state.checkedStates[politicalState]++;
-    }
-  }
-};
 
 const initialState: DistrictListState = {
   checkedDistricts: {},
   checkedStates: {},
-  districtsByState: initialDistrictsByState,
+  districtsByState: {},
   expanded: false,
   expandedState: false,
 };
-
-selectState(initialState, 'NSW');
 
 const clear = (state: DistrictListState) => {
   state.checkedDistricts = {};
@@ -86,9 +54,38 @@ export const districtlistSlice = createSlice({
   name: 'DistrictList',
   initialState,
   reducers: {
+    addDistrictFileNames: (state, action: PayloadAction<string>) => {
+      const districts = action.payload;
+      const districtsByState: DistrictsByState = {};
+      for (const district of districts) {
+        const politicalState = district.substr(0, district.indexOf(' - '));
+        const districtsForState = districtsByState[politicalState] || [];
+        districtsForState.push(district);
+        districtsByState[politicalState] = districtsForState;
+        stateByDistrict[district] = politicalState;
+      }
+      state.districtsByState = districtsByState;
+    },
     checkState: (state, action: PayloadAction<string>) => {
       clear(state);
-      selectState(state, action.payload);
+      const politicalState = action.payload;
+      const defaultDistrictsForState = defaultDistrictsByState[politicalState];
+      state.checkedStates[politicalState] = 0;
+      state.expandedState = politicalState;
+      for (const district of state.districtsByState[politicalState]) {
+        if (defaultDistrictsForState) {
+          for (const defaultDistrict of defaultDistrictsForState) {
+            if (district.indexOf(defaultDistrict) > -1) {
+              state.checkedDistricts[district] = undefined;
+              state.checkedStates[politicalState]++;
+              break;
+            }
+          }
+        } else {
+          state.checkedDistricts[district] = undefined;
+          state.checkedStates[politicalState]++;
+        }
+      }
     },
     uncheckState: (state, action: PayloadAction<string>) => {
       const politicalState = action.payload;
@@ -138,7 +135,7 @@ export const districtlistSlice = createSlice({
   },
 });
 
-export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState, toggleExpanded, setExpanded, setExpandedState } = districtlistSlice.actions;
+export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState, toggleExpanded, setExpanded, setExpandedState, addDistrictFileNames } = districtlistSlice.actions;
 
 export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
 export const selectDistrictsByState = (state: RootState) => state.districtList.districtsByState;

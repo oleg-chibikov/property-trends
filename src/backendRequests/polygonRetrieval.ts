@@ -1,10 +1,12 @@
+import axios from 'axios';
+import { trackPromise } from 'react-promise-tracker';
 import * as topojson from 'topojson-client';
 import { WithFeatures } from '../interfaces';
-import { trackPromise } from 'react-promise-tracker';
-import axios from 'axios';
 
-const fetchPolygonData = async (fileName: string) => {
-  const response = (await axios.get<TopoJSON.Topology<TopoJSON.Objects<GeoJSON.GeoJsonProperties>> | GeoJSON.GeoJsonObject>(process.env.PUBLIC_URL + '/geo/' + fileName)).data;
+const fetchData = async (fileName: string) => {
+  const response = (
+    await axios.get<TopoJSON.Topology<TopoJSON.Objects<GeoJSON.GeoJsonProperties>> | GeoJSON.GeoJsonObject>('https://raw.githubusercontent.com/oleg-chibikov/australian_suburbs/master/Distributed/TopoJSON.Simplified/' + fileName)
+  ).data;
   console.log('Got polygons for ' + fileName);
   const data: WithFeatures[] = [];
   if (response.type === 'Topology') {
@@ -20,6 +22,6 @@ const fetchPolygonData = async (fileName: string) => {
 
 export const polygonRetrievalPromiseTrackerArea = 'polygon';
 
-const withPromiseTracking = async (fileName: string) => await trackPromise(fetchPolygonData(fileName), polygonRetrievalPromiseTrackerArea);
+const withPromiseTracking = async (fileName: string) => await trackPromise(fetchData(fileName), polygonRetrievalPromiseTrackerArea);
 
 export default withPromiseTracking;
