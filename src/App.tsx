@@ -47,4 +47,6 @@ export default App;
 // Property add form
 // SEO - at least should be somehow found in google
 // place site and retriever on the same hosting
-// Current location - show on map as point
+// Error alerts
+// Load suburbs one by one? signalR?
+// Store last filter in cookies

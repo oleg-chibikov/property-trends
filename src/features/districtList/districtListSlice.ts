@@ -17,6 +17,8 @@ interface DistrictListState {
   districtsByState: DistrictsByState;
   expanded: boolean;
   expandedState: string | false;
+  retrySwitch: boolean;
+  elementToScrollTo?: string;
 }
 
 const defaultDistrictsByState: { [state: string]: string[] } = {
@@ -43,6 +45,8 @@ const initialState: DistrictListState = {
   districtsByState: {},
   expanded: false,
   expandedState: false,
+  retrySwitch: false,
+  elementToScrollTo: undefined,
 };
 
 const clear = (state: DistrictListState) => {
@@ -54,7 +58,7 @@ export const districtlistSlice = createSlice({
   name: 'DistrictList',
   initialState,
   reducers: {
-    addDistrictFileNames: (state, action: PayloadAction<string>) => {
+    addDistrictFileNames: (state, action: PayloadAction<string[]>) => {
       const districts = action.payload;
       const districtsByState: DistrictsByState = {};
       for (const district of districts) {
@@ -132,15 +136,23 @@ export const districtlistSlice = createSlice({
     setExpandedState: (state, action: PayloadAction<string | false>) => {
       state.expandedState = action.payload;
     },
+    toggleRetry: (state) => {
+      state.retrySwitch = !state.retrySwitch;
+    },
+    setElementToScrollTo: (state, action: PayloadAction<string | undefined>) => {
+      state.elementToScrollTo = action.payload;
+    },
   },
 });
 
-export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState, toggleExpanded, setExpanded, setExpandedState, addDistrictFileNames } = districtlistSlice.actions;
+export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState, toggleExpanded, setExpanded, setExpandedState, addDistrictFileNames, toggleRetry, setElementToScrollTo } = districtlistSlice.actions;
 
 export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
 export const selectDistrictsByState = (state: RootState) => state.districtList.districtsByState;
 export const selectCheckedStates = (state: RootState) => state.districtList.checkedStates;
 export const selectExpanded = (state: RootState) => state.districtList.expanded;
 export const selectExpandedState = (state: RootState) => state.districtList.expandedState;
+export const selectRetrySwitch = (state: RootState) => state.districtList.retrySwitch;
+export const selectElementToScrollTo = (state: RootState) => state.districtList.elementToScrollTo;
 
 export default districtlistSlice.reducer;

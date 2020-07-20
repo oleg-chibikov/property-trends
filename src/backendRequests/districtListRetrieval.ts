@@ -1,5 +1,4 @@
 import axios from 'axios';
-import debounce from 'debounce-async';
 import { trackPromise } from 'react-promise-tracker';
 
 const fetchData = async () => {
@@ -18,7 +17,6 @@ const fetchData = async () => {
       console.log('Got district list');
       if (!data.length) {
         console.log('No data');
-        return [];
       }
       return data;
     })
@@ -28,7 +26,7 @@ const fetchData = async () => {
       } else {
         console.error('Cannot get district list: ' + err);
       }
-      return [];
+      return null;
     });
 };
 
@@ -36,6 +34,4 @@ export const districtListRetrievalPromiseTrackerArea = 'districtList';
 
 const withPromiseTracking = async () => await trackPromise(fetchData(), districtListRetrievalPromiseTrackerArea);
 
-const debounced = debounce(withPromiseTracking, 400);
-
-export default debounced;
+export default withPromiseTracking;

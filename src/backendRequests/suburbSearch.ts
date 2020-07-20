@@ -5,7 +5,8 @@ import { PostCodeFileInfo } from '../interfaces';
 
 const fetchDistrictInfo = async (searchPattern: string) => {
   if (!searchPattern && !searchPattern.length) {
-    return [];
+    console.log('Search pattern is empty');
+    return null;
   }
   const url = process.env.REACT_APP_PRICES_API_URL + `Districts/${searchPattern}`;
   console.log(`Searching for suburbs: ${url}...`);
@@ -22,7 +23,6 @@ const fetchDistrictInfo = async (searchPattern: string) => {
       console.log('Got suburb search results');
       if (!data.length) {
         console.log('No data');
-        return [];
       }
       return data;
     })
@@ -32,7 +32,7 @@ const fetchDistrictInfo = async (searchPattern: string) => {
       } else {
         console.error('Cannot get suburb search results: ' + err);
       }
-      return [];
+      return null;
     });
 };
 

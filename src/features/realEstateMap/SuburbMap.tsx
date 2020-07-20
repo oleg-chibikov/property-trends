@@ -6,6 +6,7 @@ import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'reac
 import { renderToString } from 'react-dom/server';
 import { GeoJSON } from 'react-leaflet';
 import Control from 'react-leaflet-control';
+import { trackPromise } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
 import fetchPriceData from '../../backendRequests/priceDataSearch';
@@ -44,6 +45,7 @@ const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
 const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
 let searchBoxSelectedSuburbId: string | undefined;
 let searchBoxHighlightedSuburbId: string | undefined;
+export const processDistrictsPromiseTrackerArea = 'processDistricts';
 
 const colors = ColorUtils.generateColors(15);
 
@@ -96,7 +98,9 @@ const applyStyleToLayer = (layer: CustomLayer) => {
 };
 
 const applyPriceData = (data: RealEstateResponse[]) => {
+  console.log('Applying price data...');
   if (!data.length) {
+    console.log('No data available');
     return;
   }
 
@@ -141,7 +145,9 @@ const applyPriceData = (data: RealEstateResponse[]) => {
   }
 };
 
-const fetchAndApplyPriceData = async (filters: MapFilters) => {
+const fetchAndApplyPriceData = (filters: MapFilters) => {
+  let ignore = false;
+
   const cleanup = () => {
     const resetAllLayers = () => {
       const resetPriceData = (properties: FeatureProperties) => {
@@ -165,8 +171,31 @@ const fetchAndApplyPriceData = async (filters: MapFilters) => {
 
   cleanup();
 
-  const data = await fetchPriceData(filters);
-  applyPriceData(data);
+  const fetchData = async () => {
+    try {
+      return await fetchPriceData(filters);
+    } catch {
+      //debounce error;
+      return null;
+    }
+  };
+
+  const applyData = async () => {
+    const data = await fetchData();
+    if (!ignore) {
+      if (data) {
+        applyPriceData(data);
+      }
+    } else {
+      console.log('Ignored applying previous price data as it is not the most recent');
+    }
+  };
+
+  applyData();
+
+  return () => {
+    ignore = true;
+  };
 };
 
 const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeatureProperties>, layer: CustomLayer) => {
@@ -221,81 +250,88 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
     }
   };
 
+  // search for prices in parallel with fetching districts
   getPricesForCheckedDistricts();
 
-  const addCheckedLayers = async (checkedDistrictFileNames: { [fileName: string]: undefined }) => {
-    const addInfoToFeatures = (data: WithFeatures, fileName: string) => {
-      for (const feature of data.features) {
-        const properties = feature.properties;
-        properties.fileName = fileName;
-        const { state, district } = DomainUtils.getStateAndDistrictFromFileName(fileName);
-        properties.district = district;
-        properties.state = state;
-        const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
-        const postCode = parseInt(properties.description);
-        properties.postCode = postCode;
-        const suburbId = DomainUtils.getSuburbId(name, postCode);
-        properties.name = name;
-        properties.suburbId = suburbId;
+  const processDistricts = async () => {
+    const addCheckedLayers = async (checkedDistrictFileNames: { [fileName: string]: undefined }) => {
+      const addInfoToFeatures = (data: WithFeatures, fileName: string) => {
+        for (const feature of data.features) {
+          const properties = feature.properties;
+          properties.fileName = fileName;
+          const { state, district } = DomainUtils.getStateAndDistrictFromFileName(fileName);
+          properties.district = district;
+          properties.state = state;
+          const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
+          const postCode = parseInt(properties.description);
+          properties.postCode = postCode;
+          const suburbId = DomainUtils.getSuburbId(name, postCode);
+          properties.name = name;
+          properties.suburbId = suburbId;
 
-        // Setting prices for new features when prices are already fetched and new layer is added
-        setFeaturePriceProperties(properties);
+          // Setting prices for new features when prices are already fetched and new layer is added
+          setFeaturePriceProperties(properties);
+        }
+      };
+
+      const applyPolygonData = (data: GeoJSON.GeoJsonObject | GeoJSON.GeoJsonObject[]) => {
+        // this object contains all the layers, not just recently added
+        const compoundLayer = geoJsonElement.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
+        bounds = compoundLayer.getBounds();
+      };
+
+      for (const districtFileName in checkedDistrictFileNames) {
+        if (districtFileName in currentlyCheckedDistricts) {
+          continue;
+        }
+
+        const data = await fetchPolygonData(districtFileName);
+
+        for (const withFeatures of data) {
+          addInfoToFeatures(withFeatures, districtFileName);
+        }
+
+        applyPolygonData(data);
+        currentlyCheckedDistricts[districtFileName] = undefined;
+        console.log('Added ' + districtFileName);
       }
     };
 
-    const applyPolygonData = (data: GeoJSON.GeoJsonObject | GeoJSON.GeoJsonObject[]) => {
-      // this object contains all the layers, not just recently added
-      const compoundLayer = geoJsonElement.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
-      bounds = compoundLayer.getBounds();
+    const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: undefined }) => {
+      for (const fileName in layersByFileName) {
+        if (!(fileName in checkedDistricts)) {
+          const innerLayers = layersByFileName[fileName];
+          for (const layer of innerLayers) {
+            const compoundLayer = geoJsonElement.leafletElement.removeLayer(layer);
+            bounds = compoundLayer.getBounds();
+            const properties = layer.feature.properties;
+            dispatch(removeSuburb(properties.suburbId));
+            // console.log('Deleted feature ' + properties.name);
+          }
+
+          for (const layer of innerLayers) {
+            delete layersBySuburbId[layer.feature.properties.suburbId];
+          }
+          delete layersByFileName[fileName];
+          delete currentlyCheckedDistricts[fileName];
+          console.log('Deleted ' + fileName);
+        }
+      }
     };
 
-    for (const districtFileName in checkedDistrictFileNames) {
-      if (districtFileName in currentlyCheckedDistricts) {
-        continue;
-      }
-
-      const data = await fetchPolygonData(districtFileName);
-
-      for (const withFeatures of data) {
-        addInfoToFeatures(withFeatures, districtFileName);
-      }
-
-      applyPolygonData(data);
-      currentlyCheckedDistricts[districtFileName] = undefined;
-      console.log('Added ' + districtFileName);
+    removeUncheckedLayers(checkedDistrictFileNames);
+    await addCheckedLayers(checkedDistrictFileNames);
+    // Searchbox requires new file to be loaded - select here and show selected suburb
+    if (!eventHandler.onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId)) {
+      eventHandler.showBounds(bounds);
     }
+
+    MapUtils.redrawMap(mapElement);
   };
 
-  const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: undefined }) => {
-    for (const fileName in layersByFileName) {
-      if (!(fileName in checkedDistricts)) {
-        const innerLayers = layersByFileName[fileName];
-        for (const layer of innerLayers) {
-          const compoundLayer = geoJsonElement.leafletElement.removeLayer(layer);
-          bounds = compoundLayer.getBounds();
-          const properties = layer.feature.properties;
-          dispatch(removeSuburb(properties.suburbId));
-          // console.log('Deleted feature ' + properties.name);
-        }
+  const processDistrictsWithPromiseTracking = async () => await trackPromise(processDistricts(), processDistrictsPromiseTrackerArea);
 
-        for (const layer of innerLayers) {
-          delete layersBySuburbId[layer.feature.properties.suburbId];
-        }
-        delete layersByFileName[fileName];
-        delete currentlyCheckedDistricts[fileName];
-        console.log('Deleted ' + fileName);
-      }
-    }
-  };
-
-  removeUncheckedLayers(checkedDistrictFileNames);
-  await addCheckedLayers(checkedDistrictFileNames);
-  // Searchbox requires new file to be loaded - select here and show selected suburb
-  if (!eventHandler.onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId)) {
-    eventHandler.showBounds(bounds);
-  }
-
-  MapUtils.redrawMap(mapElement);
+  await processDistrictsWithPromiseTracking();
 };
 
 const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
@@ -314,7 +350,7 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
     processCheckedDistricts(checkedDistrictFileNames);
   }, [checkedDistrictFileNames]);
   useEffect(() => {
-    fetchAndApplyPriceData(filters);
+    return fetchAndApplyPriceData(filters);
   }, [filters]);
   const geojsonRef = useCallback((node) => {
     if (node !== null) {

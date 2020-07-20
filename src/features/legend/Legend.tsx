@@ -33,7 +33,6 @@ const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemClick
   if (!keys.length) {
     return <div className={styles.legendContainer}>No price data</div>;
   }
-  console.log('Legend');
   return (
     <Accordion expanded={expanded} square onChange={toggle} TransitionProps={{ unmountOnExit: true }}>
       <AccordionSummary expandIcon={<ExpandLessIcon />}>Legend</AccordionSummary>

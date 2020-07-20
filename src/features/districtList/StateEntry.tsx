@@ -1,10 +1,10 @@
 import { Accordion, AccordionDetails, AccordionSummary, FormGroup } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from './DistrictList.module.css';
-import { selectCheckedDistricts, selectDistrictsByState, selectExpandedState, setExpandedState } from './districtListSlice';
+import { selectCheckedDistricts, selectDistrictsByState, selectExpandedState, setElementToScrollTo, setExpandedState } from './districtListSlice';
 import DistrictSelector from './DistrictSelector';
 import StateEntryHeader from './StateEntryHeader';
 
@@ -12,48 +12,40 @@ interface StateEntryProps {
   state: string;
 }
 
-const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state }) => {
-  const [shouldScroll, setShouldScroll] = useState<boolean>(true);
+const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state: politicalState }) => {
   const dispatch = useDispatch();
-  const expandedState = useSelector(selectExpandedState);
+  const expandedPoliticalState = useSelector(selectExpandedState);
+  const isExpanded = expandedPoliticalState === politicalState;
   const checkedDistricts = useSelector(selectCheckedDistricts);
   const districtsByState = useSelector(selectDistrictsByState);
-  const districtsForState = districtsByState[state].map((district, index) => {
-    const id = `district_${state}_${index}`;
+  const districtsForState = districtsByState[politicalState].map((district, index) => {
+    const suburbElementId = `district_${politicalState}_${index}`;
     const isChecked = district in checkedDistricts;
     return {
       district: district,
       checked: isChecked,
-      id: id,
+      id: suburbElementId,
     };
   });
   //  .sort((x, y) => (x.checked === y.checked ? 0 : x.checked ? -1 : 1));
 
-  useEffect(() => {
-    if (shouldScroll) {
-      const districtToScrollTo = districtsForState.find((x) => x.checked);
-      if (districtToScrollTo) {
-        const scrollIntoView = () => {
-          const el = document.querySelector('#' + districtToScrollTo.id);
-          if (el) {
-            el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'auto' });
-          }
-        };
-        scrollIntoView();
-        setShouldScroll(false);
-      }
-    }
-  }, [districtsForState, setShouldScroll, shouldScroll]);
+  const firstChecked = districtsForState.find((x) => x.checked)?.id;
 
   const handleStateChange = (panel: string) => (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
-    setShouldScroll(true);
     dispatch(setExpandedState(isExpanded ? panel : false));
+    dispatch(setElementToScrollTo(isExpanded ? firstChecked : undefined));
   };
 
+  useEffect(() => {
+    if (firstChecked) {
+      dispatch(setElementToScrollTo(firstChecked));
+    }
+  }, [dispatch, firstChecked]);
+
   return (
-    <Accordion square key={state} expanded={expandedState === state} onChange={handleStateChange(state)} TransitionProps={{ unmountOnExit: true }} className={'innerAccordion ' + styles.districtList}>
+    <Accordion square key={politicalState} expanded={isExpanded} onChange={handleStateChange(politicalState)} TransitionProps={{ unmountOnExit: true }} className={'innerAccordion ' + styles.districtList}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <StateEntryHeader state={state} />
+        <StateEntryHeader state={politicalState} />
       </AccordionSummary>
       <AccordionDetails className="innerAccordionDetails">
         <FormGroup>

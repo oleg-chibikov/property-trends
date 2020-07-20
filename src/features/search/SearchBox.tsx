@@ -3,7 +3,7 @@ import LocationOnIcon from '@material-ui/icons/LocationOn';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchDistrictInfoDebounced, { suburbSearchPromiseTrackerArea } from '../../backendRequests/suburbSearch';
@@ -15,6 +15,35 @@ import styles from './SearchBox.module.css';
 import { highlightSuburb, selectExpanded, setExpanded, setSearchResult, unhighlightSuburb } from './searchBoxSlice';
 
 let inputRef: HTMLInputElement | undefined;
+
+const fetchAndSetData = (searchPattern: string | undefined, setData: (data: PostCodeFileInfo[]) => void) => {
+  let ignore = false;
+  const fetchData = async () => {
+    try {
+      return await fetchDistrictInfoDebounced(searchPattern);
+    } catch {
+      // debounce error
+      return null;
+    }
+  };
+
+  const applyData = async () => {
+    const data = await fetchData();
+    if (!ignore) {
+      if (data) {
+        setData(data);
+      }
+    } else {
+      console.log('Ignored applying previous search data as it is not the most recent');
+    }
+  };
+
+  applyData();
+
+  return () => {
+    ignore = true;
+  };
+};
 
 const SearchBox: React.FunctionComponent = () => {
   const dispatch = useDispatch();
@@ -28,17 +57,9 @@ const SearchBox: React.FunctionComponent = () => {
     inputRef.focus();
   }
 
-  const setDataAsync = useCallback(async () => {
-    try {
-      setData(await fetchDistrictInfoDebounced(searchPattern));
-    } catch {
-      // debounce error
-    }
-  }, [searchPattern]);
-
   useEffect(() => {
-    setDataAsync();
-  }, [setDataAsync]);
+    return fetchAndSetData(searchPattern, setData);
+  }, [searchPattern, setData]);
 
   return useMemo(
     () => (

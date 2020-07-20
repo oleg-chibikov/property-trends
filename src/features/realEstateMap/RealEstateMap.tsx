@@ -1,12 +1,13 @@
 import { debounce, useTheme } from '@material-ui/core';
 import { Layer, LeafletEvent, Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'react';
 import { Map, ScaleControl, TileLayer, ZoomControl } from 'react-leaflet';
 import { BoxZoomControl } from 'react-leaflet-box-zoom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import MapUtils from '../../utils/mapUtils';
 import CurrentLocationMarker from '../currentLocation/CurrentLocationMarker';
+import { setIsPaused } from '../currentLocation/currentLocationSlice';
 import { selectExpanded as selectDistrictListExpanded } from '../districtList/districtListSlice';
 import { selectExpanded as selectFiltersExpanded } from '../filters/filtersSlice';
 import MapConstants from './mapConstants';
@@ -14,8 +15,14 @@ import './RealEstateMap.module.css';
 import SuburbMap from './SuburbMap';
 
 let lastZoom: number;
+let dispatch: Dispatch<any>;
+
+const onMapZoomStart = (event: LeafletEvent) => {
+  dispatch(setIsPaused(true));
+};
 
 const onMapZoomEnd = (event: LeafletEvent) => {
+  dispatch(setIsPaused(false));
   const map = event.target as LeafletMap;
   const zoom = map.getZoom();
   if (zoom < MapConstants.tooltipZoom && (!lastZoom || lastZoom >= MapConstants.tooltipZoom)) {
@@ -47,6 +54,7 @@ const RealEstateMap: React.FunctionComponent = () => {
   const filtersExpanded = useSelector(selectFiltersExpanded);
   const districtListExpanded = useSelector(selectDistrictListExpanded);
   const theme = useTheme();
+  dispatch = useDispatch();
 
   const [currentLocation, setCurrentLocation] = useState<[number, number]>();
   useEffect(() => {
@@ -93,7 +101,19 @@ const RealEstateMap: React.FunctionComponent = () => {
       return null;
     }
     return (
-      <Map animate={true} onzoomend={onMapZoomEnd} ref={mapRef} zoomControl={false} attributionControl={false} inertia={true} preferCanvas={false} scrollWheelZoom={true} zoom={15} center={currentLocation}>
+      <Map
+        animate={true}
+        onzoomstart={onMapZoomStart}
+        onzoomend={onMapZoomEnd}
+        ref={mapRef}
+        zoomControl={false}
+        attributionControl={false}
+        inertia={true}
+        preferCanvas={false}
+        scrollWheelZoom={true}
+        zoom={15}
+        center={currentLocation}
+      >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
         <CurrentLocationMarker />
         {map?.leafletElement && <SuburbMap leafletMap={map.leafletElement} />}

@@ -6,7 +6,8 @@ import { RealEstateResponse } from '../interfaces';
 
 const fetchData = async (filters: MapFilters) => {
   if (!filters.districts.length) {
-    return [];
+    console.log('Filters are empty');
+    return null;
   }
 
   const getMinValue = (value: number | number[]) => {
@@ -17,7 +18,7 @@ const fetchData = async (filters: MapFilters) => {
     return Array.isArray(value) ? value[1] : value;
   };
 
-  const constructionStatus = filters.constructionStatus === 'any' ? '' : filters.constructionStatus;
+  const constructionStatus = filters.constructionStatus;
   const bedroomsMin = getMinValue(filters.bedrooms);
   const bedroomsMax = getMaxValue(filters.bedrooms);
   const bathroomsMin = getMinValue(filters.bathrooms);
@@ -27,7 +28,7 @@ const fetchData = async (filters: MapFilters) => {
   const isRent = filters.dealType === 'rent';
   const url =
     process.env.REACT_APP_PRICES_API_URL +
-    `RealEstate?isRent=${isRent}&propertyTypes=${filters.propertyType}&constructionStatus=${constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${
+    `RealEstate?isRent=${isRent}&propertyType=${filters.propertyType}&constructionStatus=${constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${
       filters.mainPriceOnly || false
     }&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
   console.log(`Fetching ${url}...`);
@@ -44,7 +45,6 @@ const fetchData = async (filters: MapFilters) => {
       console.log('Got prices');
       if (!data.length) {
         console.log('No data');
-        return [];
       }
       return data;
     })
@@ -54,7 +54,7 @@ const fetchData = async (filters: MapFilters) => {
       } else {
         console.error('Cannot get prices: ' + err);
       }
-      return [];
+      return null;
     });
 };
 
