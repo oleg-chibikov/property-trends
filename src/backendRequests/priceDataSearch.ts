@@ -1,36 +1,17 @@
 import axios from 'axios';
 import debounce from 'debounce-async';
 import { trackPromise } from 'react-promise-tracker';
-import { MapFilters } from '../features/filters/filtersSlice';
-import { RealEstateResponse } from '../interfaces';
+import { MapFilters, RealEstateResponse } from '../interfaces';
+import DomainUtils from '../utils/domainUtils';
 
-const fetchData = async (filters: MapFilters) => {
-  if (!filters.districts.length) {
-    console.log('Filters are empty');
+const fetchData = async (filters: MapFilters, districts: string[]) => {
+  if (!districts.length) {
+    console.log('District filters are empty');
     return null;
   }
 
-  const getMinValue = (value: number | number[]) => {
-    return Array.isArray(value) ? value[0] : value;
-  };
-
-  const getMaxValue = (value: number | number[]) => {
-    return Array.isArray(value) ? value[1] : value;
-  };
-
-  const constructionStatus = filters.constructionStatus;
-  const bedroomsMin = getMinValue(filters.bedrooms);
-  const bedroomsMax = getMaxValue(filters.bedrooms);
-  const bathroomsMin = getMinValue(filters.bathrooms);
-  const bathroomsMax = getMaxValue(filters.bathrooms);
-  const parkingSpacesMin = getMinValue(filters.parkingSpaces);
-  const parkingSpacesMax = getMaxValue(filters.parkingSpaces);
-  const isRent = filters.dealType === 'rent';
-  const url =
-    process.env.REACT_APP_PRICES_API_URL +
-    `RealEstate?isRent=${isRent}&propertyType=${filters.propertyType}&constructionStatus=${constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${
-      filters.mainPriceOnly || false
-    }&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
+  const filtersUrl = DomainUtils.getFiltersUrl(filters);
+  const url = process.env.REACT_APP_PRICES_API_URL + `RealEstate?${filtersUrl}`;
   console.log(`Fetching ${url}...`);
 
   const CancelToken = axios.CancelToken;
@@ -39,7 +20,7 @@ const fetchData = async (filters: MapFilters) => {
   source = axios.CancelToken.source();
 
   return await axios
-    .post<RealEstateResponse[]>(url, filters.districts, { cancelToken: source.token })
+    .post<RealEstateResponse[]>(url, districts, { cancelToken: source.token })
     .then((priceDataResponse) => {
       const data = priceDataResponse.data;
       console.log('Got prices');
@@ -60,7 +41,7 @@ const fetchData = async (filters: MapFilters) => {
 
 export const priceDataSearchPromiseTrackerArea = 'price';
 
-const withPromiseTracking = async (filters: MapFilters) => await trackPromise(fetchData(filters), priceDataSearchPromiseTrackerArea);
+const withPromiseTracking = async (filters: MapFilters, districts: string[]) => await trackPromise(fetchData(filters, districts), priceDataSearchPromiseTrackerArea);
 
 const debounced = debounce(withPromiseTracking, 400);
 

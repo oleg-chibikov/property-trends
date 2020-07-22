@@ -1,4 +1,4 @@
-import { Map, Polygon } from 'leaflet';
+import { LeafletMouseEvent, Map, Polygon } from 'leaflet';
 
 export interface PriceIntrevalInfo {
   intervalMinPrice: number;
@@ -19,6 +19,16 @@ export interface RealEstateResponse {
   suburbId: string;
 }
 
+export interface RealEstateEntry {
+  minPrice: number;
+  maxPrice?: number;
+  propertyName?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  id: number;
+}
+
 export interface CustomLayer extends Polygon<FeatureProperties> {
   feature: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon, FeatureProperties>;
 }
@@ -27,7 +37,7 @@ export interface CompoundLayer extends Polygon {
   getLayers: () => CustomLayer[];
 }
 
-export interface EventArgs<T> {
+export interface EventArgs<T> extends LeafletMouseEvent {
   target: T;
 }
 
@@ -85,4 +95,15 @@ export interface PostCodeFileInfo {
 
 export interface WithMap {
   leafletMap: Map;
+}
+
+export interface MapFilters {
+  dealType: string;
+  propertyType: string;
+  bedrooms: number | number[];
+  bathrooms: number | number[];
+  parkingSpaces: number | number[];
+  constructionStatus: string;
+  allowedWindowInDays: number;
+  mainPriceOnly: boolean;
 }

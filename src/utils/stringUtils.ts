@@ -7,5 +7,5 @@ export default class StringUtils {
       .join(' ');
   };
 
-  static removeNonAlphaNumberic = (str: string) => str.replace(/\W/g, '_');
+  static removeNonAlphaNumberic = (str: string) => str.replace(/\W/g, '');
 }

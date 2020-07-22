@@ -1,28 +1,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import { MapFilters } from '../../interfaces';
 
 const defaultRange: number[] = [0, 7];
 
 interface FiltersState {
   filters: MapFilters;
+  districts: string[];
   expanded: boolean;
 }
 
-export interface MapFilters {
-  dealType: string;
-  propertyType: string;
-  bedrooms: number | number[];
-  bathrooms: number | number[];
-  parkingSpaces: number | number[];
-  constructionStatus: string;
-  allowedWindowInDays: number;
-  mainPriceOnly: boolean;
-  districts: string[];
-}
-
 const initialState: FiltersState = {
-  filters: { propertyType: 'apartment', dealType: 'buy', bedrooms: [2, 2], bathrooms: defaultRange, parkingSpaces: defaultRange, constructionStatus: 'any', allowedWindowInDays: 7, mainPriceOnly: true, districts: [] },
+  filters: { propertyType: 'apartment', dealType: 'buy', bedrooms: [2, 2], bathrooms: defaultRange, parkingSpaces: defaultRange, constructionStatus: 'any', allowedWindowInDays: 7, mainPriceOnly: true },
   expanded: false,
+  districts: [],
 };
 
 export const FiltersSlice = createSlice({
@@ -70,7 +61,7 @@ export const FiltersSlice = createSlice({
       }
     },
     changeDistricts: (state, action: PayloadAction<string[]>) => {
-      state.filters.districts = action.payload;
+      state.districts = action.payload;
     },
     toggleExpanded: (state) => {
       state.expanded = !state.expanded;
@@ -96,6 +87,7 @@ export const {
 } = FiltersSlice.actions;
 
 export const selectFilters = (state: RootState) => state.filters.filters;
+export const selectDistricts = (state: RootState) => state.filters.districts;
 export const selectPropertyType = (state: RootState) => state.filters.filters.propertyType;
 export const selectDealType = (state: RootState) => state.filters.filters.dealType;
 export const selectBedrooms = (state: RootState) => state.filters.filters.bedrooms;

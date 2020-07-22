@@ -1,13 +1,16 @@
-import { LatLngBounds, Map } from 'leaflet';
+import { LatLngBounds, LatLngLiteral, Map } from 'leaflet';
 import { Dispatch } from 'react';
-import { CustomLayer, EventArgs } from '../../interfaces';
+import fetchSuburbData from '../../backendRequests/suburbDataRetrieval';
+import { CustomLayer, EventArgs, MapFilters } from '../../interfaces';
 import DomainUtils from '../../utils/domainUtils';
+import { setPosition, setProperties, setSuburbKey } from '../popup/popupSlice';
 import { removeSearchResult } from '../search/searchBoxSlice';
 import { scrollToSuburb } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
 
 class SuburbMapEventHandler {
   private dispatch: Dispatch<any>;
+  private currentFilters?: MapFilters;
   private mapElement: Map;
   private highlighter: Highlighter;
   private layersBySuburbId: { [suburbId: string]: CustomLayer };
@@ -20,6 +23,8 @@ class SuburbMapEventHandler {
     this.highlighter = highlighter;
     this.layersBySuburbId = layersBySuburbId;
   }
+
+  setFilters = (filters: MapFilters) => (this.currentFilters = filters);
 
   showBounds = (bounds: LatLngBounds | undefined) => {
     if (bounds && bounds.isValid()) {
@@ -118,11 +123,30 @@ class SuburbMapEventHandler {
     this.highlighter.unhighlightLayer(layer);
   };
 
+  fetchAndBindPopup = async (latLng: LatLngLiteral, layer: CustomLayer) => {
+    if (!this.currentFilters) {
+      console.log('Filters are not set');
+      return;
+    }
+    const positionCopy = { lat: latLng.lat, lng: latLng.lng };
+    this.dispatch(setPosition(positionCopy));
+    this.dispatch(setProperties(undefined));
+    const properties = layer.feature.properties;
+    const locality = properties.name;
+    const postCode = properties.postCode;
+    this.dispatch(setSuburbKey({ locality, postCode }));
+    console.log('Downloading data for ' + locality + '...');
+    const data = await fetchSuburbData(this.currentFilters, postCode, locality);
+    console.log('Data is downloaded for ' + locality);
+    this.dispatch(setProperties(data?.sort((a, b) => (a.minPrice > b.minPrice ? 1 : a.minPrice === b.minPrice ? ((a.maxPrice || 0) > (b.maxPrice || 0) ? 1 : -1) : -1)) || []));
+  };
+
   onLayerClick = (e: EventArgs<CustomLayer>) => {
     const layer = e.target;
     const properties = layer.feature.properties;
     this.highlighter.highlightLayer(layer);
     this.scrollToSuburbInList(properties.suburbId);
+    this.fetchAndBindPopup(e.latlng, layer);
   };
 
   onLayerDoubleClick = (e: EventArgs<CustomLayer>) => {

@@ -10,6 +10,7 @@ import CurrentLocationMarker from '../currentLocation/CurrentLocationMarker';
 import { setIsPaused } from '../currentLocation/currentLocationSlice';
 import { selectExpanded as selectDistrictListExpanded } from '../districtList/districtListSlice';
 import { selectExpanded as selectFiltersExpanded } from '../filters/filtersSlice';
+import CustomPopup from '../popup/CustomPopup';
 import MapConstants from './mapConstants';
 import './RealEstateMap.module.css';
 import SuburbMap from './SuburbMap';
@@ -120,6 +121,7 @@ const RealEstateMap: React.FunctionComponent = () => {
         <ScaleControl position="topright" />
         <BoxZoomControl position="bottomright" sticky={false} />
         <ZoomControl position="bottomright" />
+        <CustomPopup />
       </Map>
     );
   }, [map, mapRef, currentLocation]);

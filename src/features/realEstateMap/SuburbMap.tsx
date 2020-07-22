@@ -10,7 +10,7 @@ import { trackPromise } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
 import fetchPriceData from '../../backendRequests/priceDataSearch';
-import { CompoundLayer, CustomLayer, FeatureProperties, RealEstateResponse, SuburbInfo, WithFeatures, WithMap } from '../../interfaces';
+import { CompoundLayer, CustomLayer, FeatureProperties, MapFilters, RealEstateResponse, SuburbInfo, WithFeatures, WithMap } from '../../interfaces';
 import ColorUtils from '../../utils/colorUtils';
 import DomainUtils from '../../utils/domainUtils';
 import MapUtils from '../../utils/mapUtils';
@@ -18,7 +18,7 @@ import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import CurrentLocation from '../currentLocation/CurrentLocation';
 import { selectCheckedDistricts } from '../districtList/districtListSlice';
-import { changeDistricts, MapFilters, selectFilters } from '../filters/filtersSlice';
+import { changeDistricts, selectDistricts, selectFilters } from '../filters/filtersSlice';
 import Info from '../info/Info';
 import Legend from '../legend/Legend';
 import { changePricesToColors } from '../legend/legendSlice';
@@ -145,7 +145,7 @@ const applyPriceData = (data: RealEstateResponse[]) => {
   }
 };
 
-const fetchAndApplyPriceData = (filters: MapFilters) => {
+const fetchAndApplyPriceData = (filters: MapFilters, districts: string[]) => {
   let ignore = false;
 
   const cleanup = () => {
@@ -173,7 +173,7 @@ const fetchAndApplyPriceData = (filters: MapFilters) => {
 
   const fetchData = async () => {
     try {
-      return await fetchPriceData(filters);
+      return await fetchPriceData(filters, districts);
     } catch {
       //debounce error;
       return null;
@@ -340,6 +340,8 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   dispatch = useDispatch();
   const checkedDistrictFileNames = useSelector(selectCheckedDistricts);
   const filters = useSelector(selectFilters);
+  const districts = useSelector(selectDistricts);
+  handler?.setFilters(filters); //TODO: split filters and postcodes
   // This is used to display proper icon in tooltips
   isApartment = filters.propertyType === 'apartment';
   searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);
@@ -350,8 +352,8 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
     processCheckedDistricts(checkedDistrictFileNames);
   }, [checkedDistrictFileNames]);
   useEffect(() => {
-    return fetchAndApplyPriceData(filters);
-  }, [filters]);
+    return fetchAndApplyPriceData(filters, districts);
+  }, [filters, districts]);
   const geojsonRef = useCallback((node) => {
     if (node !== null) {
       // use state to load (and display in GEOJson tag) all polygons that are already here

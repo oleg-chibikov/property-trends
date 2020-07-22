@@ -76,3 +76,13 @@ html {
 .drawerWrapper.right > button {
   margin-right: auto;
 }
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background-color: rgb(39, 39, 39);
+  color: #b3b3b3;
+}
+
+a:visited {
+  color: red;
+}

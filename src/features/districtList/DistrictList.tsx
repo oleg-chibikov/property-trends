@@ -33,10 +33,10 @@ const DistrictList: React.FunctionComponent = () => {
   });
 
   if (districtListRetrievalPromiseTracker.promiseInProgress) {
-    return <Spinner size={25} tooltip="Loading districts..." />;
+    return <Spinner tooltip="Loading districts..." />;
   }
   if (districtProcessingPromiseTracker.promiseInProgress) {
-    return <Spinner size={25} tooltip="Rendering district data..." />;
+    return <Spinner tooltip="Rendering district data..." />;
   }
 
   const keys = districtsByState ? Object.keys(districtsByState) : null;

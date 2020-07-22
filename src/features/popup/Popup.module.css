@@ -1,0 +1,8 @@
+.header {
+  margin: 1rem 0 0 0;
+}
+
+.propertiesList {
+  max-height: 20rem;
+  overflow: auto;
+}
