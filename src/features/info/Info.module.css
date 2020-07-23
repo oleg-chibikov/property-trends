@@ -1,11 +1,10 @@
 .info {
-  padding: 0.5rem;
+  padding: 0.75rem;
   font: 1rem Arial, Helvetica, sans-serif;
-  background: white;
-  background: rgba(255, 255, 255, 0.8);
+  background: #303030;
   box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
   border-radius: 0.3rem;
-  color: #777;
+  color: white;
 }
 
 .header {

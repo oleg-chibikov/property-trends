@@ -24,6 +24,7 @@ const StateEntryHeader: React.FunctionComponent<StateEntryProps> = ({ state }) =
       <FormControlLabel
         control={
           <Checkbox
+            color="primary"
             checked={checked}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               if (event.target.checked) {

@@ -19,6 +19,16 @@ export interface RealEstateResponse {
   suburbId: string;
 }
 
+export interface HistoryEntry {
+  date: string;
+  medianPrice: number;
+  minPrice: number;
+  averagePrice: number;
+  maxPrice: number;
+  percentile95Price: number;
+  count: number;
+}
+
 export interface RealEstateEntry {
   minPrice: number;
   maxPrice?: number;
@@ -53,6 +63,10 @@ export interface SuburbKey {
   locality: string;
 }
 
+export interface SuburbKeyWithState extends SuburbKey {
+  state: string;
+}
+
 export interface LegendEntryEventHandlers {
   onItemClick: (subIntervalMinPrice: number) => void;
   onItemMouseOut: (subIntervalMinPrice: number) => void;
@@ -64,14 +78,18 @@ export interface SuburbListEntryEventHandlers {
   onItemClick: (suburbId: string) => void;
 }
 
-export interface FeatureProperties {
-  fileName: string;
+export interface NewFeatureProperties {
   name: string;
   Name?: string;
+  description: string;
+}
+
+export interface FeatureProperties {
+  fileName: string;
+  locality: string;
   tooltipContent: string;
   suburbId: string;
   priceData?: RealEstateResponse;
-  description: string;
   postCode: number;
   state: string;
   district: string;

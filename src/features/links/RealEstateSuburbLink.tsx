@@ -1,23 +1,22 @@
-import { Link } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { FeatureProperties } from '../../interfaces';
+import { SuburbKeyWithState } from '../../interfaces';
 import DomainUtils from '../../utils/domainUtils';
 
-const RealEstateSuburbLink: React.FunctionComponent<FeatureProperties> = ({ state, postCode, name }) => {
+const RealEstateSuburbLink: React.FunctionComponent<SuburbKeyWithState> = ({ state, postCode, locality }) => {
   const paddedPostCode = DomainUtils.padPostCode(postCode);
   return (
-    <Link href={DomainUtils.getRealEstateSuburbUri(name, paddedPostCode, state)} target="_blank">
-      {name}
+    <a href={DomainUtils.getRealEstateSuburbUri(locality, paddedPostCode, state)} rel="noopener noreferrer" target="_blank">
+      {locality}
       {postCode && <span> {paddedPostCode}</span>}
-    </Link>
+    </a>
   );
 };
 
 RealEstateSuburbLink.propTypes = {
   state: PropTypes.string.isRequired,
   postCode: PropTypes.number.isRequired,
-  name: PropTypes.string.isRequired,
+  locality: PropTypes.string.isRequired,
 };
 
 export default React.memo(RealEstateSuburbLink);

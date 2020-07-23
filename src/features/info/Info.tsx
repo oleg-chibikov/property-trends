@@ -7,9 +7,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FeatureProperties } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
 import { selectFilters } from '../filters/filtersSlice';
+import RealEstateSuburbLink from '../links/RealEstateSuburbLink';
 import styles from './Info.module.css';
 import { clearInfo, selectInfo } from './infoSlice';
-import RealEstateSuburbLink from './RealEstateSuburbLink';
 
 const Info: React.FunctionComponent = () => {
   const info = useSelector(selectInfo);

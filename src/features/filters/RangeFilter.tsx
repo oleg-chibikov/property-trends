@@ -29,7 +29,7 @@ const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefau
       label={
         <Tooltip title="Use range selection">
           <span>
-            {label}: <Switch size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
+            {label}: <Switch color="primary" size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
           </span>
         </Tooltip>
       }

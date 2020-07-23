@@ -18,7 +18,8 @@ const scrollToSuburb = (elementIdToScrollTo: string | undefined) => {
         el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'auto' });
       }
     };
-    setTimeout(scrollIntoView, 100);
+    scrollIntoView();
+    setTimeout(scrollIntoView, 500);
   }
 };
 
@@ -50,7 +51,7 @@ const DistrictList: React.FunctionComponent = () => {
           }}
           title="Retry"
         >
-          <ErrorIcon color="secondary" />
+          <ErrorIcon color="primary" />
         </IconButton>{' '}
         Error fetching districts. Please retry.
       </React.Fragment>

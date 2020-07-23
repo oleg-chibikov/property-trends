@@ -1,0 +1,29 @@
+.suburbInfo {
+  width: 100%;
+}
+
+.header {
+  margin: 1rem 0 0 0;
+}
+
+.header > a {
+  color: white !important;
+}
+
+.propertiesList {
+  max-height: 20rem;
+  overflow: auto;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(8, auto);
+  grid-gap: 0 1rem;
+}
+
+.historyGraph {
+  height: 30rem;
+}
+
+.tabPanel {
+  padding: 0;
+  padding-top: 1rem;
+}

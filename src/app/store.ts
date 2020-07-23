@@ -6,6 +6,7 @@ import infoReducer from '../features/info/infoSlice';
 import legendReducer from '../features/legend/legendSlice';
 import popupReducer from '../features/popup/popupSlice';
 import searchBoxReducer from '../features/search/searchBoxSlice';
+import suburbInfoReducer from '../features/suburbInfo/suburbInfoSlice';
 import suburbListReducer from '../features/suburbList/suburbListSlice';
 
 export const store = configureStore({
@@ -18,6 +19,7 @@ export const store = configureStore({
     searchBox: searchBoxReducer,
     currentLocation: currentLocationReducer,
     popup: popupReducer,
+    suburbInfo: suburbInfoReducer,
   },
 });
 

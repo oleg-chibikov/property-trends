@@ -32,7 +32,7 @@ const DistrictListButton: React.FunctionComponent = () => {
     const keys = districtsByState ? Object.keys(districtsByState) : null;
 
     if (!keys?.length) {
-      return <ErrorIcon color="secondary" />;
+      return <ErrorIcon color="primary" />;
     }
     return <MapIcon />;
   };

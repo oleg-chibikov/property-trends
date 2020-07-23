@@ -17,7 +17,7 @@ export default class ThemeUtils {
           main: '#a22a11',
         },
         secondary: {
-          main: '#d32f2f',
+          main: '#e1d5cc',
         },
       },
       overrides: {

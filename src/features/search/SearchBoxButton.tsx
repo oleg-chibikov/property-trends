@@ -15,7 +15,7 @@ const SearchBoxButton: React.FunctionComponent = () => {
     <Typography component="div" variant="caption">
       {
         <IconButton title="Search" onClick={toggleDrawer}>
-          <SearchIcon color="secondary" />
+          <SearchIcon color="primary" />
         </IconButton>
       }
     </Typography>

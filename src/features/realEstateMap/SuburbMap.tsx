@@ -10,7 +10,7 @@ import { trackPromise } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
 import fetchPriceData from '../../backendRequests/priceDataSearch';
-import { CompoundLayer, CustomLayer, FeatureProperties, MapFilters, RealEstateResponse, SuburbInfo, WithFeatures, WithMap } from '../../interfaces';
+import { CompoundLayer, CustomLayer, FeatureProperties, MapFilters, NewFeatureProperties, RealEstateResponse, SuburbInfo, WithFeatures, WithMap } from '../../interfaces';
 import ColorUtils from '../../utils/colorUtils';
 import DomainUtils from '../../utils/domainUtils';
 import MapUtils from '../../utils/mapUtils';
@@ -57,7 +57,7 @@ const setFeaturePriceProperties = (properties: FeatureProperties) => {
 
 const setLayerPopupAndTooltip = (layer: CustomLayer) => {
   const properties = layer.feature.properties;
-  const name = properties.name;
+  const name = properties.locality;
   const priceDataForFeature = properties.priceData;
   const formattedPostCode = DomainUtils.padPostCode(properties.postCode);
   // const realEstateSuburbUri = DomainUtils.getRealEstateSuburbUri(name, formattedPostCode, properties.state);
@@ -81,7 +81,7 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
     dispatch(setSuburbColor({ suburbId: properties.suburbId, color: color }));
   }
 
-  // console.log('price for ' + feature?.properties.name + ': ' + medianPrice || 'not set');
+  // console.log('price for ' + feature?.properties.locality + ': ' + medianPrice || 'not set');
   return {
     fillColor: color ? color : '#d1abf2',
     weight: 2,
@@ -218,7 +218,7 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
 
   dispatch(
     addSuburb({
-      name: properties.name,
+      name: properties.locality,
       suburbId: suburbId,
     } as SuburbInfo)
   );
@@ -256,17 +256,22 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
   const processDistricts = async () => {
     const addCheckedLayers = async (checkedDistrictFileNames: { [fileName: string]: undefined }) => {
       const addInfoToFeatures = (data: WithFeatures, fileName: string) => {
+        const readPropertiesFromNewFeature = (properties: NewFeatureProperties) => {
+          const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
+          const postCode = parseInt(properties.description);
+          return { postCode, name };
+        };
         for (const feature of data.features) {
+          const { postCode, name } = readPropertiesFromNewFeature((feature.properties as unknown) as NewFeatureProperties);
+
           const properties = feature.properties;
           properties.fileName = fileName;
           const { state, district } = DomainUtils.getStateAndDistrictFromFileName(fileName);
           properties.district = district;
           properties.state = state;
-          const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
-          const postCode = parseInt(properties.description);
           properties.postCode = postCode;
           const suburbId = DomainUtils.getSuburbId(name, postCode);
-          properties.name = name;
+          properties.locality = name;
           properties.suburbId = suburbId;
 
           // Setting prices for new features when prices are already fetched and new layer is added
@@ -306,7 +311,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
             bounds = compoundLayer.getBounds();
             const properties = layer.feature.properties;
             dispatch(removeSuburb(properties.suburbId));
-            // console.log('Deleted feature ' + properties.name);
+            // console.log('Deleted feature ' + properties.locality);
           }
 
           for (const layer of innerLayers) {
@@ -341,7 +346,6 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   const checkedDistrictFileNames = useSelector(selectCheckedDistricts);
   const filters = useSelector(selectFilters);
   const districts = useSelector(selectDistricts);
-  handler?.setFilters(filters); //TODO: split filters and postcodes
   // This is used to display proper icon in tooltips
   isApartment = filters.propertyType === 'apartment';
   searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);

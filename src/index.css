@@ -83,6 +83,18 @@ html {
   color: #b3b3b3;
 }
 
+a {
+  color: white;
+}
+
 a:visited {
-  color: red;
+  color: #a6d161;
+}
+
+.chartTooltip {
+  background-color: #303030;
+  color: white;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  padding: 5px 9px;
 }

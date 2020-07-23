@@ -8,6 +8,7 @@ import FiltersButton from './features/filters/FiltersButton';
 import FiltersWithDrawer from './features/filters/FiltersWithDrawer';
 import RealEstateMap from './features/realEstateMap/RealEstateMap';
 import SearchBoxWithDrawer from './features/search/SearchBoxWithDrawer';
+import SuburbInfoWithDrawer from './features/suburbInfo/SuburbInfoWithDrawer';
 import ThemeUtils from './utils/themeUtils';
 
 const App = () => {
@@ -32,6 +33,7 @@ const App = () => {
           <footer>Australian Property Trends 2020</footer>
         </div>
         <DistrictListWithDrawer />
+        <SuburbInfoWithDrawer />
       </div>
     </MuiThemeProvider>
   );
