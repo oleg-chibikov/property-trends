@@ -35,21 +35,13 @@ const SuburbHistory: React.FunctionComponent = () => {
     return <Spinner tooltip="Loading history..."></Spinner>;
   }
 
-  const lineData = history.map((el) => ({ x: el.date.split('T')[0], y: el.medianPrice as number | null, z: el.count }));
-  const data = [
-    // { id: 'very high weight', data: lineData.filter((el) => el.z >= 10) },
-    // { id: 'high weight', data: lineData.filter((el) => el.z >= 5 && el.z < 10) },
-    // { id: 'low weight', data: lineData.filter((el) => el.z < 5) },
-    { id: filters.dealType, data: lineData },
-  ];
-
   return (
     <div className={styles.historyGraph}>
       {/* {history.map((el, index) => (
         <div key={index}>{index + 1 + '. ' + el.date + MoneyUtils.format(el.medianPrice)}</div>
       ))} */}
 
-      <SuburbHistoryChart data={data} />
+      <SuburbHistoryChart history={history} />
     </div>
   );
 };
