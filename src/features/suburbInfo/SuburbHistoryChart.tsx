@@ -1,3 +1,4 @@
+import { useMediaQuery } from '@material-ui/core';
 import { ResponsiveLine } from '@nivo/line';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -57,7 +58,7 @@ const convertHistoryToChartData = (history: HistoryEntry[]) => {
 };
 
 // https://github.com/plouc/nivo/issues/308
-const theme = {
+const chartTheme = {
   background: '#222222',
   // tooltip: {
   //   container: {
@@ -117,9 +118,12 @@ const theme = {
 const SuburbHistoryChart: React.FunctionComponent<SuburbHistoryChartProps> = ({ history }) => {
   const { data, min } = convertHistoryToChartData(history);
 
+  const enoughHeight = useMediaQuery('(min-height: 35rem)');
+
   return (
     <ResponsiveLine
-      theme={theme}
+      colors={['#a8a8a82b', '#8fccac69', '#61ffad']}
+      theme={chartTheme}
       enableArea={true}
       enableCrosshair={true}
       margin={{ top: 10, right: 50, bottom: 60, left: 50 }}
@@ -195,10 +199,19 @@ const SuburbHistoryChart: React.FunctionComponent<SuburbHistoryChartProps> = ({ 
         tickSize: 5,
         tickPadding: 5,
         tickRotation: -45,
-        legend: 'median price',
+        tickValues: enoughHeight ? 8 : 3,
+        legend: enoughHeight ? 'median price' : undefined,
         legendOffset: 12,
       }}
-      axisBottom={{ tickSize: 5, tickPadding: 5, tickRotation: -45, format: '%b %Y', tickValues: 'every 1 months', legend: 'month', legendOffset: -12 }}
+      axisBottom={{
+        tickSize: 5,
+        tickPadding: 5,
+        tickRotation: -45,
+        format: '%b %Y',
+        tickValues: 'every 1 months',
+        legend: enoughHeight ? 'month' : undefined,
+        legendOffset: -12,
+      }}
     />
   );
 };

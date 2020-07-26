@@ -29,7 +29,7 @@
   font-size: larger;
 }
 
-@media (min-height: 850px) and (min-width: 1024px) {
+@media (min-height: 53rem) and (min-width: 1024px) {
   .suburbList {
     display: block;
   }

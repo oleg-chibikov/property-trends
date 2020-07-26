@@ -59,7 +59,7 @@ export const suburbListSlice = createSlice({
 
 export const { addSuburb, removeSuburb, highlightSuburb, unhighlightSuburb, setSuburbColor, scrollToSuburb } = suburbListSlice.actions;
 
-export const selectSuburbs = (state: RootState) => state.SuburbList.suburbs;
-export const selectScrollToSuburb = (state: RootState) => state.SuburbList.scrollToSuburb;
+export const selectSuburbs = (state: RootState) => state.suburbList.suburbs;
+export const selectScrollToSuburb = (state: RootState) => state.suburbList.scrollToSuburb;
 
 export default suburbListSlice.reducer;

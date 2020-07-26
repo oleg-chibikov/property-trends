@@ -59,7 +59,7 @@
   }
 }
 
-@media (min-height: 500px) {
+@media (min-height: 30rem) {
   .legendContainer {
     grid-template-rows: repeat(15, auto);
   }

@@ -20,7 +20,13 @@
 }
 
 .historyGraph {
-  height: 30rem;
+  height: 12rem;
+}
+
+@media (min-height: 35rem) {
+  .historyGraph {
+    height: 25rem;
+  }
 }
 
 .tabPanel {
