@@ -1,0 +1,117 @@
+.chart {
+  height: 12rem;
+  padding: 0;
+}
+
+@media (min-height: 35rem) {
+  .chart {
+    height: 25rem;
+  }
+}
+
+.chart > svg {
+  overflow: visible;
+}
+
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  color: white;
+  font: 8px sans-serif;
+  border-width: 1px;
+  border-color: black;
+  background-color: #303030;
+  pointer-events: none;
+  padding: 5px 9px;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  width: auto;
+  height: auto;
+  opacity: 0;
+  z-index: 999999999999;
+}
+
+.area,
+.scatter,
+.line,
+.areaBrush,
+.crosshairGroup {
+  clip-path: url(#clip);
+}
+
+.line {
+  fill: none;
+  stroke: rgb(187, 0, 103);
+  stroke-width: 3;
+}
+
+.area,
+.scatter {
+  fill: url(#gradient);
+}
+
+.areaBrush {
+  fill: url(#gradient-brush);
+}
+
+.area,
+.areaBrush {
+  opacity: 0.5;
+  stroke: cyan;
+  stroke-opacity: 1;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.dot {
+  fill: #141414;
+  stroke: black;
+  stroke-width: 1px;
+  r: 3px;
+}
+
+.dotSurrounding {
+  cursor: help;
+  fill: #141414;
+  opacity: 0.1;
+}
+
+.selectedDot {
+  fill: none;
+  stroke: black;
+}
+
+.dotSurrounding,
+.selectedDot {
+  r: 10px;
+}
+
+.selectedDotTooltip {
+  text-anchor: left;
+  fill: white;
+  font: 8px sans-serif;
+  alignment-baseline: middle;
+}
+
+.gridLine {
+  opacity: 0.1;
+  stroke-dasharray: 1px;
+}
+
+.crosshairContainer {
+  fill: none;
+  stroke: rgba(132, 255, 49, 0.39);
+  stroke-width: 1;
+  stroke-dasharray: 5px;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+  cursor: move;
+}
+
+.axis text {
+  transform: rotate(45deg);
+  text-anchor: start;
+}

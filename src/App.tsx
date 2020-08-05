@@ -35,6 +35,7 @@ const App = () => {
         <DistrictListWithDrawer />
         <SuburbInfoWithDrawer />
       </div>
+      <div className="tooltip"></div>
     </MuiThemeProvider>
   );
 };

@@ -8,7 +8,12 @@ interface SuburbInfoState {
   properties?: RealEstateEntry[];
   history?: HistoryEntry[];
   activeTab: string;
+  chartBrushSelection: number[];
 }
+
+const currentDate = new Date();
+const oneYearFromNow = new Date();
+oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() - 1);
 
 const initialState: SuburbInfoState = {
   expanded: false,
@@ -16,6 +21,7 @@ const initialState: SuburbInfoState = {
   properties: undefined,
   history: undefined,
   activeTab: 'History',
+  chartBrushSelection: [currentDate.getTime(), oneYearFromNow.getTime()],
 };
 
 export const suburbinfoSlice = createSlice({
@@ -40,10 +46,13 @@ export const suburbinfoSlice = createSlice({
     setActiveTab: (state, action: PayloadAction<string>) => {
       state.activeTab = action.payload;
     },
+    setChartBrushSelection: (state, action: PayloadAction<number[]>) => {
+      state.chartBrushSelection = action.payload;
+    },
   },
 });
 
-export const { setSuburbKey, setProperties, setHistory, toggleExpanded, setExpanded, setActiveTab } = suburbinfoSlice.actions;
+export const { setSuburbKey, setProperties, setHistory, toggleExpanded, setExpanded, setActiveTab, setChartBrushSelection } = suburbinfoSlice.actions;
 
 export const selectSuburbInfoPosition = (state: RootState) => state.suburbInfo.expanded;
 export const selectSuburbKey = (state: RootState) => state.suburbInfo.suburbKey;
@@ -51,5 +60,6 @@ export const selectProperties = (state: RootState) => state.suburbInfo.propertie
 export const selectHistory = (state: RootState) => state.suburbInfo.history;
 export const selectExpanded = (state: RootState) => state.suburbInfo.expanded;
 export const selectActiveTab = (state: RootState) => state.suburbInfo.activeTab;
+export const selectChartBrushSelection = (state: RootState) => state.suburbInfo.chartBrushSelection;
 
 export default suburbinfoSlice.reducer;

@@ -19,16 +19,6 @@
   grid-gap: 0 1rem;
 }
 
-.historyGraph {
-  height: 12rem;
-}
-
-@media (min-height: 35rem) {
-  .historyGraph {
-    height: 25rem;
-  }
-}
-
 .tabPanel {
   padding: 0;
   padding-top: 1rem;

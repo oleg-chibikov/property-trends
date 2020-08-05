@@ -125,3 +125,11 @@ export interface MapFilters {
   allowedWindowInDays: number;
   mainPriceOnly: boolean;
 }
+
+export interface ChartData {
+  date: Date;
+  median: number;
+  count: number;
+  min: number;
+  max: number;
+}

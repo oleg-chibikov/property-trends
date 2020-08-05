@@ -4,8 +4,7 @@ import fetchSuburbHistory from '../../backendRequests/suburbHistoryRetrieval';
 import { MapFilters } from '../../interfaces';
 import { selectFilters } from '../filters/filtersSlice';
 import Spinner from '../spinner/Spinner';
-import SuburbHistoryChart from './SuburbHistoryChart';
-import styles from './SuburbInfo.module.css';
+import BrushChart from './BrushChart';
 import { selectHistory, selectSuburbKey, setHistory } from './suburbInfoSlice';
 
 let dispatch: Dispatch<any>;
@@ -35,15 +34,17 @@ const SuburbHistory: React.FunctionComponent = () => {
     return <Spinner tooltip="Loading history..."></Spinner>;
   }
 
-  return (
-    <div className={styles.historyGraph}>
-      {/* {history.map((el, index) => (
-        <div key={index}>{index + 1 + '. ' + el.date + MoneyUtils.format(el.medianPrice)}</div>
-      ))} */}
+  const historyWithDates = history
+    .filter((x) => x.medianPrice != null)
+    .map((x) => ({
+      date: new Date(x.date),
+      median: x.medianPrice,
+      count: x.count,
+      min: x.minPrice,
+      max: x.maxPrice,
+    }));
 
-      <SuburbHistoryChart history={history} />
-    </div>
-  );
+  return <BrushChart data={historyWithDates} />;
 };
 
 export default React.memo(SuburbHistory);
