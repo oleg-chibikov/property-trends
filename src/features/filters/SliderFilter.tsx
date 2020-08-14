@@ -1,24 +1,50 @@
-import { Mark, Slider, Typography } from '@material-ui/core';
+import { Mark, Slider, Tooltip, Typography } from '@material-ui/core';
+import CodeIcon from '@material-ui/icons/Code';
+import ToggleButton from '@material-ui/lab/ToggleButton';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
 interface SliderFilterProps {
-  label: string | any;
+  label: any;
+  useRange?: boolean;
   value: number | number[];
   min: number;
   max: number;
   marks: boolean | Mark[];
   onChange: (value: number | number[]) => void;
-  convertValue?: (value: number | number[]) => number | number[] | undefined;
 }
 
-const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ convertValue, marks, label, value, onChange, min, max }) => {
-  const isRange = Array.isArray(value);
+const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label, useRange, value, onChange, min, max }) => {
+  let isRange = Array.isArray(value);
+  const convertValue = (value: number | number[]) => {
+    return isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
+  };
   const [localValue, setLocalValue] = useState<number | number[]>(value);
   const valueCopy = convertValue ? convertValue(localValue) : localValue;
   return (
     <div>
-      <Typography variant="body1">{label}</Typography>
+      <Typography variant="body1">
+        {useRange ? (
+          <Tooltip title="Use range selection">
+            <span>
+              {label}:{' '}
+              <ToggleButton
+                size="small"
+                value="check"
+                selected={isRange}
+                onChange={() => {
+                  isRange = !isRange;
+                  onChange(convertValue(localValue));
+                }}
+              >
+                <CodeIcon />
+              </ToggleButton>
+            </span>
+          </Tooltip>
+        ) : (
+          label
+        )}
+      </Typography>
       <div className="slider">
         <Slider
           track={!isRange ? false : 'normal'}
@@ -41,12 +67,12 @@ const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ convertValue
 
 SliderFilter.propTypes = {
   label: PropTypes.any.isRequired,
+  useRange: PropTypes.bool,
   value: PropTypes.any.isRequired,
   min: PropTypes.number.isRequired,
   max: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
   marks: PropTypes.any.isRequired,
-  convertValue: PropTypes.func,
 };
 
 export default React.memo(SliderFilter);

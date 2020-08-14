@@ -1,6 +1,3 @@
-import { Tooltip } from '@material-ui/core';
-import CodeIcon from '@material-ui/icons/Code';
-import ToggleButton from '@material-ui/lab/ToggleButton';
 import PropTypes from 'prop-types';
 import React from 'react';
 import SliderFilter from './SliderFilter';
@@ -15,42 +12,11 @@ interface RangeFilterProps {
 }
 
 const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ label, value, onChange, min, max }) => {
-  let isRange = Array.isArray(value);
   const marks: { value: number; label: string }[] = [];
   for (let i = min; i <= max; i++) {
     marks.push({ value: i, label: i.toString() + (i === max ? '+' : '') });
   }
-  const convertValue = (value: number | number[]) => {
-    return isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
-  };
-  return (
-    <SliderFilter
-      min={min}
-      max={max}
-      onChange={onChange}
-      value={value}
-      convertValue={convertValue}
-      marks={marks}
-      label={
-        <Tooltip title="Use range selection">
-          <span>
-            {label}:{' '}
-            <ToggleButton
-              size="small"
-              value="check"
-              selected={isRange}
-              onChange={() => {
-                isRange = !isRange;
-                onChange(convertValue(value));
-              }}
-            >
-              <CodeIcon />
-            </ToggleButton>
-          </span>
-        </Tooltip>
-      }
-    />
-  );
+  return <SliderFilter label={label} min={min} max={max} onChange={onChange} value={value} marks={marks} useRange={true} />;
 };
 
 RangeFilter.propTypes = {
