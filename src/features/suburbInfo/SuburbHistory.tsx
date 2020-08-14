@@ -9,8 +9,8 @@ import { selectHistory, selectSuburbKey, setHistory } from './suburbInfoSlice';
 
 let dispatch: Dispatch<any>;
 
-const fetchAndApplyData = async (filters: MapFilters, postCode: number, locality: string) => {
-  const data = await fetchSuburbHistory(filters, postCode, locality);
+const fetchAndApplyData = async (filters: MapFilters, state: string, postCode: number, locality: string) => {
+  const data = await fetchSuburbHistory(filters, state, postCode, locality);
   dispatch(setHistory(data?.sort((a, b) => (a.date > b.date ? 1 : -1)) || []));
 };
 
@@ -22,7 +22,7 @@ const SuburbHistory: React.FunctionComponent = () => {
 
   useEffect(() => {
     if (suburbKey) {
-      fetchAndApplyData(filters, suburbKey.postCode, suburbKey.locality);
+      fetchAndApplyData(filters, suburbKey.state, suburbKey.postCode, suburbKey.locality);
     }
   }, [filters, suburbKey]);
 

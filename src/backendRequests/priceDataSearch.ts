@@ -10,7 +10,7 @@ const fetchData = async (filters: MapFilters, districts: string[]) => {
   }
 
   const filtersUrl = DomainUtils.getFiltersUrl(filters);
-  const url = process.env.REACT_APP_PRICES_API_URL + `RealEstate?${filtersUrl}`;
+  const url = process.env.REACT_APP_PRICES_API_URL + `Prices?${filtersUrl}`;
 
   return await AxiosUtils.fetchWithPromiseTracking<RealEstateResponse>(priceDataSearchPromiseTrackerArea, url, 'post', districts);
 };

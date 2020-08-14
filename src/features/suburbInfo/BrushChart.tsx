@@ -147,6 +147,9 @@ function applyHighlightAndCrosshair(
     const x = getCurrentXPosition(mouse);
     const i = bisect(data, xScale.invert(x), 1);
     const selectedData = data[i];
+    if (!selectedData){
+      return;
+    }
     focus.transition().duration(100).ease(d3.easeLinear).attr('cx', xScale(selectedData.date)).attr('cy', yScale(selectedData.median));
     focusText.html(`${timeFormat(selectedData.date)}  :${MoneyUtils.format(selectedData.median)}`);
 

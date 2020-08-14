@@ -14,7 +14,7 @@ interface FeatureListProps extends SuburbListEntryEventHandlers, WithMap {}
 
 const SuburbList: React.FunctionComponent<FeatureListProps> = (props) => {
   const polygonRetrievalPromiseTracker = usePromiseTracker({ area: polygonRetrievalPromiseTrackerArea, delay: 0 });
-  const features = useSelector(selectSuburbs);
+  const suburbs = useSelector(selectSuburbs);
   const scrollToSuburb = useSelector(selectScrollToSuburb);
   useEffect(() => {
     if (scrollToSuburb) {
@@ -34,10 +34,10 @@ const SuburbList: React.FunctionComponent<FeatureListProps> = (props) => {
     <div className={styles.suburbListWrapper}>
       <SearchBoxButton />
       <div onMouseOver={() => props.leafletMap.scrollWheelZoom.disable()} onMouseOut={() => props.leafletMap.scrollWheelZoom.enable()} className={styles.suburbList}>
-        {Object.keys(features)
+        {Object.keys(suburbs)
           .sort()
           .map((key) => {
-            return <SuburbListEntry key={features[key].suburbId} {...{ ...features[key], ...props }} />;
+            return <SuburbListEntry key={suburbs[key].suburbId} {...{ ...suburbs[key], ...props }} />;
           })}
       </div>
     </div>

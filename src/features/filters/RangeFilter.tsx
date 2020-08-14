@@ -1,6 +1,6 @@
 import { Switch, Tooltip } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React from 'react';
 import SliderFilter from './SliderFilter';
 
 interface RangeFilterProps {
@@ -12,24 +12,36 @@ interface RangeFilterProps {
   onChange: (value: number | number[]) => void;
 }
 
-const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ isRangeByDefault, label, value, onChange, min, max }) => {
-  const [isRange, setIsRange] = useState<boolean>(isRangeByDefault || false);
+const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ label, value, onChange, min, max }) => {
+  let isRange = Array.isArray(value);
   const marks: { value: number; label: string }[] = [];
   for (let i = min; i <= max; i++) {
     marks.push({ value: i, label: i.toString() + (i === max ? '+' : '') });
   }
+  const convertValue = (value: number | number[]) => {
+    return isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
+  };
   return (
     <SliderFilter
       min={min}
       max={max}
       onChange={onChange}
       value={value}
-      convertValue={(value) => (isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value)}
+      convertValue={convertValue}
       marks={marks}
       label={
         <Tooltip title="Use range selection">
           <span>
-            {label}: <Switch color="primary" size="small" checked={isRange} onChange={() => setIsRange(!isRange)} />
+            {label}:{' '}
+            <Switch
+              color="primary"
+              size="small"
+              checked={isRange}
+              onChange={() => {
+                isRange = !isRange;
+                onChange(convertValue(value));
+              }}
+            />
           </span>
         </Tooltip>
       }

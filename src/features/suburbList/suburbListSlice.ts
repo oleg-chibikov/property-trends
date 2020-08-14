@@ -21,11 +21,8 @@ export const suburbListSlice = createSlice({
   name: 'SuburbList',
   initialState,
   reducers: {
-    addSuburb: (state, action: PayloadAction<SuburbInfo>) => {
-      state.suburbs[action.payload.suburbId] = action.payload;
-    },
-    removeSuburb: (state, action: PayloadAction<string>) => {
-      delete state.suburbs[action.payload];
+    replaceSuburbs: (state, action: PayloadAction<{ [suburbId: string]: SuburbInfo }>) => {
+      state.suburbs = action.payload;
     },
     highlightSuburb: (state, action: PayloadAction<string>) => {
       const suburbId = action.payload;
@@ -57,7 +54,7 @@ export const suburbListSlice = createSlice({
   },
 });
 
-export const { addSuburb, removeSuburb, highlightSuburb, unhighlightSuburb, setSuburbColor, scrollToSuburb } = suburbListSlice.actions;
+export const { replaceSuburbs, highlightSuburb, unhighlightSuburb, setSuburbColor, scrollToSuburb } = suburbListSlice.actions;
 
 export const selectSuburbs = (state: RootState) => state.suburbList.suburbs;
 export const selectScrollToSuburb = (state: RootState) => state.suburbList.scrollToSuburb;

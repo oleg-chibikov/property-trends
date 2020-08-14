@@ -1,8 +1,8 @@
 import { Action, combineReducers, configureStore, getDefaultMiddleware, ThunkAction } from '@reduxjs/toolkit';
-import { FLUSH, PAUSE, PERSIST, persistReducer, PURGE, REGISTER, REHYDRATE, persistStore } from 'redux-persist';
+import { FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import currentLocationReducer from '../features/currentLocation/currentLocationSlice';
-import reducer from '../features/districtList/districtListSlice';
+import districtListReducer from '../features/districtList/districtListSlice';
 import filtersReducer from '../features/filters/filtersSlice';
 import infoReducer from '../features/info/infoSlice';
 import legendReducer from '../features/legend/legendSlice';
@@ -19,7 +19,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   suburbList: suburbListReducer,
   info: infoReducer,
-  districtList: reducer,
+  districtList: districtListReducer,
   filters: filtersReducer,
   legend: legendReducer,
   searchBox: searchBoxReducer,

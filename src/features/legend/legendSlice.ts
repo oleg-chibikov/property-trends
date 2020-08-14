@@ -4,7 +4,7 @@ import { PricesToColors } from '../../interfaces';
 
 interface LegendState {
   pricesToColors: PricesToColors;
-  highlightedPrices: { [intervalMinPrice: number]: undefined };
+  highlightedPrices: { [intervalMinPrice: number]: number };
 }
 
 const initialState: LegendState = {
@@ -20,7 +20,7 @@ export const legendSlice = createSlice({
       state.pricesToColors = action.payload;
     },
     highlightLegendEntry: (state, action: PayloadAction<number>) => {
-      state.highlightedPrices[action.payload] = undefined;
+      state.highlightedPrices[action.payload] = 0;
     },
     unhighlightLegendEntry: (state, action: PayloadAction<number>) => {
       delete state.highlightedPrices[action.payload];

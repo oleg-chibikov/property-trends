@@ -1,8 +1,6 @@
-import { Mark, Slider, Typography, useMediaQuery, useTheme } from '@material-ui/core';
+import { Mark, Slider, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { setExpanded } from './filtersSlice';
 
 interface SliderFilterProps {
   label: string | any;
@@ -15,16 +13,15 @@ interface SliderFilterProps {
 }
 
 const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ convertValue, marks, label, value, onChange, min, max }) => {
-  const dispatch = useDispatch();
+  const isRange = Array.isArray(value);
   const [localValue, setLocalValue] = useState<number | number[]>(value);
   const valueCopy = convertValue ? convertValue(localValue) : localValue;
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   return (
     <div>
       <Typography variant="body1">{label}</Typography>
       <div className="slider">
         <Slider
+          track={!isRange ? false : 'normal'}
           min={min}
           max={max}
           value={valueCopy}
@@ -35,9 +32,6 @@ const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ convertValue
           }}
           onChangeCommitted={(event: unknown, newValue: number | number[]) => {
             onChange(newValue);
-            if (!isDesktop) {
-              dispatch(setExpanded(false));
-            }
           }}
         />
       </div>

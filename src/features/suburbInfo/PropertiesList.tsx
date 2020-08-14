@@ -11,8 +11,8 @@ import { selectProperties, selectSuburbKey, setProperties } from './suburbInfoSl
 
 let dispatch: Dispatch<any>;
 
-const fetchAndApplyData = async (filters: MapFilters, postCode: number, locality: string) => {
-  const data = await fetchSuburbData(filters, postCode, locality);
+const fetchAndApplyData = async (filters: MapFilters, state: string, postCode: number, locality: string) => {
+  const data = await fetchSuburbData(filters, state, postCode, locality);
   dispatch(setProperties(data?.sort((a, b) => (a.minPrice > b.minPrice ? 1 : a.minPrice === b.minPrice ? ((a.maxPrice || 0) > (b.maxPrice || 0) ? 1 : -1) : -1)) || []));
 };
 
@@ -24,7 +24,7 @@ const PropertiesList: React.FunctionComponent = () => {
 
   useEffect(() => {
     if (suburbKey) {
-      fetchAndApplyData(filters, suburbKey.postCode, suburbKey.locality);
+      fetchAndApplyData(filters, suburbKey.state, suburbKey.postCode, suburbKey.locality);
     }
   }, [filters, suburbKey]);
 

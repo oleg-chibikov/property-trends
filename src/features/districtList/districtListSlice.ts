@@ -12,7 +12,7 @@ interface StateByDistrict {
 const stateByDistrict: StateByDistrict = {};
 
 interface DistrictListState {
-  checkedDistricts: { [fileName: string]: undefined };
+  checkedDistricts: { [fileName: string]: number };
   checkedStates: { [state: string]: number };
   districtsByState: DistrictsByState;
   expanded: boolean;
@@ -54,6 +54,28 @@ const clear = (state: DistrictListState) => {
   state.checkedStates = {};
 };
 
+const checkStateInternal = (state: DistrictListState, action: PayloadAction<string>) => {
+  clear(state);
+  const politicalState = action.payload;
+  const defaultDistrictsForState = defaultDistrictsByState[politicalState];
+  state.checkedStates[politicalState] = 0;
+  state.expandedState = politicalState;
+  for (const district of state.districtsByState[politicalState]) {
+    if (defaultDistrictsForState) {
+      for (const defaultDistrict of defaultDistrictsForState) {
+        if (district.indexOf(defaultDistrict) > -1) {
+          state.checkedDistricts[district] = 0;
+          state.checkedStates[politicalState]++;
+          break;
+        }
+      }
+    } else {
+      state.checkedDistricts[district] = 0;
+      state.checkedStates[politicalState]++;
+    }
+  }
+};
+
 export const districtlistSlice = createSlice({
   name: 'DistrictList',
   initialState,
@@ -70,32 +92,17 @@ export const districtlistSlice = createSlice({
       }
       state.districtsByState = districtsByState;
     },
-    checkState: (state, action: PayloadAction<string>) => {
-      clear(state);
-      const politicalState = action.payload;
-      const defaultDistrictsForState = defaultDistrictsByState[politicalState];
-      state.checkedStates[politicalState] = 0;
-      state.expandedState = politicalState;
-      for (const district of state.districtsByState[politicalState]) {
-        if (defaultDistrictsForState) {
-          for (const defaultDistrict of defaultDistrictsForState) {
-            if (district.indexOf(defaultDistrict) > -1) {
-              state.checkedDistricts[district] = undefined;
-              state.checkedStates[politicalState]++;
-              break;
-            }
-          }
-        } else {
-          state.checkedDistricts[district] = undefined;
-          state.checkedStates[politicalState]++;
-        }
-      }
-    },
+    checkState: checkStateInternal,
     uncheckState: (state, action: PayloadAction<string>) => {
       const politicalState = action.payload;
       delete state.checkedStates[politicalState];
       for (const district of state.districtsByState[politicalState]) {
         delete state.checkedDistricts[district];
+      }
+    },
+    checkInitialStateIfEmpty: (state, action: PayloadAction<string>) => {
+      if (!Object.keys(state.checkedStates).length) {
+        checkStateInternal(state, action);
       }
     },
     checkDistrict: (state, action: PayloadAction<string>) => {
@@ -104,7 +111,7 @@ export const districtlistSlice = createSlice({
         return;
       }
       const politicalState = stateByDistrict[district];
-      state.checkedDistricts[district] = undefined;
+      state.checkedDistricts[district] = 0;
       if (!state.checkedStates[politicalState]) {
         state.checkedStates[politicalState] = 0;
       }
@@ -115,7 +122,7 @@ export const districtlistSlice = createSlice({
       const district = action.payload;
       const politicalState = stateByDistrict[district];
       state.checkedStates[politicalState] = 0;
-      state.checkedDistricts[district] = undefined;
+      state.checkedDistricts[district] = 0;
       state.checkedStates[politicalState]++;
     },
     uncheckDistrict: (state, action: PayloadAction<string>) => {
@@ -145,7 +152,20 @@ export const districtlistSlice = createSlice({
   },
 });
 
-export const { checkDistrict, checkDistrictOnly, uncheckDistrict, checkState, uncheckState, toggleExpanded, setExpanded, setExpandedState, addDistrictFileNames, toggleRetry, setElementToScrollTo } = districtlistSlice.actions;
+export const {
+  checkDistrict,
+  checkDistrictOnly,
+  uncheckDistrict,
+  checkState,
+  uncheckState,
+  checkInitialStateIfEmpty,
+  toggleExpanded,
+  setExpanded,
+  setExpandedState,
+  addDistrictFileNames,
+  toggleRetry,
+  setElementToScrollTo,
+} = districtlistSlice.actions;
 
 export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
 export const selectDistrictsByState = (state: RootState) => state.districtList.districtsByState;

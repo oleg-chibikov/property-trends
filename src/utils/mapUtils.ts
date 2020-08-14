@@ -4,7 +4,7 @@ export default class MapUtils {
   static redrawMap = (map: Map, after?: number | undefined) => {
     setTimeout(function () {
       map.invalidateSize();
-      console.log('Redrawed map');
+      console.log('Redrawn map');
     }, after || 10);
   };
 }

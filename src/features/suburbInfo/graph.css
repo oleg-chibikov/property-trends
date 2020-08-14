@@ -17,7 +17,7 @@ div.tooltip {
   position: absolute;
   text-align: center;
   color: white;
-  font: 8px sans-serif;
+  font: 10px sans-serif;
   border-width: 1px;
   border-color: black;
   background-color: #303030;
@@ -83,13 +83,13 @@ div.tooltip {
 
 .dotSurrounding,
 .selectedDot {
-  r: 10px;
+  r: 14px;
 }
 
 .selectedDotTooltip {
   text-anchor: left;
   fill: white;
-  font: 8px sans-serif;
+  font: 10px sans-serif;
   alignment-baseline: middle;
 }
 

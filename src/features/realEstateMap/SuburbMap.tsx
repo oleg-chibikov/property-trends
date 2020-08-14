@@ -25,7 +25,7 @@ import { changePricesToColors } from '../legend/legendSlice';
 import { selectHighlightedSuburb, selectSelectedSuburb } from '../search/searchBoxSlice';
 import ShowAll from '../showAll/ShowAll';
 import SuburbList from '../suburbList/SuburbList';
-import { addSuburb, removeSuburb, setSuburbColor } from '../suburbList/suburbListSlice';
+import { replaceSuburbs, setSuburbColor } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
 import MapConstants from './mapConstants';
 import SuburbMapEventHandler from './suburbMapEventHandler';
@@ -84,10 +84,10 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
   // console.log('price for ' + feature?.properties.locality + ': ' + medianPrice || 'not set');
   return {
     fillColor: color ? color : '#d1abf2',
-    weight: 2,
-    opacity: 1,
+    weight: 1,
+    opacity: 0.3,
     color: 'dimgray',
-    dashArray: '3',
+    // dashArray: '3',
     fillOpacity: opacity,
   };
 };
@@ -216,13 +216,6 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   const suburbId = properties.suburbId;
   layersBySuburbId[suburbId] = layer;
 
-  dispatch(
-    addSuburb({
-      name: properties.locality,
-      suburbId: suburbId,
-    } as SuburbInfo)
-  );
-
   // if priceData is fetched - the necessary properties and the style should be applied;
   if (priceDataBySuburbId) {
     applyStyleToLayer(layer);
@@ -241,7 +234,7 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   }, 0);
 };
 
-const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: string]: undefined }) => {
+const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: string]: number }) => {
   const getPricesForCheckedDistricts = () => {
     const checkedDistrictFileNamesKeys = Object.keys(checkedDistrictFileNames);
     if (checkedDistrictFileNamesKeys.length) {
@@ -254,7 +247,8 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
   getPricesForCheckedDistricts();
 
   const processDistricts = async () => {
-    const addCheckedLayers = async (checkedDistrictFileNames: { [fileName: string]: undefined }) => {
+    const addCheckedLayers = async (checkedDistrictFileNames: { [fileName: string]: number }) => {
+      const suburbsToAdd: { [suburbId: string]: SuburbInfo } = {};
       const addInfoToFeatures = (data: WithFeatures, fileName: string) => {
         const readPropertiesFromNewFeature = (properties: NewFeatureProperties) => {
           const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
@@ -273,6 +267,10 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
           const suburbId = DomainUtils.getSuburbId(name, postCode);
           properties.locality = name;
           properties.suburbId = suburbId;
+          suburbsToAdd[suburbId] = {
+            name,
+            suburbId,
+          };
 
           // Setting prices for new features when prices are already fetched and new layer is added
           setFeaturePriceProperties(properties);
@@ -284,9 +282,16 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
         const compoundLayer = geoJsonElement.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
         bounds = compoundLayer.getBounds();
       };
-
       for (const districtFileName in checkedDistrictFileNames) {
         if (districtFileName in currentlyCheckedDistricts) {
+          for (const layer of layersByFileName[districtFileName]) {
+            const name = layer.feature.properties.locality;
+            const suburbId = layer.feature.properties.suburbId;
+            suburbsToAdd[suburbId] = {
+              name,
+              suburbId,
+            };
+          }
           continue;
         }
 
@@ -300,18 +305,17 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
         currentlyCheckedDistricts[districtFileName] = undefined;
         console.log('Added ' + districtFileName);
       }
+
+      dispatch(replaceSuburbs(suburbsToAdd));
     };
 
-    const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: undefined }) => {
+    const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: number }) => {
       for (const fileName in layersByFileName) {
         if (!(fileName in checkedDistricts)) {
           const innerLayers = layersByFileName[fileName];
           for (const layer of innerLayers) {
             const compoundLayer = geoJsonElement.leafletElement.removeLayer(layer);
             bounds = compoundLayer.getBounds();
-            const properties = layer.feature.properties;
-            dispatch(removeSuburb(properties.suburbId));
-            // console.log('Deleted feature ' + properties.locality);
           }
 
           for (const layer of innerLayers) {
