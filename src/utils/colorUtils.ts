@@ -47,7 +47,7 @@ export default class ColorUtils {
 
     const colorsByPriceInterval: PricesToColors = {};
     const suburbIdsByPriceInterval: { [price: number]: string[] } = {};
-    for (let i = 0, currentPriceAnchor = minMedianPrice; currentPriceAnchor < maxMedianPrice; currentPriceAnchor += priceIntervalSize, i++) {
+    for (let i = 0, currentPriceAnchor = minMedianPrice; i < shadeCount; currentPriceAnchor += priceIntervalSize, i++) {
       colorsByPriceInterval[currentPriceAnchor] = { intervalMinPrice: currentPriceAnchor, color: colors[i], suburbCount: 0 };
     }
 
