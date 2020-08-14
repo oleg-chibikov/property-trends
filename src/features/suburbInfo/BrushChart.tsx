@@ -45,7 +45,7 @@ const BrushChart: React.FunctionComponent<BrushChartProps> = ({ data }) => {
     const mainGraphGroup = createMainGraph(svg, margin);
     applyGridLines(mainGraphGroup, mainGraphHeight, mainGraphWidth, xScale, yScale);
     const brushGraph = createBrushGraph(svg, brushPosition);
-    const maxPrice = setScaleDomains(data, xScale, yScale, xBrushScale, yBrushScale);
+    const prices = setScaleDomains(data, xScale, yScale, xBrushScale, yBrushScale);
     const { xAxis, yAxis, xBrushAxis } = createAxes(xScale, xBrushScale, yScale);
 
     appendAxesToMainGraph(mainGraphGroup, mainGraphHeight, xAxis, yAxis);
@@ -56,14 +56,14 @@ const BrushChart: React.FunctionComponent<BrushChartProps> = ({ data }) => {
     const overlay = createOverlay(svg, mainGraphWidth, mainGraphHeight, margin);
     const scatter = appendScatterToMainGraph(svg, data, xScale, yScale, margin);
 
-    applyGradient(svg, yScale, 'gradient', maxPrice);
-    applyGradient(svg, yBrushScale, 'gradient-brush', maxPrice);
+    applyGradient(svg, yScale, 'gradient', prices);
+    applyGradient(svg, yBrushScale, 'gradient-brush', prices);
 
     applyHighlightAndCrosshair(overlay, xScale, yScale, svg, data, margin);
-    applyBrushBehaviorToBrushGraph(xBrushScale, xScale, yScale, xAxis, mainGraphGroup, overlay, area, trendLine, scatter, mainGraphWidth, brushHeight, brushGraph);
-    applyZoomBehaviorToMainGraph(xBrushScale, xScale, yScale, xAxis, mainGraphGroup, overlay, area, trendLine, scatter, brushGraph, mainGraphWidth, mainGraphHeight);
+    applyBrushBehaviorToBrushGraph(data, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, trendLine, scatter, mainGraphWidth, brushHeight, brushGraph);
+    applyZoomBehaviorToMainGraph(data, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, trendLine, scatter, brushGraph, mainGraphWidth, mainGraphHeight);
 
-    applyDefaultBrushSelection(currentSelection, xBrushScale, xScale, yScale, xAxis, mainGraphGroup, overlay, area, trendLine, scatter, mainGraphWidth);
+    applyDefaultBrushSelection(data, currentSelection, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, trendLine, scatter, mainGraphWidth);
     appendAxesToBrushGraph(brushGraph, brushHeight, xBrushAxis);
   }, [dimensions]); // only dimensions change should trigger the redraw
 
@@ -147,7 +147,7 @@ function applyHighlightAndCrosshair(
     const x = getCurrentXPosition(mouse);
     const i = bisect(data, xScale.invert(x), 1);
     const selectedData = data[i];
-    if (!selectedData){
+    if (!selectedData) {
       return;
     }
     focus.transition().duration(100).ease(d3.easeLinear).attr('cx', xScale(selectedData.date)).attr('cy', yScale(selectedData.median));
@@ -216,11 +216,13 @@ function applyGridLines(mainGraphGroup: d3.Selection<SVGGElement, unknown, null,
 }
 
 function applyDefaultBrushSelection(
+  data: ChartData[],
   currentSelection: number[],
   xBrushScale: d3.ScaleTime<number, number>,
   xScale: d3.ScaleTime<number, number>,
   yScale: d3.ScaleLinear<number, number>,
   xAxis: d3.Axis<Date>,
+  yAxis: d3.Axis<number>,
   mainGraphGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
   overlay: d3.Selection<SVGRectElement, unknown, null, undefined>,
   area: d3.Area<ChartData>,
@@ -234,12 +236,14 @@ function applyDefaultBrushSelection(
   if (minValueForDomain > selection[0]) {
     selection[0] = minValueForDomain;
   }
+
   const maxValueForDomain = currentDomain[1].getTime();
   if (maxValueForDomain < selection[1]) {
     selection[1] = minValueForDomain;
   }
+
   const brushedSelection = selection.map(xBrushScale);
-  applyBrushSelectionToMainGraph(brushedSelection, xBrushScale, xScale, yScale, xAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
+  applyBrushSelectionToMainGraph(data, brushedSelection, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
 }
 
 function getCurrentOrDefaultSelection(currentSelection: number[]) {
@@ -248,10 +252,12 @@ function getCurrentOrDefaultSelection(currentSelection: number[]) {
 }
 
 function applyBrushBehaviorToBrushGraph(
+  data: ChartData[],
   xBrushScale: d3.ScaleTime<number, number>,
   xScale: d3.ScaleTime<number, number>,
   yScale: d3.ScaleLinear<number, number>,
   xAxis: d3.Axis<Date>,
+  yAxis: d3.Axis<number>,
   mainGraphGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
   overlay: d3.Selection<SVGRectElement, unknown, null, undefined>,
   area: d3.Area<ChartData>,
@@ -266,7 +272,7 @@ function applyBrushBehaviorToBrushGraph(
       return; // ignore brush-by-zoom
     }
     const selection = (d3.event.selection as number[]) || xBrushScale.range();
-    applyBrushSelectionToMainGraph(selection, xBrushScale, xScale, yScale, xAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
+    applyBrushSelectionToMainGraph(data, selection, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
     updateCrosshairPosition();
   };
 
@@ -296,10 +302,12 @@ function applyBrushBehaviorToBrushGraph(
 }
 
 function applyZoomBehaviorToMainGraph(
+  data: ChartData[],
   xBrushScale: d3.ScaleTime<number, number>,
   xScale: d3.ScaleTime<number, number>,
   yScale: d3.ScaleLinear<number, number>,
   xAxis: d3.Axis<Date>,
+  yAxis: d3.Axis<number>,
   mainGraphGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
   overlay: d3.Selection<SVGRectElement, unknown, null, undefined>,
   area: d3.Area<ChartData>,
@@ -316,12 +324,10 @@ function applyZoomBehaviorToMainGraph(
     const transform = d3.event.transform as d3.ZoomTransform;
     const newDomain = transform.rescaleX(xBrushScale).domain();
 
-    applyNewDomain(newDomain, xScale, yScale, xAxis, mainGraphGroup, area, line, scatter);
-    const range = xScale.range();
+    const { range, domainValues } = applyNewDomain(data, newDomain, xScale, yScale, xAxis, yAxis, mainGraphGroup, area, line, scatter);
     if (brushBehavior) {
       brushGraph.select('.brush').call(brushBehavior.move as any, range.map(transform.invertX, transform));
     }
-    const domainValues = range.map(xScale.invert);
     dispatch(setChartBrushSelection(domainValues.map((x) => x.getTime())));
     updateCrosshairPosition();
   };
@@ -358,11 +364,13 @@ function applyZoomBehaviorToMainGraph(
 }
 
 function applyBrushSelectionToMainGraph(
+  data: ChartData[],
   selection: number[],
   xBrushScale: d3.ScaleTime<number, number>,
   xScale: d3.ScaleTime<number, number>,
   yScale: d3.ScaleLinear<number, number>,
   xAxis: d3.Axis<Date>,
+  yAxis: d3.Axis<number>,
   mainGraphGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
   overlay: d3.Selection<SVGRectElement, unknown, null, undefined>,
   area: d3.Area<ChartData>,
@@ -371,7 +379,7 @@ function applyBrushSelectionToMainGraph(
   mainGraphWidth: number
 ) {
   const newDomain = selection.map(xBrushScale.invert, xBrushScale);
-  applyNewDomain(newDomain, xScale, yScale, xAxis, mainGraphGroup, area, line, scatter);
+  applyNewDomain(data, newDomain, xScale, yScale, xAxis, yAxis, mainGraphGroup, area, line, scatter);
   // This line retains the brush selection on the brush graph
   if (zoomBehavior) {
     overlay.call(zoomBehavior.transform as any, d3.zoomIdentity.scale(mainGraphWidth / (selection[1] - selection[0])).translate(-selection[0], 0));
@@ -381,10 +389,12 @@ function applyBrushSelectionToMainGraph(
 }
 
 function applyNewDomain(
+  data: ChartData[],
   newDomain: Date[],
   xScale: d3.ScaleTime<number, number>,
   yScale: d3.ScaleLinear<number, number>,
   xAxis: d3.Axis<Date>,
+  yAxis: d3.Axis<number>,
   mainGraphGroup: d3.Selection<SVGGElement, unknown, null, undefined>,
   area: d3.Area<ChartData>,
   line: d3.Line<ChartData>,
@@ -412,6 +422,20 @@ function applyNewDomain(
     //   .transition(transition as any)
     .attr('cx', (d: any) => xScale(d.date))
     .attr('cy', (d: any) => yScale(d.median));
+
+  const range = xScale.range();
+  const domainValues = range.map(xScale.invert);
+  const dataSelection = data.filter((x) => x.date >= domainValues[0] && x.date <= domainValues[1]);
+  setYDomain(dataSelection, yScale);
+
+  const yAxisSelection = mainGraphGroup
+    .select('.axis--y')
+    //  .transition(transition as any)
+    .call(yAxis as any);
+
+  rotateAxisTicks(yAxisSelection);
+
+  return { range, domainValues };
 }
 
 function rotateAxisTicks<T extends d3.BaseType>(axisSelection: d3.Selection<T, unknown, null, undefined>) {
@@ -500,17 +524,23 @@ function setScaleDomains(data: ChartData[], xScale: d3.ScaleTime<number, number>
     throw new Error('Date range is undefined');
   }
 
-  const maxPrice = d3.max(data, (d) => d.median);
-  if (!maxPrice) {
-    throw new Error('Max price is undefined');
-  }
+  const prices = setYDomain(data, yScale);
   xScale.domain(dateRange);
-  const topDataMargin = maxPrice / 10;
-  yScale.domain([0, maxPrice + topDataMargin]);
   xBrushScale.domain(xScale.domain());
   yBrushScale.domain(yScale.domain());
   midDate = getMidDate(dateRange);
-  return maxPrice;
+  return prices;
+}
+
+function setYDomain(data: ChartData[], yScale: d3.ScaleLinear<number, number>) {
+  if (!data.length) {
+    return { minPrice: 0, maxPrice: 0 };
+  }
+  const maxPrice = d3.max(data, (d) => d.median) ?? 0;
+  const minPrice = d3.min(data, (d) => d.median) ?? 0;
+  const topDataMargin = (maxPrice - minPrice) / 10;
+  yScale.domain([minPrice - topDataMargin, maxPrice + topDataMargin]);
+  return { minPrice, maxPrice };
 }
 
 function clearSvg(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>) {
@@ -629,15 +659,15 @@ function getMidDate(dateRange: Date[]) {
   return endTime - (endTime - startTime) / 2;
 }
 
-function applyGradient(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, yScale: d3.ScaleLinear<number, number>, id: string, maxPrice: number) {
+function applyGradient(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, yScale: d3.ScaleLinear<number, number>, id: string, prices: { minPrice: number; maxPrice: number }) {
   svg
     .append('linearGradient')
     .attr('id', id)
     .attr('gradientUnits', 'userSpaceOnUse')
     .attr('x1', 0)
-    .attr('y1', yScale(0))
+    .attr('y1', yScale(prices.minPrice))
     .attr('x2', 0)
-    .attr('y2', yScale(maxPrice))
+    .attr('y2', yScale(prices.maxPrice))
     .selectAll('stop')
     .data([
       { offset: '0%', color: '#e0f0ea' },
