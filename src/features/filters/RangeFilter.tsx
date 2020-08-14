@@ -1,4 +1,6 @@
-import { Switch, Tooltip } from '@material-ui/core';
+import { Tooltip } from '@material-ui/core';
+import CodeIcon from '@material-ui/icons/Code';
+import ToggleButton from '@material-ui/lab/ToggleButton';
 import PropTypes from 'prop-types';
 import React from 'react';
 import SliderFilter from './SliderFilter';
@@ -33,15 +35,17 @@ const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ label, value, 
         <Tooltip title="Use range selection">
           <span>
             {label}:{' '}
-            <Switch
-              color="primary"
+            <ToggleButton
               size="small"
-              checked={isRange}
+              value="check"
+              selected={isRange}
               onChange={() => {
                 isRange = !isRange;
                 onChange(convertValue(value));
               }}
-            />
+            >
+              <CodeIcon />
+            </ToggleButton>
           </span>
         </Tooltip>
       }

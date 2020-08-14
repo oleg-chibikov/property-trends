@@ -1,6 +1,6 @@
-import piecewise from '@freder/piecewise';
 import { createColors, RGB, rgbHex } from 'color-map';
 import { PricesToColors, RealEstateResponse } from '../interfaces';
+import { MapFilters } from './../interfaces';
 import MathUtils from './mathUtils';
 
 export default class ColorUtils {
@@ -31,6 +31,43 @@ export default class ColorUtils {
     return firstHalf.concat(secondHalf).map((x) => rgbHex(x));
   };
 
+  static calculatePricesToColors = (filters: MapFilters, data: RealEstateResponse[], colors: string[]) => {
+    const shadeCount = colors.length;
+    const isHouse = filters.propertyType === 'house';
+    const isRent = filters.dealType === 'rent';
+    const houseModifier = isHouse ? 2 : 1;
+    const minMedianPrice = (isRent ? 300 : 200000) * houseModifier; // getMinMedianPrice(data);
+    const maxMedianPrice = (isRent ? 900 : 1300000) * houseModifier; // getMaxMedianPrice(data);
+
+    const totalPriceRangeSize = maxMedianPrice - minMedianPrice;
+    let priceIntervalSize = Math.round(totalPriceRangeSize / shadeCount);
+    if (!priceIntervalSize) {
+      priceIntervalSize = 1;
+    }
+
+    const colorsByPriceInterval: PricesToColors = {};
+    const suburbIdsByPriceInterval: { [price: number]: string[] } = {};
+    for (let i = 0, currentPriceAnchor = minMedianPrice; currentPriceAnchor < maxMedianPrice; currentPriceAnchor += priceIntervalSize, i++) {
+      colorsByPriceInterval[currentPriceAnchor] = { intervalMinPrice: currentPriceAnchor, color: colors[i], suburbCount: 0 };
+    }
+
+    const priceAnchorPoints = Object.keys(colorsByPriceInterval).map(Number);
+
+    for (const suburbInfo of data) {
+      const priceAnchorPoint = MathUtils.closestMinimal(suburbInfo.medianPrice, priceAnchorPoints);
+      if (!suburbIdsByPriceInterval[priceAnchorPoint]) {
+        suburbIdsByPriceInterval[priceAnchorPoint] = [suburbInfo.suburbId];
+      } else {
+        suburbIdsByPriceInterval[priceAnchorPoint].push(suburbInfo.suburbId);
+      }
+      const priceSubIntrevalInfo = colorsByPriceInterval[priceAnchorPoint];
+      priceSubIntrevalInfo.suburbCount++;
+      suburbInfo.priceIntrevalInfo = priceSubIntrevalInfo;
+    }
+    return { colorsByPriceInterval, suburbIdsByPriceInterval };
+  };
+
+  /*
   static calculatePricesToColors = (data: RealEstateResponse[], colors: string[]) => {
     const shadeCount = colors.length;
     const getMinMedianPrice = (data: RealEstateResponse[]) => data.reduce((min, p) => (p.medianPrice < min ? p.medianPrice : min), data[0].medianPrice);
@@ -205,9 +242,9 @@ export default class ColorUtils {
     const suburbsByPrice = assignColorsToSuburbs();
 
     return { pricesToColors, suburbsByPrice };
-  };
+  };*/
 
   static getOpacityByPropertyCount = (propertyCount: number | undefined) => {
-    return MathUtils.linearToLinear(propertyCount || 0, 0, 15, 0.2, 0.8);
+    return MathUtils.linearToLinear(propertyCount || 0, 0, 15, 0.7, 0.9);
   };
 }

@@ -1,5 +1,12 @@
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 import createBreakpoints from '@material-ui/core/styles/createBreakpoints';
+import { ToggleButtonClassKey } from '@material-ui/lab/ToggleButton';
+
+declare module '@material-ui/core/styles/overrides' {
+  export interface ComponentNameToClassKey {
+    MuiToggleButton: ToggleButtonClassKey;
+  }
+}
 
 const pxToRem = (value: number) => `${value / 16}rem`;
 const breakpoints = createBreakpoints({});
@@ -21,6 +28,11 @@ export default class ThemeUtils {
         },
       },
       overrides: {
+        MuiToggleButton: {
+          sizeSmall: {
+            padding: '0.1rem',
+          },
+        },
         MuiIconButton: {
           root: {
             [`${breakpoints.down('md')} and (orientation: landscape)`]: {

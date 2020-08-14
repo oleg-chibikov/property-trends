@@ -83,7 +83,7 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
 
   // console.log('price for ' + feature?.properties.locality + ': ' + medianPrice || 'not set');
   return {
-    fillColor: color ? color : '#d1abf2',
+    fillColor: color ? color : '#ffffff',
     weight: 1,
     opacity: 0.3,
     color: 'dimgray',
@@ -97,7 +97,7 @@ const applyStyleToLayer = (layer: CustomLayer) => {
   layer.setStyle(getFeatureStyle(feature));
 };
 
-const applyPriceData = (data: RealEstateResponse[]) => {
+const applyPriceData = (filters: MapFilters, data: RealEstateResponse[]) => {
   console.log('Applying price data...');
   if (!data.length) {
     console.log('No data available');
@@ -109,10 +109,10 @@ const applyPriceData = (data: RealEstateResponse[]) => {
     priceData.suburbId = suburbId;
   }
 
-  const { pricesToColors, suburbsByPrice } = ColorUtils.calculatePricesToColors(data, colors);
-  eventHandler.setSuburbIdsByPriceInterval(suburbsByPrice);
+  const { colorsByPriceInterval, suburbIdsByPriceInterval } = ColorUtils.calculatePricesToColors(filters, data, colors);
+  eventHandler.setSuburbIdsByPriceInterval(suburbIdsByPriceInterval);
 
-  dispatch(changePricesToColors(pricesToColors));
+  dispatch(changePricesToColors(colorsByPriceInterval));
 
   console.log('Caclulated colors');
 
@@ -184,7 +184,7 @@ const fetchAndApplyPriceData = (filters: MapFilters, districts: string[]) => {
     const data = await fetchData();
     if (!ignore) {
       if (data) {
-        applyPriceData(data);
+        applyPriceData(filters, data);
       }
     } else {
       console.log('Ignored applying previous price data as it is not the most recent');
