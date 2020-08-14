@@ -85,6 +85,7 @@ class Highlighter {
     layer.setStyle({
       weight: 3,
       color: 'black',
+      opacity: 1,
       //fillColor: 'magenta',
       dashArray: '',
       //fillOpacity: 0.3,
