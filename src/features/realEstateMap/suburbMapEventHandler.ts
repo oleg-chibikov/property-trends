@@ -69,6 +69,10 @@ class SuburbMapEventHandler {
     let combinedBounds: LatLngBounds | undefined = undefined;
     this.applyByPriceInterval(intervalMinPrice, (suburbId) => {
       const layer = this.layersBySuburbId[suburbId];
+      if (!layer) {
+        console.error(`layer for ${suburbId} is missing`);
+        return;
+      }
       this.highlighter.highlightLayer(layer, false);
       if (combinedBounds) {
         combinedBounds.extend(layer.getBounds());
