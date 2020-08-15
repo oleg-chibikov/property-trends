@@ -55,12 +55,12 @@
 
 @media (min-height: 0) {
   .legendContainer {
-    grid-template-rows: repeat(5, auto);
+    grid-template-rows: repeat(8, auto);
   }
 }
 
 @media (min-height: 30rem) {
   .legendContainer {
-    grid-template-rows: repeat(15, auto);
+    grid-template-rows: repeat(12, auto);
   }
 }

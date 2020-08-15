@@ -36,7 +36,7 @@ export default class ColorUtils {
     const isHouse = filters.propertyType === 'house';
     const isRent = filters.dealType === 'rent';
     const houseModifier = isHouse ? 2 : 1;
-    const minMedianPrice = (isRent ? 300 : 200000) * houseModifier; // getMinMedianPrice(data);
+    const minMedianPrice = (isRent ? 100 : 200000) * houseModifier; // getMinMedianPrice(data);
     const maxMedianPrice = (isRent ? 900 : 1300000) * houseModifier; // getMaxMedianPrice(data);
 
     const totalPriceRangeSize = maxMedianPrice - minMedianPrice;

@@ -47,7 +47,7 @@ let searchBoxSelectedSuburbId: string | undefined;
 let searchBoxHighlightedSuburbId: string | undefined;
 export const processDistrictsPromiseTrackerArea = 'processDistricts';
 
-const colors = ColorUtils.generateColors(15);
+const colors = ColorUtils.generateColors(24);
 
 const setFeaturePriceProperties = (properties: FeatureProperties) => {
   if (!properties.priceData && priceDataBySuburbId) {
