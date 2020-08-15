@@ -48,8 +48,8 @@ export default class DomainUtils {
     const parkingSpacesMax = getMaxValue(filters.parkingSpaces);
     const isRent = filters.dealType === 'rent';
 
-    return `isRent=${isRent}&propertyType=${filters.propertyType}&constructionStatus=${constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${
-      filters.mainPriceOnly || false
+    return `isRent=${isRent}&propertyType=${filters.propertyType}&constructionStatus=${constructionStatus}&allowedWindowInDays=${filters.allowedWindowInDays}&mainPriceOnly=${filters.mainPriceOnly || false}&includeSold=${
+      filters.includeSold || false
     }&bedroomsMin=${bedroomsMin}&bedroomsMax=${bedroomsMax}&bathroomsMin=${bathroomsMin}&bathroomsMax=${bathroomsMax}&parkingSpacesMin=${parkingSpacesMin}&parkingSpacesMax=${parkingSpacesMax}`;
   };
 }

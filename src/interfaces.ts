@@ -124,6 +124,7 @@ export interface MapFilters {
   constructionStatus: string;
   allowedWindowInDays: number;
   mainPriceOnly: boolean;
+  includeSold: boolean;
 }
 
 export interface ChartData {

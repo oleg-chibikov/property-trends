@@ -7,6 +7,7 @@ import BedroomsFilter from './BedroomsFilter';
 import ConstructionStatusFilter from './ConstructionStatusFilter';
 import DealTypesFilter from './DealTypesFilter';
 import styles from './Filters.module.css';
+import IncludeSoldFilter from './IncludeSoldFilter';
 import MainPriceOnlyFilter from './MainPriceOnlyFilter';
 import ParkingSpacesFilter from './ParkingSpacesFilter';
 import PropertyTypesFilter from './PropertyTypesFilter';
@@ -22,6 +23,7 @@ const FiltersList: React.FunctionComponent = () => {
       <ParkingSpacesFilter />
       <AllowedWindowInDaysFilter />
       <MainPriceOnlyFilter />
+      <IncludeSoldFilter />
     </FormGroup>
   );
 };

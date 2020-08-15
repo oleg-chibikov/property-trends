@@ -11,7 +11,7 @@ interface FiltersState {
 }
 
 const initialState: FiltersState = {
-  filters: { propertyType: 'apartment', dealType: 'buy', bedrooms: [2, 2], bathrooms: defaultRange, parkingSpaces: defaultRange, constructionStatus: 'any', allowedWindowInDays: 7, mainPriceOnly: true },
+  filters: { propertyType: 'apartment', dealType: 'buy', bedrooms: [2, 2], bathrooms: defaultRange, parkingSpaces: defaultRange, constructionStatus: 'any', allowedWindowInDays: 7, mainPriceOnly: true, includeSold: false },
   expanded: false,
   districts: [],
 };
@@ -50,6 +50,11 @@ export const FiltersSlice = createSlice({
         state.filters.mainPriceOnly = action.payload;
       }
     },
+    changeIncludeSold: (state, action: PayloadAction<boolean>) => {
+      if (state.filters.includeSold !== action.payload) {
+        state.filters.includeSold = action.payload;
+      }
+    },
     changeAllowedWindowInDays: (state, action: PayloadAction<number>) => {
       if (state.filters.allowedWindowInDays !== action.payload) {
         state.filters.allowedWindowInDays = action.payload;
@@ -80,6 +85,7 @@ export const {
   changeAllowedWindowInDays,
   changeConstructionStatus,
   changeMainPriceOnly,
+  changeIncludeSold,
   changeParkingSpaces,
   changeDistricts,
   toggleExpanded,
@@ -96,6 +102,7 @@ export const selectParkingSpaces = (state: RootState) => state.filters.filters.p
 export const selectConstructionStatus = (state: RootState) => state.filters.filters.constructionStatus;
 export const selectAllowedWindowInDays = (state: RootState) => state.filters.filters.allowedWindowInDays;
 export const selectMainPriceOnly = (state: RootState) => state.filters.filters.mainPriceOnly;
+export const selectIncludeSold = (state: RootState) => state.filters.filters.includeSold;
 export const selectExpanded = (state: RootState) => state.filters.expanded;
 
 export default FiltersSlice.reducer;
