@@ -72,8 +72,6 @@ div.tooltip {
 
 .dotSurrounding {
   cursor: help;
-  fill: #141414;
-  opacity: 0.1;
 }
 
 .selectedDot {

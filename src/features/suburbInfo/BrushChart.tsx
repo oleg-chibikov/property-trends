@@ -479,7 +479,7 @@ function appendScatterToMainGraph(
     .attr('class', 'dot')
     .attr('cx', (d) => xScale(d.date))
     .attr('cy', (d) => yScale(d.median))
-    .style('opacity', (x) => (x.count < 3 ? 0.2 : x.count < 10 ? 0.5 : 1));
+    .style('opacity', (x) => (x.count < 3 ? 0.2 : x.count < 5 ? 0.5 : x.count < 10 ? 0.7 : 1));
 
   scatter
     .selectAll('.dotSurrounding')
@@ -489,6 +489,8 @@ function appendScatterToMainGraph(
     .attr('class', 'dotSurrounding')
     .attr('cx', (d) => xScale(d.date))
     .attr('cy', (d) => yScale(d.median))
+    .style('fill', (x) => (x.count < 3 ? '#f3f0e7' : x.count < 5 ? '#eedfb4' : x.count < 10 ? '#eed590' : '#ffc21a'))
+    .style('opacity', (x) => (x.count < 3 ? 0.1 : x.count < 5 ? 0.3 : x.count < 10 ? 0.5 : 0.7))
     .on('mouseover', (d) => showTooltip(d, tooltip))
     .on('click', (d) => showTooltip(d, tooltip))
     .on('mousemove', (d) => repositionTooltip(d, tooltip))
