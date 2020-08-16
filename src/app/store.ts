@@ -6,7 +6,6 @@ import districtListReducer from '../features/districtList/districtListSlice';
 import filtersReducer from '../features/filters/filtersSlice';
 import infoReducer from '../features/info/infoSlice';
 import legendReducer from '../features/legend/legendSlice';
-import popupReducer from '../features/popup/popupSlice';
 import searchBoxReducer from '../features/search/searchBoxSlice';
 import suburbInfoReducer from '../features/suburbInfo/suburbInfoSlice';
 import suburbListReducer from '../features/suburbList/suburbListSlice';
@@ -14,6 +13,7 @@ const persistConfig = {
   key: 'root',
   version: 1,
   storage,
+  blacklist: ['info', 'legend', 'searchBox', 'currentLocation'],
 };
 
 const rootReducer = combineReducers({
@@ -24,7 +24,6 @@ const rootReducer = combineReducers({
   legend: legendReducer,
   searchBox: searchBoxReducer,
   currentLocation: currentLocationReducer,
-  popup: popupReducer,
   suburbInfo: suburbInfoReducer,
 });
 

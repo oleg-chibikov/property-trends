@@ -2,7 +2,6 @@ import { LatLngBounds, Map } from 'leaflet';
 import { Dispatch } from 'react';
 import { CustomLayer, EventArgs } from '../../interfaces';
 import DomainUtils from '../../utils/domainUtils';
-import { setPosition } from '../popup/popupSlice';
 import { removeSearchResult } from '../search/searchBoxSlice';
 import { setExpanded, setHistory, setProperties, setSuburbKey } from '../suburbInfo/suburbInfoSlice';
 import { scrollToSuburb } from '../suburbList/suburbListSlice';
@@ -136,8 +135,6 @@ class SuburbMapEventHandler {
     this.dispatch(setSuburbKey({ locality, postCode, state }));
     this.highlighter.highlightLayer(layer);
     this.scrollToSuburbInList(properties.suburbId);
-    const positionCopy = { lat: e.latlng.lat, lng: e.latlng.lng };
-    this.dispatch(setPosition(positionCopy));
     this.dispatch(setExpanded(true));
   };
 
