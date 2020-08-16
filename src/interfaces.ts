@@ -15,7 +15,7 @@ export interface RealEstateResponse {
   maxPrice: number;
   percentile95Price: number;
   count: number;
-  priceIntrevalInfo?: PriceIntrevalInfo;
+  priceIntrevalInfo: PriceIntrevalInfo;
   suburbId: string;
 }
 
@@ -93,6 +93,25 @@ export interface FeatureProperties {
   postCode: number;
   state: string;
   district: string;
+}
+
+export interface InfoData {
+  fileName: string;
+  locality: string;
+  suburbId: string;
+  postCode: number;
+  state: string;
+  district: string;
+  priceData?: InfoPriceData;
+}
+
+export interface InfoPriceData {
+  medianPrice: number;
+  minPrice: number;
+  averagePrice: number;
+  maxPrice: number;
+  percentile95Price: number;
+  count: number;
 }
 
 export interface WithFeatures extends GeoJSON.GeoJsonObject {

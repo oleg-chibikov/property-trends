@@ -17,7 +17,7 @@ import MapUtils from '../../utils/mapUtils';
 import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import CurrentLocation from '../currentLocation/CurrentLocation';
-import { selectCheckedDistricts } from '../districtList/districtListSlice';
+import { selectCheckedDistricts, selectUseAdaptiveColors } from '../districtList/districtListSlice';
 import { changeDistricts, selectDistricts, selectFilters } from '../filters/filtersSlice';
 import Info from '../info/Info';
 import Legend from '../legend/Legend';
@@ -30,6 +30,7 @@ import Highlighter from './highlighter';
 import MapConstants from './mapConstants';
 import SuburbMapEventHandler from './suburbMapEventHandler';
 
+let setCurrentPriceData: (data: RealEstateResponse[]) => void;
 let isApartment: boolean;
 const apartmentHtml = renderToString(<Apartment />);
 const houseHtml = renderToString(<Home />);
@@ -97,24 +98,19 @@ const applyStyleToLayer = (layer: CustomLayer) => {
   layer.setStyle(getFeatureStyle(feature));
 };
 
-const applyPriceData = (filters: MapFilters, data: RealEstateResponse[]) => {
+const applyPriceData = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[]) => {
   console.log('Applying price data...');
-  if (!data.length) {
-    console.log('No data available');
-    return;
-  }
 
-  for (const priceData of data) {
-    const suburbId = DomainUtils.getSuburbId(priceData.locality, priceData.postCode);
-    priceData.suburbId = suburbId;
-  }
+  const setColors = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[]) => {
+    const { colorsByPriceInterval, suburbIdsByPriceInterval } = ColorUtils.calculatePricesToColors(useAdaptiveColors, filters, data, colors);
+    eventHandler.setSuburbIdsByPriceInterval(suburbIdsByPriceInterval);
 
-  const { colorsByPriceInterval, suburbIdsByPriceInterval } = ColorUtils.calculatePricesToColors(filters, data, colors);
-  eventHandler.setSuburbIdsByPriceInterval(suburbIdsByPriceInterval);
+    dispatch(changePricesToColors(colorsByPriceInterval));
 
-  dispatch(changePricesToColors(colorsByPriceInterval));
+    console.log('Caclulated colors');
+  };
 
-  console.log('Caclulated colors');
+  setColors(useAdaptiveColors, filters, data);
 
   const getRealEstateDictionary = (priceDataArray: RealEstateResponse[]) => {
     if (!priceDataArray) {
@@ -183,8 +179,17 @@ const fetchAndApplyPriceData = (filters: MapFilters, districts: string[]) => {
   const applyData = async () => {
     const data = await fetchData();
     if (!ignore) {
-      if (data) {
-        applyPriceData(filters, data);
+      if (data && data.length) {
+        const setSuburbIds = () => {
+          for (const priceData of data) {
+            const suburbId = DomainUtils.getSuburbId(priceData.locality, priceData.postCode);
+            priceData.suburbId = suburbId;
+          }
+        };
+
+        setSuburbIds();
+
+        setCurrentPriceData(data);
       }
     } else {
       console.log('Ignored applying previous price data as it is not the most recent');
@@ -347,9 +352,13 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   const [handler, setHandler] = useState<SuburbMapEventHandler>();
   dispatch = useDispatch();
+  const [data, setData] = useState<RealEstateResponse[]>();
+  setCurrentPriceData = setData;
   const checkedDistrictFileNames = useSelector(selectCheckedDistricts);
+  const useAdaptiveColors = useSelector(selectUseAdaptiveColors);
   const filters = useSelector(selectFilters);
   const districts = useSelector(selectDistricts);
+  const supportsMouse = window.matchMedia('(hover: hover)').matches;
   // This is used to display proper icon in tooltips
   isApartment = filters.propertyType === 'apartment';
   searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);
@@ -362,14 +371,22 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   useEffect(() => {
     return fetchAndApplyPriceData(filters, districts);
   }, [filters, districts]);
-  const geojsonRef = useCallback((node) => {
-    if (node !== null) {
-      // use state to load (and display in GEOJson tag) all polygons that are already here
-      geoJsonElement = node;
-      highlighter = new Highlighter(dispatch, geoJsonElement);
-      setHandler(new SuburbMapEventHandler(dispatch, mapElement, highlighter, layersBySuburbId));
+  useEffect(() => {
+    if (data && data.length) {
+      applyPriceData(useAdaptiveColors, filters, data);
     }
-  }, []);
+  }, [useAdaptiveColors, filters, data]);
+  const geojsonRef = useCallback(
+    (node) => {
+      if (node !== null) {
+        // use state to load (and display in GEOJson tag) all polygons that are already here
+        geoJsonElement = node;
+        highlighter = new Highlighter(dispatch, geoJsonElement);
+        setHandler(new SuburbMapEventHandler(supportsMouse, dispatch, mapElement, highlighter, layersBySuburbId));
+      }
+    },
+    [supportsMouse]
+  );
 
   if (handler) {
     eventHandler = handler;

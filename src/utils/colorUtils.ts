@@ -1,5 +1,6 @@
+import piecewise from '@freder/piecewise';
 import { createColors, RGB, rgbHex } from 'color-map';
-import { PricesToColors, RealEstateResponse } from '../interfaces';
+import { PriceIntrevalInfo, PricesToColors, RealEstateResponse } from '../interfaces';
 import { MapFilters } from './../interfaces';
 import MathUtils from './mathUtils';
 
@@ -31,7 +32,18 @@ export default class ColorUtils {
     return firstHalf.concat(secondHalf).map((x) => rgbHex(x));
   };
 
-  static calculatePricesToColors = (filters: MapFilters, data: RealEstateResponse[], colors: string[]) => {
+  static calculatePricesToColors = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[], colors: string[]) => {
+    if (useAdaptiveColors) {
+      return ColorUtils.getColorsAdaptive(colors, data);
+    }
+    return ColorUtils.getColorsWholeRange(filters, colors, data);
+  };
+
+  static getOpacityByPropertyCount = (propertyCount: number | undefined) => {
+    return MathUtils.linearToLinear(propertyCount || 0, 0, 15, 0.7, 0.9);
+  };
+
+  private static getColorsWholeRange = (filters: MapFilters, colors: string[], data: RealEstateResponse[]) => {
     const shadeCount = colors.length;
     const isHouse = filters.propertyType === 'house';
     const isRent = filters.dealType === 'rent';
@@ -62,13 +74,12 @@ export default class ColorUtils {
       }
       const priceSubIntrevalInfo = colorsByPriceInterval[priceAnchorPoint];
       priceSubIntrevalInfo.suburbCount++;
-      suburbInfo.priceIntrevalInfo = priceSubIntrevalInfo;
+      ColorUtils.SetPriceIntervalInfo(suburbInfo, priceSubIntrevalInfo);
     }
     return { colorsByPriceInterval, suburbIdsByPriceInterval };
   };
 
-  /*
-  static calculatePricesToColors = (data: RealEstateResponse[], colors: string[]) => {
+  private static getColorsAdaptive = (colors: string[], data: RealEstateResponse[]) => {
     const shadeCount = colors.length;
     const getMinMedianPrice = (data: RealEstateResponse[]) => data.reduce((min, p) => (p.medianPrice < min ? p.medianPrice : min), data[0].medianPrice);
     const getMaxMedianPrice = (data: RealEstateResponse[]) => data.reduce((max, p) => (p.medianPrice > max ? p.medianPrice : max), data[0].medianPrice);
@@ -191,31 +202,31 @@ export default class ColorUtils {
     adjustShadeCount();
 
     const buildVariableLengthSubIntervals = () => {
-      const pricesToColors: PricesToColors = {};
+      const colorsByPriceInterval: PricesToColors = {};
       let globalSubIntervalIndex = 0;
       let firstPriceSet = false;
       for (const subIntervalInfo of subIntervals) {
         const subIntervalSize = Math.round(priceIntervalSize / subIntervalInfo.subIntervalCount);
         for (let i = 0; i < subIntervalInfo.subIntervalCount; i++) {
           const subIntervalMinPrice = firstPriceSet ? subIntervalInfo.intervalMinPrice + i * subIntervalSize : minMedianPrice; // the first interval with subIntervals should encompass all the previous intervals without subIntervals
-          pricesToColors[subIntervalMinPrice] = { intervalMinPrice: subIntervalMinPrice, color: colors[globalSubIntervalIndex], suburbCount: 0 };
+          colorsByPriceInterval[subIntervalMinPrice] = { intervalMinPrice: subIntervalMinPrice, color: colors[globalSubIntervalIndex], suburbCount: 0 };
           globalSubIntervalIndex++;
           firstPriceSet = true;
         }
       }
-      return pricesToColors;
+      return colorsByPriceInterval;
     };
 
-    const pricesToColors = buildVariableLengthSubIntervals();
+    const colorsByPriceInterval = buildVariableLengthSubIntervals();
 
     const assignColorsToSuburbs = () => {
       const buildPiecewiseEasingFunction = () => {
         const piecewiseEasingFnObjects = [];
-        const keys = Object.keys(pricesToColors).map(Number);
+        const keys = Object.keys(colorsByPriceInterval).map(Number);
         let index = 0;
         for (const subIntervalMinPrice of keys) {
-          const priceSubIntervalInfo = pricesToColors[subIntervalMinPrice];
-          const nextPriceSubIntervalInfo = pricesToColors[keys[index + 1]];
+          const priceSubIntervalInfo = colorsByPriceInterval[subIntervalMinPrice];
+          const nextPriceSubIntervalInfo = colorsByPriceInterval[keys[index + 1]];
           piecewiseEasingFnObjects.push({ tInterval: [priceSubIntervalInfo.intervalMinPrice, nextPriceSubIntervalInfo?.intervalMinPrice || Number.MAX_VALUE], easingFn: () => subIntervalMinPrice });
           index++;
         }
@@ -227,9 +238,9 @@ export default class ColorUtils {
       const suburbIdsByPriceInterval: { [price: number]: string[] } = {};
       for (const suburbInfo of data) {
         const subIntervalMinPrice = piecewiseEasingFn(suburbInfo.medianPrice);
-        const priceSubIntrevalInfo = pricesToColors[subIntervalMinPrice];
+        const priceSubIntrevalInfo = colorsByPriceInterval[subIntervalMinPrice];
         priceSubIntrevalInfo.suburbCount++;
-        suburbInfo.priceIntrevalInfo = priceSubIntrevalInfo;
+        ColorUtils.SetPriceIntervalInfo(suburbInfo, priceSubIntrevalInfo);
         if (!suburbIdsByPriceInterval[priceSubIntrevalInfo.intervalMinPrice]) {
           suburbIdsByPriceInterval[priceSubIntrevalInfo.intervalMinPrice] = [suburbInfo.suburbId];
         } else {
@@ -239,12 +250,12 @@ export default class ColorUtils {
       return suburbIdsByPriceInterval;
     };
 
-    const suburbsByPrice = assignColorsToSuburbs();
+    const suburbIdsByPriceInterval = assignColorsToSuburbs();
 
-    return { pricesToColors, suburbsByPrice };
-  };*/
-
-  static getOpacityByPropertyCount = (propertyCount: number | undefined) => {
-    return MathUtils.linearToLinear(propertyCount || 0, 0, 15, 0.7, 0.9);
+    return { colorsByPriceInterval, suburbIdsByPriceInterval };
   };
+
+  private static SetPriceIntervalInfo(suburbInfo: RealEstateResponse, priceIntrevalInfo: PriceIntrevalInfo) {
+    suburbInfo.priceIntrevalInfo = priceIntrevalInfo;
+  }
 }

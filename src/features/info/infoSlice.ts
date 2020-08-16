@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
-import { FeatureProperties } from './../../interfaces';
+import { InfoData } from './../../interfaces';
 
 interface InfoState {
-  currentInfo?: FeatureProperties;
+  currentInfo?: InfoData;
 }
 
 const initialState: InfoState = {
@@ -14,7 +14,7 @@ export const infoSlice = createSlice({
   name: 'Info',
   initialState,
   reducers: {
-    setInfo: (state, action: PayloadAction<FeatureProperties>) => {
+    setInfo: (state, action: PayloadAction<InfoData>) => {
       state.currentInfo = action.payload;
     },
     clearInfo: (state) => {

@@ -7,6 +7,7 @@ import { districtListRetrievalPromiseTrackerArea } from '../../backendRequests/d
 import withDrawer from '../../hoc/WithDrawer';
 import { processDistrictsPromiseTrackerArea } from '../realEstateMap/SuburbMap';
 import Spinner from '../spinner/Spinner';
+import AdaptiveColorsSwitch from './AdaptiveColorsSwitch';
 import { selectDistrictsByState, selectElementToScrollTo, toggleRetry } from './districtListSlice';
 import StateEntry from './StateEntry';
 
@@ -63,6 +64,7 @@ const DistrictList: React.FunctionComponent = () => {
       {keys.map((state, index) => (
         <StateEntry key={index} state={state} />
       ))}
+      <AdaptiveColorsSwitch />
     </FormGroup>
   );
 };

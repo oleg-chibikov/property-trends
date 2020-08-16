@@ -53,8 +53,25 @@ class Highlighter {
   };
 
   private showInfo = (properties: FeatureProperties) => {
-    const copy = { ...properties };
-    this.dispatch(setInfo(copy));
+    const priceData = properties.priceData;
+    this.dispatch(
+      setInfo({
+        fileName: properties.fileName,
+        locality: properties.locality,
+        suburbId: properties.suburbId,
+        postCode: properties.postCode,
+        state: properties.state,
+        district: properties.district,
+        priceData: priceData && {
+          medianPrice: priceData.medianPrice,
+          minPrice: priceData.minPrice,
+          averagePrice: priceData.averagePrice,
+          maxPrice: priceData.maxPrice,
+          percentile95Price: priceData.percentile95Price,
+          count: priceData.count,
+        },
+      })
+    );
   };
 
   private hideInfo = () => {

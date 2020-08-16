@@ -13,7 +13,7 @@ const persistConfig = {
   key: 'root',
   version: 1,
   storage,
-  blacklist: ['info', 'legend', 'searchBox', 'currentLocation'],
+  blacklist: ['info', 'legend', 'searchBox', 'currentLocation', 'suburbList'],
 };
 
 const rootReducer = combineReducers({

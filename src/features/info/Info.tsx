@@ -4,7 +4,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import Home from '@material-ui/icons/Home';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FeatureProperties } from '../../interfaces';
+import { InfoData } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
 import { selectFilters } from '../filters/filtersSlice';
 import RealEstateSuburbLink from '../links/RealEstateSuburbLink';
@@ -17,7 +17,7 @@ const Info: React.FunctionComponent = () => {
   const isApartment = filters.propertyType === 'apartment';
   const dispatch = useDispatch();
 
-  const renderAdditionalInfo = (info: FeatureProperties) =>
+  const renderAdditionalInfo = (info: InfoData) =>
     info.priceData && (
       <React.Fragment>
         <div>

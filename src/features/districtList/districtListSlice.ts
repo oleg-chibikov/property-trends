@@ -19,6 +19,7 @@ interface DistrictListState {
   expandedState: string | false;
   retrySwitch: boolean;
   elementToScrollTo?: string;
+  useAdaptiveColors: boolean;
 }
 
 const defaultDistrictsByState: { [state: string]: string[] } = {
@@ -47,6 +48,7 @@ const initialState: DistrictListState = {
   expandedState: false,
   retrySwitch: false,
   elementToScrollTo: undefined,
+  useAdaptiveColors: true,
 };
 
 const clear = (state: DistrictListState) => {
@@ -149,6 +151,9 @@ export const districtlistSlice = createSlice({
     setElementToScrollTo: (state, action: PayloadAction<string | undefined>) => {
       state.elementToScrollTo = action.payload;
     },
+    toggleUseAdaptiveColors: (state) => {
+      state.useAdaptiveColors = !state.useAdaptiveColors;
+    },
   },
 });
 
@@ -165,6 +170,7 @@ export const {
   addDistrictFileNames,
   toggleRetry,
   setElementToScrollTo,
+  toggleUseAdaptiveColors,
 } = districtlistSlice.actions;
 
 export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
@@ -174,5 +180,6 @@ export const selectExpanded = (state: RootState) => state.districtList.expanded;
 export const selectExpandedState = (state: RootState) => state.districtList.expandedState;
 export const selectRetrySwitch = (state: RootState) => state.districtList.retrySwitch;
 export const selectElementToScrollTo = (state: RootState) => state.districtList.elementToScrollTo;
+export const selectUseAdaptiveColors = (state: RootState) => state.districtList.useAdaptiveColors;
 
 export default districtlistSlice.reducer;
