@@ -95,7 +95,9 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
 
 const applyStyleToLayer = (layer: CustomLayer) => {
   const feature = layer.feature;
-  layer.setStyle(getFeatureStyle(feature));
+
+  // With setTimeout it applies style to layers one by one, otherwise - at once
+  setTimeout(() => layer.setStyle(getFeatureStyle(feature)), 0);
 };
 
 const applyPriceData = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[]) => {
@@ -145,6 +147,7 @@ const fetchAndApplyPriceData = (filters: MapFilters, districts: string[]) => {
   let ignore = false;
 
   const cleanup = () => {
+    console.log('Cleaning up old colors...');
     const resetAllLayers = () => {
       const resetPriceData = (properties: FeatureProperties) => {
         properties.priceData = undefined;
@@ -165,7 +168,8 @@ const fetchAndApplyPriceData = (filters: MapFilters, districts: string[]) => {
     resetAllLayers();
   };
 
-  cleanup();
+  // It doesn't cleanup data without timeout
+  setTimeout(cleanup, 0);
 
   const fetchData = async () => {
     try {
@@ -221,7 +225,7 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   const suburbId = properties.suburbId;
   layersBySuburbId[suburbId] = layer;
 
-  // if priceData is fetched - the necessary properties and the style should be applied;
+  // If priceData is fetched - the necessary properties and the style should be applied;
   if (priceDataBySuburbId) {
     applyStyleToLayer(layer);
   }
@@ -229,7 +233,7 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
   // layer.bindPopup('');
   const tooltipContent = setLayerPopupAndTooltip(layer);
   layer.bindTooltip(tooltipContent, { permanent: true, direction: 'center', interactive: false, className: 'suburb-tooltip' });
-  // for some reason it doesn't work without setTimeout
+  // For some reason it doesn't work without setTimeout
   setTimeout(() => {
     if (mapElement.getZoom() >= MapConstants.tooltipZoom) {
       layer.openTooltip();
@@ -248,7 +252,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
     }
   };
 
-  // search for prices in parallel with fetching districts
+  // Search for prices in parallel with fetching districts
   getPricesForCheckedDistricts();
 
   const processDistricts = async () => {
@@ -283,7 +287,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
       };
 
       const applyPolygonData = (data: GeoJSON.GeoJsonObject | GeoJSON.GeoJsonObject[]) => {
-        // this object contains all the layers, not just recently added
+        // This object contains all the layers, not just recently added
         const compoundLayer = geoJsonElement.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
         bounds = compoundLayer.getBounds();
       };
@@ -335,7 +339,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
 
     removeUncheckedLayers(checkedDistrictFileNames);
     await addCheckedLayers(checkedDistrictFileNames);
-    // Searchbox requires new file to be loaded - select here and show selected suburb
+    // SearchBox requires a new file to be loaded - select here and show selected suburb
     if (!eventHandler.onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId)) {
       eventHandler.showBounds(bounds);
     }
@@ -379,7 +383,7 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   const geojsonRef = useCallback(
     (node) => {
       if (node !== null) {
-        // use state to load (and display in GEOJson tag) all polygons that are already here
+        // Use state to load (and display in GEOJson tag) all polygons that are already here
         geoJsonElement = node;
         highlighter = new Highlighter(dispatch, geoJsonElement);
         setHandler(new SuburbMapEventHandler(supportsMouse, dispatch, mapElement, highlighter, layersBySuburbId));

@@ -179,7 +179,7 @@ class SuburbMapEventHandler {
     this.dispatch(setProperties(undefined));
     this.dispatch(setHistory(undefined));
     this.dispatch(setSuburbKey(undefined));
-    this.dispatch(setSuburbKey({ ...properties }));
+    this.dispatch(setSuburbKey({ state: properties.state, locality: properties.locality, postCode: properties.postCode }));
     this.dispatch(setExpanded(true));
   }
 }
