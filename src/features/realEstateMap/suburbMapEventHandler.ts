@@ -1,4 +1,4 @@
-import { LatLngBounds, Map } from 'leaflet';
+import { DomEvent, LatLngBounds, Map } from 'leaflet';
 import { Dispatch } from 'react';
 import { CustomLayer, EventArgs } from '../../interfaces';
 import { removeSearchResult } from '../search/searchBoxSlice';
@@ -144,8 +144,8 @@ class SuburbMapEventHandler {
     if (!this.supportsMouse) {
       this.showSuburbInfo(properties);
     }
-    (e as any).originalEvent.view?.L.DomEvent.stopPropagation(e);
-    return false;
+
+    DomEvent.stopPropagation(e);
   };
 
   onLayerMouseDown = (e: EventArgs<CustomLayer>) => {

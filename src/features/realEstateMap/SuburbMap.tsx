@@ -166,21 +166,22 @@ const fetchAndApplyPriceData = (filters: MapFilters, districts: string[]) => {
 
     cleanupLegend();
     resetAllLayers();
+    console.log('Cleanup finished');
   };
 
   // It doesn't cleanup data without timeout
   setTimeout(cleanup, 0);
 
-  const fetchData = async () => {
-    try {
-      return await fetchPriceData(filters, districts);
-    } catch {
-      //debounce error;
-      return null;
-    }
-  };
-
   const applyData = async () => {
+    const fetchData = async () => {
+      try {
+        return await fetchPriceData(filters, districts);
+      } catch {
+        //debounce error;
+        return null;
+      }
+    };
+
     const data = await fetchData();
     if (!ignore) {
       if (data && data.length) {
