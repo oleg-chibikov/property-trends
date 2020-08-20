@@ -45,17 +45,16 @@ const onMapZoomStart = (event: LeafletEvent) => {
   dispatch(setIsCurrentLocationSearchPaused(true));
 };
 
-const onMapDragStart = async (event: LeafletEvent) => {
-  console.log('Starting dragging...');
+const onMapMoveStart = async (event: LeafletEvent) => {
+  console.log('Starting moving...');
 };
 
-const onMapDragEnd = async (event: LeafletEvent) => {
-  console.log('Finished dragging');
+const onMapMoveEnd = async (event: LeafletEvent) => {
   triggerDistrictsReloadForUserInitiatedEvent(event);
+  console.log('Finished moving');
 };
 
 const onMapZoomEnd = (event: LeafletEvent) => {
-  console.log('Finished zooming');
   dispatch(setIsCurrentLocationSearchPaused(false));
   const map = event.target as LeafletMap;
   const zoom = map.getZoom();
@@ -81,7 +80,7 @@ const onMapZoomEnd = (event: LeafletEvent) => {
     });
   }
   lastZoom = zoom;
-  triggerDistrictsReloadForUserInitiatedEvent(event);
+  console.log('Finished zooming');
 };
 
 const RealEstateMap: React.FunctionComponent = () => {
@@ -140,8 +139,8 @@ const RealEstateMap: React.FunctionComponent = () => {
         animate={true}
         onzoomstart={onMapZoomStart}
         onzoomend={onMapZoomEnd}
-        ondragstart={onMapDragStart}
-        ondragend={onMapDragEnd}
+        onmovestart={onMapMoveStart}
+        onmoveend={onMapMoveEnd}
         ref={mapRef}
         zoomControl={false}
         attributionControl={false}
