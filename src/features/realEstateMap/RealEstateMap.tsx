@@ -35,7 +35,7 @@ const loadRegionsInViewport = async (map: LeafletMap) => {
 
   const districtsByBoundingBox = await fetchSuburbPolygons(northWest.lng, northWest.lat, southEast.lng, southEast.lat);
   if (districtsByBoundingBox) {
-    console.log('Applying new districts...');
+    console.log('Applying new districts from viewport...');
     dispatch(checkStatesAndDistricts(districtsByBoundingBox));
   }
 };

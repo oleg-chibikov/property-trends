@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { StateAndDistrict } from '../../interfaces';
+import DomainUtils from '../../utils/domainUtils';
 
 export interface DistrictsByState {
   [state: string]: string[];
@@ -15,8 +16,8 @@ const defaultDistrictsByState: { [state: string]: string[] } = {
     'Sydney - City',
     'Sydney - Eastern',
     'Sydney - Inner',
-    //'Sydney - North',
-    //'Sydney - Ryde',
+    // 'Sydney - North',
+    // 'Sydney - Ryde',
     // 'Sydney - Parramatta',
     // 'Sydney - Sutherland'
   ],
@@ -31,9 +32,9 @@ const defaultDistrictsByState: { [state: string]: string[] } = {
 const stateByDistrict: StateByDistrict = {};
 
 interface DistrictListState {
-  checkedDistricts: { [fileName: string]: number };
+  checkedDistrictFileNames: { [fileName: string]: number };
   checkedStates: { [state: string]: number };
-  districtsByState: DistrictsByState;
+  districtFileNamesByState: DistrictsByState;
   expanded: boolean;
   expandedState: string | false;
   retrySwitch: boolean;
@@ -43,9 +44,9 @@ interface DistrictListState {
 }
 
 const initialState: DistrictListState = {
-  checkedDistricts: {},
+  checkedDistrictFileNames: {},
   checkedStates: {},
-  districtsByState: {},
+  districtFileNamesByState: {},
   expanded: false,
   expandedState: false,
   retrySwitch: false,
@@ -55,7 +56,7 @@ const initialState: DistrictListState = {
 };
 
 const clear = (state: DistrictListState) => {
-  state.checkedDistricts = {};
+  state.checkedDistrictFileNames = {};
   state.checkedStates = {};
 };
 
@@ -64,25 +65,25 @@ const checkStateInternal = (state: DistrictListState, zoomToSelection: boolean, 
   state.checkedStates[politicalState] = 0;
   state.expandedState = politicalState;
   const districtsToCheck = districts || defaultDistrictsByState[politicalState];
-  for (const district of state.districtsByState[politicalState]) {
+  for (const district of state.districtFileNamesByState[politicalState]) {
     if (districtsToCheck) {
       // Select only requested districts
       for (const defaultDistrict of districtsToCheck) {
         if (district.indexOf(defaultDistrict) > -1) {
-          state.checkedDistricts[district] = 0;
+          state.checkedDistrictFileNames[district] = 0;
           state.checkedStates[politicalState]++;
           break;
         }
       }
     } else {
       // Select whole state
-      state.checkedDistricts[district] = 0;
+      state.checkedDistrictFileNames[district] = 0;
       state.checkedStates[politicalState]++;
     }
   }
 };
 
-export const districtlistSlice = createSlice({
+export const districtListSlice = createSlice({
   name: 'DistrictList',
   initialState,
   reducers: {
@@ -96,7 +97,7 @@ export const districtlistSlice = createSlice({
         districtsByState[politicalState] = districtsForState;
         stateByDistrict[district] = politicalState;
       }
-      state.districtsByState = districtsByState;
+      state.districtFileNamesByState = districtsByState;
     },
     checkState: (state, action: PayloadAction<string>) => {
       clear(state);
@@ -109,8 +110,8 @@ export const districtlistSlice = createSlice({
       state.zoomToSelection = true;
       const politicalState = action.payload;
       delete state.checkedStates[politicalState];
-      for (const district of state.districtsByState[politicalState]) {
-        delete state.checkedDistricts[district];
+      for (const fileName of state.districtFileNamesByState[politicalState]) {
+        delete state.checkedDistrictFileNames[fileName];
       }
     },
     checkInitialStateIfEmpty: (state, action: PayloadAction<string>) => {
@@ -120,13 +121,13 @@ export const districtlistSlice = createSlice({
       }
     },
     checkDistrict: (state, action: PayloadAction<string>) => {
-      const district = action.payload;
-      if (district in state.checkedDistricts) {
+      const fileName = action.payload;
+      if (fileName in state.checkedDistrictFileNames) {
         return;
       }
       state.zoomToSelection = true;
-      const politicalState = stateByDistrict[district];
-      state.checkedDistricts[district] = 0;
+      const politicalState = stateByDistrict[fileName];
+      state.checkedDistrictFileNames[fileName] = 0;
       if (!state.checkedStates[politicalState]) {
         state.checkedStates[politicalState] = 0;
       }
@@ -134,6 +135,13 @@ export const districtlistSlice = createSlice({
     },
     checkStatesAndDistricts: (state, action: PayloadAction<StateAndDistrict[]>) => {
       const statesAndDistricts = action.payload;
+      const allNewDistricts = statesAndDistricts.map((x) => x.district).sort();
+      const allExistingDistricts = state.checkedDistrictFileNames ? Object.keys(state.checkedDistrictFileNames).map(DomainUtils.getDistrictNameFromFileName).sort() : [];
+
+      if (JSON.stringify(allNewDistricts) === JSON.stringify(allExistingDistricts)) {
+        console.log('Selected districts are identical to previous selection');
+        return;
+      }
       clear(state);
       const districtsByState: DistrictsByState = {};
       for (const stateAndDistrict of statesAndDistricts) {
@@ -156,14 +164,14 @@ export const districtlistSlice = createSlice({
       const district = action.payload;
       const politicalState = stateByDistrict[district];
       state.checkedStates[politicalState] = 0;
-      state.checkedDistricts[district] = 0;
+      state.checkedDistrictFileNames[district] = 0;
       state.checkedStates[politicalState]++;
     },
     uncheckDistrict: (state, action: PayloadAction<string>) => {
       state.zoomToSelection = true;
       const district = action.payload;
       const politicalState = stateByDistrict[district];
-      delete state.checkedDistricts[district];
+      delete state.checkedDistrictFileNames[district];
       state.checkedStates[politicalState]--;
       if (state.checkedStates[politicalState] <= 0) {
         delete state.checkedStates[politicalState];
@@ -206,10 +214,10 @@ export const {
   toggleUseAdaptiveColors,
   checkStatesAndDistricts,
   setZoomToSelection,
-} = districtlistSlice.actions;
+} = districtListSlice.actions;
 
-export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
-export const selectDistrictsByState = (state: RootState) => state.districtList.districtsByState;
+export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistrictFileNames;
+export const selectDistrictsByState = (state: RootState) => state.districtList.districtFileNamesByState;
 export const selectCheckedStates = (state: RootState) => state.districtList.checkedStates;
 export const selectDistrictListExpanded = (state: RootState) => state.districtList.expanded;
 export const selectDistrictListExpandedState = (state: RootState) => state.districtList.expandedState;
@@ -218,4 +226,4 @@ export const selectElementToScrollTo = (state: RootState) => state.districtList.
 export const selectUseAdaptiveColors = (state: RootState) => state.districtList.useAdaptiveColors;
 export const selectZoomToSelection = (state: RootState) => state.districtList.zoomToSelection;
 
-export default districtlistSlice.reducer;
+export default districtListSlice.reducer;

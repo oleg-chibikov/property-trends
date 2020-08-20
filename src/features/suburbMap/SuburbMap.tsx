@@ -32,8 +32,6 @@ import Highlighter from './highlighter';
 import SuburbMapEventHandler from './suburbMapEventHandler';
 
 //TODO: if nothing remembered and user is in Australia - show region around
-// if moved and nothing changed - don't reload districts (scrollToSelected)
-// zoom to current Location - load regions?
 
 interface PriceDataBySuburbId {
   [suburbId: string]: RealEstateResponse;

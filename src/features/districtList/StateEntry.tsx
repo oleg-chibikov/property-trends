@@ -20,7 +20,7 @@ const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state: political
   const districtsByState = useSelector(selectDistrictsByState);
   const districtsForState = districtsByState[politicalState].map((district, index) => {
     const suburbElementId = `district_${politicalState}_${index}`;
-    const isChecked = district in checkedDistricts;
+    const isChecked = checkedDistricts && district in checkedDistricts;
     return {
       district: district,
       checked: isChecked,
