@@ -1,15 +1,11 @@
 import { useEffect, useRef } from 'react';
 
-/**
- * Hook that returns the last used value.
- */
-
-function usePrevious<T>(value: T) {
+export const usePrevious = <T>(value: T): T | undefined => {
   const ref = useRef<T>();
   useEffect(() => {
     ref.current = value;
   });
   return ref.current;
-}
+};
 
 export default usePrevious;

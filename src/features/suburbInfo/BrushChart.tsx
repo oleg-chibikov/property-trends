@@ -2,11 +2,11 @@ import * as d3 from 'd3';
 import PropTypes from 'prop-types';
 import React, { Dispatch, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import useResizeObserver from '../../hooks/useResizeObserver';
 import { ChartData } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
 import './graph.css';
 import { selectChartBrushSelection, selectExpanded, setChartBrushSelection } from './suburbInfoSlice';
-import useResizeObserver from './useResizeObserver';
 
 interface BrushChartProps {
   data: ChartData[];

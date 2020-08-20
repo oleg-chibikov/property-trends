@@ -95,6 +95,11 @@ export interface FeatureProperties {
   district: string;
 }
 
+export interface StateAndDistrict {
+  state: string;
+  district: string;
+}
+
 export interface InfoData {
   fileName: string;
   locality: string;

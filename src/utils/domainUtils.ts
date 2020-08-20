@@ -30,7 +30,7 @@ export default class DomainUtils {
 
   static getRealEstatePropertyUri = (id: number) => `https://www.realestate.com.au/${id}`;
 
-  static getFiltersUrl = (filters: MapFilters) => {
+  static getFiltersUrlParams = (filters: MapFilters) => {
     const getMinValue = (value: number | number[]) => {
       return Array.isArray(value) ? value[0] : value;
     };

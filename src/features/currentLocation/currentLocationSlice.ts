@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
-interface InfoState {
+interface CurrentLocationState {
   currentLocation?: [number, number];
   isPaused: boolean;
 }
 
-const initialState: InfoState = {
+const initialState: CurrentLocationState = {
   currentLocation: undefined,
   isPaused: false,
 };

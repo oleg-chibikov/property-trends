@@ -1,10 +1,10 @@
 import { DomEvent, LatLngBounds, Map } from 'leaflet';
 import { Dispatch } from 'react';
-import { CustomLayer, EventArgs } from '../../interfaces';
+import { CustomLayer, EventArgs, FeatureProperties } from '../../interfaces';
+import GlobalEventHelper from '../../utils/globalEventHelper';
 import { removeSearchResult } from '../search/searchBoxSlice';
 import { setExpanded, setHistory, setProperties, setSuburbKey } from '../suburbInfo/suburbInfoSlice';
 import { scrollToSuburb } from '../suburbList/suburbListSlice';
-import { FeatureProperties } from './../../interfaces';
 import Highlighter from './highlighter';
 
 class SuburbMapEventHandler {
@@ -24,10 +24,26 @@ class SuburbMapEventHandler {
     this.supportsMouse = supportsMouse;
   }
 
-  showBounds = (bounds: LatLngBounds | undefined) => {
+  showBounds = async (bounds: LatLngBounds | undefined) => {
+    console.log('Fitting map to bounds...');
+    GlobalEventHelper.isProgrammaticEvent = true;
     if (bounds && bounds.isValid()) {
-      this.mapElement.fitBounds(bounds);
+      const zoomToBounds = () => {
+        const mapElement = this.mapElement;
+        const promise = new Promise((resolve) => {
+          mapElement.once('moveend', function () {
+            setTimeout(function () {
+              resolve();
+            }, 20);
+          });
+        });
+        mapElement.fitBounds(bounds);
+        return promise;
+      };
+      await zoomToBounds();
     }
+    GlobalEventHelper.isProgrammaticEvent = false;
+    console.log('Finished fitting map to bounds');
   };
 
   showLocation = (coords: Coordinates) => {
@@ -47,7 +63,7 @@ class SuburbMapEventHandler {
     if (!layer) {
       return;
     }
-    this.mapElement?.fitBounds(layer.getBounds());
+    this.showBounds(layer.getBounds());
   };
 
   onSuburbListEntryClick = (suburbId: string) => {

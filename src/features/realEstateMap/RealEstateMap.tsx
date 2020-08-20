@@ -5,28 +5,62 @@ import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'reac
 import { Map, ScaleControl, TileLayer, ZoomControl } from 'react-leaflet';
 import { BoxZoomControl } from 'react-leaflet-box-zoom';
 import { useDispatch, useSelector } from 'react-redux';
+import fetchSuburbPolygons from '../../backendRequests/suburbPolygonRetrieval';
+import GlobalEventHelper from '../../utils/globalEventHelper';
 import MapUtils from '../../utils/mapUtils';
 import CurrentLocationMarker from '../currentLocation/CurrentLocationMarker';
 import { setIsPaused } from '../currentLocation/currentLocationSlice';
-import { selectExpanded as selectDistrictListExpanded } from '../districtList/districtListSlice';
+import { checkStatesAndDistricts, selectExpanded as selectDistrictListExpanded } from '../districtList/districtListSlice';
 import { selectExpanded as selectFiltersExpanded } from '../filters/filtersSlice';
+import SuburbMap from '../suburbMap/SuburbMap';
 import MapConstants from './mapConstants';
-import './RealEstateMap.module.css';
-import SuburbMap from './SuburbMap';
 
-let lastZoom: number;
+let lastZoom = 15;
 let dispatch: Dispatch<any>;
 
+const triggerDistrictsReloadForUserInitiatedEvent = (event: LeafletEvent) => {
+  if (!GlobalEventHelper.isProgrammaticEvent) {
+    // Trigger reloading districts according to viewport only for user-initiated events
+    loadRegionsInViewport(event.target as LeafletMap);
+  }
+};
+
+const loadRegionsInViewport = async (map: LeafletMap) => {
+  if (lastZoom < MapConstants.loadDistrictsZoom) {
+    return;
+  }
+  const bounds = map.getBounds();
+  const northWest = bounds.getNorthWest();
+  const southEast = bounds.getSouthEast();
+
+  const districtsByBoundingBox = await fetchSuburbPolygons(northWest.lng, northWest.lat, southEast.lng, southEast.lat);
+  if (districtsByBoundingBox) {
+    console.log('Applying new districts...');
+    dispatch(checkStatesAndDistricts(districtsByBoundingBox));
+  }
+};
+
 const onMapZoomStart = (event: LeafletEvent) => {
+  console.log('Starting zooming...');
   dispatch(setIsPaused(true));
 };
 
+const onMapDragStart = async (event: LeafletEvent) => {
+  console.log('Starting dragging...');
+};
+
+const onMapDragEnd = async (event: LeafletEvent) => {
+  console.log('Finished dragging');
+  triggerDistrictsReloadForUserInitiatedEvent(event);
+};
+
 const onMapZoomEnd = (event: LeafletEvent) => {
+  console.log('Finished zooming');
   dispatch(setIsPaused(false));
   const map = event.target as LeafletMap;
   const zoom = map.getZoom();
-  if (zoom < MapConstants.tooltipZoom && (!lastZoom || lastZoom >= MapConstants.tooltipZoom)) {
-    console.log('Closing tooltips');
+  if (zoom < MapConstants.tooltipZoom && lastZoom >= MapConstants.tooltipZoom) {
+    console.log('Closing tooltips...');
     map.eachLayer(function (layer: Layer) {
       if (layer.getTooltip) {
         const toolTip = layer.getTooltip();
@@ -35,8 +69,8 @@ const onMapZoomEnd = (event: LeafletEvent) => {
         }
       }
     });
-  } else if (zoom >= MapConstants.tooltipZoom && (!lastZoom || lastZoom < MapConstants.tooltipZoom)) {
-    console.log('Opening tooltips');
+  } else if (zoom >= MapConstants.tooltipZoom && lastZoom < MapConstants.tooltipZoom) {
+    console.log('Opening tooltips...');
     map.eachLayer(function (layer: Layer) {
       if (layer.getTooltip) {
         const toolTip = layer.getTooltip();
@@ -47,6 +81,7 @@ const onMapZoomEnd = (event: LeafletEvent) => {
     });
   }
   lastZoom = zoom;
+  triggerDistrictsReloadForUserInitiatedEvent(event);
 };
 
 const RealEstateMap: React.FunctionComponent = () => {
@@ -105,13 +140,15 @@ const RealEstateMap: React.FunctionComponent = () => {
         animate={true}
         onzoomstart={onMapZoomStart}
         onzoomend={onMapZoomEnd}
+        ondragstart={onMapDragStart}
+        ondragend={onMapDragEnd}
         ref={mapRef}
         zoomControl={false}
         attributionControl={false}
         inertia={true}
         preferCanvas={false}
         scrollWheelZoom={true}
-        zoom={15}
+        zoom={lastZoom}
         center={currentLocation}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />

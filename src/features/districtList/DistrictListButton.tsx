@@ -5,8 +5,8 @@ import React from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
 import { districtListRetrievalPromiseTrackerArea } from '../../backendRequests/districtListRetrieval';
-import { processDistrictsPromiseTrackerArea } from '../realEstateMap/SuburbMap';
 import Spinner from '../spinner/Spinner';
+import { processDistrictsPromiseTrackerArea } from '../suburbMap/SuburbMap';
 import { selectDistrictsByState, toggleExpanded } from './districtListSlice';
 import SelectedStates from './SelectedStates';
 

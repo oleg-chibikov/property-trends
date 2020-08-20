@@ -16,7 +16,7 @@ export default class AxiosUtils {
         const data = response.data;
         console.log(`Got data for ${url}`);
         if (!data.length) {
-          console.log('No data');
+          console.log(`No data for ${url}`);
         }
         return data;
       })

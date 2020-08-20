@@ -10,6 +10,7 @@ import { trackPromise } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
 import fetchPriceData from '../../backendRequests/priceDataSearch';
+import usePrevious from '../../hooks/usePrevious';
 import { CompoundLayer, CustomLayer, FeatureProperties, MapFilters, NewFeatureProperties, RealEstateResponse, SuburbInfo, WithFeatures, WithMap } from '../../interfaces';
 import ColorUtils from '../../utils/colorUtils';
 import DomainUtils from '../../utils/domainUtils';
@@ -17,46 +18,50 @@ import MapUtils from '../../utils/mapUtils';
 import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import CurrentLocation from '../currentLocation/CurrentLocation';
-import { selectCheckedDistricts, selectUseAdaptiveColors } from '../districtList/districtListSlice';
-import { changeDistricts, selectDistricts, selectFilters } from '../filters/filtersSlice';
+import { selectCheckedDistricts, selectUseAdaptiveColors, selectZoomToSelection } from '../districtList/districtListSlice';
+import { changeDistrictsToLoad, selectDistrictsToLoad, selectFilters } from '../filters/filtersSlice';
 import Info from '../info/Info';
 import Legend from '../legend/Legend';
 import { changePricesToColors } from '../legend/legendSlice';
+import MapConstants from '../realEstateMap/mapConstants';
 import { selectHighlightedSuburb, selectSelectedSuburb } from '../search/searchBoxSlice';
 import ShowAll from '../showAll/ShowAll';
 import SuburbList from '../suburbList/SuburbList';
 import { replaceSuburbs, setSuburbColor } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
-import MapConstants from './mapConstants';
 import SuburbMapEventHandler from './suburbMapEventHandler';
 
-let setCurrentPriceData: (data: RealEstateResponse[]) => void;
+//TODO: if nothing remembered and user is in Australia - show region around
+// if moved and nothing changed - don't reload districts (scrollToSelected)
+// zoom to current Location - load regions?
+
+interface PriceDataBySuburbId {
+  [suburbId: string]: RealEstateResponse;
+}
+
+let useAdaptiveColors: boolean;
+let currentFilters: MapFilters;
 let isApartment: boolean;
-const apartmentHtml = renderToString(<Apartment />);
-const houseHtml = renderToString(<Home />);
 let highlighter: Highlighter;
 let eventHandler: SuburbMapEventHandler;
 let mapElement: Map;
 let bounds: LatLngBounds | undefined;
 let geoJsonElement: GeoJSON;
 let dispatch: Dispatch<unknown>;
-let priceDataBySuburbId: { [suburbId: string]: RealEstateResponse } | undefined = undefined;
-const currentlyCheckedDistricts: { [fileName: string]: undefined } = {};
-const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
-const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
 let searchBoxSelectedSuburbId: string | undefined;
 let searchBoxHighlightedSuburbId: string | undefined;
+let zoomToSelection: boolean;
+const apartmentHtml = renderToString(<Apartment />);
+const houseHtml = renderToString(<Home />);
+const priceDataByFileName: { [fileName: string]: PriceDataBySuburbId } = {};
+const currentlyCheckedDistricts: { [fileName: string]: number } = {};
+const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
+const layersByFileName: { [fileName: string]: CustomLayer[] } = {};
 export const processDistrictsPromiseTrackerArea = 'processDistricts';
 
 const colors = ColorUtils.generateColors(24);
 
-const setFeaturePriceProperties = (properties: FeatureProperties) => {
-  if (!properties.priceData && priceDataBySuburbId) {
-    properties.priceData = priceDataBySuburbId[properties.suburbId];
-  }
-};
-
-const setLayerPopupAndTooltip = (layer: CustomLayer) => {
+const setLayerTooltip = (layer: CustomLayer) => {
   const properties = layer.feature.properties;
   const name = properties.locality;
   const priceDataForFeature = properties.priceData;
@@ -78,9 +83,6 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
   const color = properties.priceData?.priceIntrevalInfo?.color;
   const propertyCount = properties.priceData?.count;
   const opacity: number = ColorUtils.getOpacityByPropertyCount(propertyCount);
-  if (color) {
-    dispatch(setSuburbColor({ suburbId: properties.suburbId, color: color }));
-  }
 
   // console.log('price for ' + feature?.properties.locality + ': ' + medianPrice || 'not set');
   return {
@@ -95,117 +97,84 @@ const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
 
 const applyStyleToLayer = (layer: CustomLayer) => {
   const feature = layer.feature;
+  const style = getFeatureStyle(feature);
 
   // With setTimeout it applies style to layers one by one, otherwise - at once
-  setTimeout(() => layer.setStyle(getFeatureStyle(feature)), 0);
+  setTimeout(() => layer.setStyle(style), 0);
 };
 
-const applyPriceData = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[]) => {
-  console.log('Applying price data...');
-
-  const setColors = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[]) => {
-    const { colorsByPriceInterval, suburbIdsByPriceInterval } = ColorUtils.calculatePricesToColors(useAdaptiveColors, filters, data, colors);
-    eventHandler.setSuburbIdsByPriceInterval(suburbIdsByPriceInterval);
-
-    dispatch(changePricesToColors(colorsByPriceInterval));
-
-    console.log('Caclulated colors');
+const fetchAndApplyPriceData = async (filters: MapFilters, districtFileNames: string[]) => {
+  const cleanupLegend = () => {
+    console.log(`Cleaning up legend...`);
+    return dispatch(changePricesToColors({}));
   };
-
-  setColors(useAdaptiveColors, filters, data);
-
-  const getRealEstateDictionary = (priceDataArray: RealEstateResponse[]) => {
-    if (!priceDataArray) {
-      return {};
-    }
-    const priceDataBySuburbId: {
-      [suburbId: string]: RealEstateResponse;
-    } = {};
-    for (const priceData of priceDataArray) {
-      const suburbId = priceData.suburbId;
-      priceDataBySuburbId[suburbId] = priceData;
-    }
-    return priceDataBySuburbId;
-  };
-
-  priceDataBySuburbId = getRealEstateDictionary(data);
-  for (const suburbId in layersBySuburbId) {
-    const layer = layersBySuburbId[suburbId];
-    const properties = layer.feature.properties;
-
-    // Setting price properties for existing features when the prices are fetched
-    setFeaturePriceProperties(properties);
-    applyStyleToLayer(layer);
-    setLayerPopupAndTooltip(layer);
-    if (suburbId === searchBoxSelectedSuburbId) {
-      highlighter.highlightLayer(layer);
-    }
-  }
-};
-
-const fetchAndApplyPriceData = (filters: MapFilters, districts: string[]) => {
-  let ignore = false;
-
-  const cleanup = () => {
-    console.log('Cleaning up old colors...');
-    const resetAllLayers = () => {
-      const resetPriceData = (properties: FeatureProperties) => {
-        properties.priceData = undefined;
+  cleanupLegend();
+  const getPriceDataForFileName = async (fileName: string) => {
+    const cleanupLayers = () => {
+      delete priceDataByFileName[fileName];
+      const layersForDistrict = layersByFileName[fileName];
+      if (layersForDistrict) {
+        console.log(`Cleaning up layers for ${fileName}...`);
+        for (const layer of layersForDistrict) {
+          const properties = layer.feature.properties;
+          properties.priceData = undefined;
+          applyStyleToLayer(layer);
+          setLayerTooltip(layer);
+        }
+      }
+    };
+    cleanupLayers();
+    const data = await fetchPriceData(filters, DomainUtils.getDistrictNameFromFileName(fileName));
+    if (data && data.length) {
+      const priceDataForFileName: PriceDataBySuburbId = {};
+      priceDataByFileName[fileName] = priceDataForFileName;
+      const setSuburbIdsAndPriceData = () => {
+        for (const priceData of data) {
+          const suburbId = DomainUtils.getSuburbId(priceData.locality, priceData.postCode);
+          priceData.suburbId = suburbId;
+          priceDataForFileName[suburbId] = priceData;
+          const layer = layersBySuburbId[suburbId];
+          if (layer) {
+            // If layer is already loaded - apply price data for it
+            applyPriceDataToLayer(layer, priceData);
+            setLayerTooltip(layer);
+          }
+        }
       };
 
-      for (const suburbId in layersBySuburbId) {
-        const layer = layersBySuburbId[suburbId];
-        const properties = layer.feature.properties;
-        resetPriceData(properties);
-        applyStyleToLayer(layer);
-        setLayerPopupAndTooltip(layer);
-      }
-    };
-
-    const cleanupLegend = () => dispatch(changePricesToColors({}));
-
-    cleanupLegend();
-    resetAllLayers();
-    console.log('Cleanup finished');
-  };
-
-  // It doesn't cleanup data without timeout
-  setTimeout(cleanup, 0);
-
-  const applyData = async () => {
-    const fetchData = async () => {
-      try {
-        return await fetchPriceData(filters, districts);
-      } catch {
-        //debounce error;
-        return null;
-      }
-    };
-
-    const data = await fetchData();
-    if (!ignore) {
-      if (data && data.length) {
-        const setSuburbIds = () => {
-          for (const priceData of data) {
-            const suburbId = DomainUtils.getSuburbId(priceData.locality, priceData.postCode);
-            priceData.suburbId = suburbId;
-          }
-        };
-
-        setSuburbIds();
-
-        setCurrentPriceData(data);
-      }
-    } else {
-      console.log('Ignored applying previous price data as it is not the most recent');
+      setSuburbIdsAndPriceData();
     }
   };
 
-  applyData();
+  await Promise.all(districtFileNames.map(getPriceDataForFileName));
 
-  return () => {
-    ignore = true;
-  };
+  // After priceData was loaded for all the suburbs - it's time to recalculate colors
+  console.log('Calculating colors after prices for all districts are loaded...');
+  setColors(useAdaptiveColors);
+};
+
+const setColors = (useAdaptiveColors: boolean) => {
+  let priceDataForAllSuburbs: RealEstateResponse[] = [];
+  for (const priceDataForFileName of Object.values(priceDataByFileName)) {
+    priceDataForAllSuburbs = priceDataForAllSuburbs.concat(Object.values(priceDataForFileName));
+  }
+
+  if (!priceDataForAllSuburbs.length) {
+    return;
+  }
+
+  const { colorsByPriceInterval, suburbIdsByPriceInterval } = ColorUtils.setColorProperties(useAdaptiveColors, currentFilters, priceDataForAllSuburbs, colors);
+  eventHandler.setSuburbIdsByPriceInterval(suburbIdsByPriceInterval);
+  dispatch(changePricesToColors(colorsByPriceInterval));
+  for (const priceData of priceDataForAllSuburbs) {
+    dispatch(setSuburbColor({ suburbId: priceData.suburbId, color: priceData.priceIntrevalInfo.color }));
+  }
+
+  console.log('Caclulated colors');
+
+  for (const layer of Object.values(layersBySuburbId)) {
+    applyStyleToLayer(layer);
+  }
 };
 
 const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeatureProperties>, layer: CustomLayer) => {
@@ -220,19 +189,23 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
     dblclick: eventHandler.onLayerDoubleClick,
   });
 
-  const layersForFileName = layersByFileName[properties.fileName] || [];
+  const fileName = properties.fileName;
+  const layersForFileName = layersByFileName[fileName] || [];
   layersForFileName.push(layer);
-  layersByFileName[properties.fileName] = layersForFileName;
+  layersByFileName[fileName] = layersForFileName;
   const suburbId = properties.suburbId;
   layersBySuburbId[suburbId] = layer;
 
   // If priceData is fetched - the necessary properties and the style should be applied;
-  if (priceDataBySuburbId) {
-    applyStyleToLayer(layer);
+  const priceDataForFileName = priceDataByFileName[fileName];
+  const priceDataForSuburb = priceDataForFileName ? priceDataForFileName[suburbId] : undefined;
+  if (priceDataForSuburb) {
+    applyPriceDataToLayer(layer, priceDataForSuburb);
+    // No need to apply style here as it is applied natively by Leaflet
   }
 
   // layer.bindPopup('');
-  const tooltipContent = setLayerPopupAndTooltip(layer);
+  const tooltipContent = setLayerTooltip(layer);
   layer.bindTooltip(tooltipContent, { permanent: true, direction: 'center', interactive: false, className: 'suburb-tooltip' });
   // For some reason it doesn't work without setTimeout
   setTimeout(() => {
@@ -246,19 +219,57 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
 
 const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: string]: number }) => {
   const getPricesForCheckedDistricts = () => {
-    const checkedDistrictFileNamesKeys = Object.keys(checkedDistrictFileNames);
-    if (checkedDistrictFileNamesKeys.length) {
-      const districtsToFetch = checkedDistrictFileNamesKeys.map(DomainUtils.getDistrictNameFromFileName);
-      dispatch(changeDistricts(districtsToFetch));
+    const newlyAddedDistrictFileNames = Object.keys(checkedDistrictFileNames).filter((districtFileName) => !(districtFileName in currentlyCheckedDistricts));
+    if (newlyAddedDistrictFileNames.length) {
+      console.log('Getting prices for ' + newlyAddedDistrictFileNames.length + ' new districts...');
+      const districtsToFetch = newlyAddedDistrictFileNames;
+      // TODO: do we need Redux for this prop? maybe useState would be enough?
+      dispatch(changeDistrictsToLoad(districtsToFetch));
+    } else {
+      const removedDistrictsFileNames = Object.keys(currentlyCheckedDistricts).filter((districtFileName) => !(districtFileName in checkedDistrictFileNames));
+      if (removedDistrictsFileNames.length) {
+        console.log('Recalculating colors as ' + removedDistrictsFileNames.length + ' districts were removed and no districts added...');
+        // If nothing was added but some suburbs were removed - recalculate colors.
+        // There is no need to recalcuate them if some suburbs were added as they will be recalculated anyway
+        if (useAdaptiveColors) {
+          setColors(true);
+        }
+      }
     }
   };
 
   // Search for prices in parallel with fetching districts
   getPricesForCheckedDistricts();
 
-  const processDistricts = async () => {
+  const addAndRemoveDistricts = async () => {
+    const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: number }) => {
+      for (const fileName in priceDataByFileName) {
+        if (!(fileName in checkedDistricts)) {
+          delete priceDataByFileName[fileName];
+        }
+      }
+      for (const fileName in layersByFileName) {
+        if (!(fileName in checkedDistricts)) {
+          const innerLayers = layersByFileName[fileName];
+          for (const layer of innerLayers) {
+            const compoundLayer = geoJsonElement.leafletElement.removeLayer(layer);
+            bounds = compoundLayer.getBounds();
+          }
+
+          for (const layer of innerLayers) {
+            const suburbId = layer.feature.properties.suburbId;
+            delete layersBySuburbId[suburbId];
+          }
+          delete layersByFileName[fileName];
+          delete currentlyCheckedDistricts[fileName];
+          console.log('Deleted ' + fileName);
+        }
+      }
+    };
+
+    removeUncheckedLayers(checkedDistrictFileNames);
     const addCheckedLayers = async (checkedDistrictFileNames: { [fileName: string]: number }) => {
-      const suburbsToAdd: { [suburbId: string]: SuburbInfo } = {};
+      const suburbsToDisplay: { [suburbId: string]: SuburbInfo } = {};
       const addInfoToFeatures = (data: WithFeatures, fileName: string) => {
         const readPropertiesFromNewFeature = (properties: NewFeatureProperties) => {
           const name = StringUtils.toTitleCase(properties.name || properties.Name || 'No Title');
@@ -277,27 +288,24 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
           const suburbId = DomainUtils.getSuburbId(name, postCode);
           properties.locality = name;
           properties.suburbId = suburbId;
-          suburbsToAdd[suburbId] = {
+          suburbsToDisplay[suburbId] = {
             name,
             suburbId,
           };
 
           // Setting prices for new features when prices are already fetched and new layer is added
-          setFeaturePriceProperties(properties);
+          const priceDataForFileName = priceDataByFileName[fileName];
+          properties.priceData = priceDataForFileName ? priceDataForFileName[suburbId] : undefined;
         }
       };
 
-      const applyPolygonData = (data: GeoJSON.GeoJsonObject | GeoJSON.GeoJsonObject[]) => {
-        // This object contains all the layers, not just recently added
-        const compoundLayer = geoJsonElement.leafletElement.addData(data as GeoJSON.GeoJsonObject) as CompoundLayer;
-        bounds = compoundLayer.getBounds();
-      };
       for (const districtFileName in checkedDistrictFileNames) {
         if (districtFileName in currentlyCheckedDistricts) {
+          //TODO: put comment
           for (const layer of layersByFileName[districtFileName]) {
             const name = layer.feature.properties.locality;
             const suburbId = layer.feature.properties.suburbId;
-            suburbsToAdd[suburbId] = {
+            suburbsToDisplay[suburbId] = {
               name,
               suburbId,
             };
@@ -311,44 +319,26 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
           addInfoToFeatures(withFeatures, districtFileName);
         }
 
-        applyPolygonData(data);
-        currentlyCheckedDistricts[districtFileName] = undefined;
-        console.log('Added ' + districtFileName);
+        // This object contains all the layers, not just recently added
+        const compoundLayer = geoJsonElement.leafletElement.addData((data as unknown) as GeoJSON.GeoJsonObject) as CompoundLayer;
+        bounds = compoundLayer.getBounds();
+        currentlyCheckedDistricts[districtFileName] = 0;
+        console.log('Added polygons for ' + districtFileName);
       }
 
-      dispatch(replaceSuburbs(suburbsToAdd));
+      dispatch(replaceSuburbs(suburbsToDisplay));
     };
 
-    const removeUncheckedLayers = (checkedDistricts: { [fileName: string]: number }) => {
-      for (const fileName in layersByFileName) {
-        if (!(fileName in checkedDistricts)) {
-          const innerLayers = layersByFileName[fileName];
-          for (const layer of innerLayers) {
-            const compoundLayer = geoJsonElement.leafletElement.removeLayer(layer);
-            bounds = compoundLayer.getBounds();
-          }
-
-          for (const layer of innerLayers) {
-            delete layersBySuburbId[layer.feature.properties.suburbId];
-          }
-          delete layersByFileName[fileName];
-          delete currentlyCheckedDistricts[fileName];
-          console.log('Deleted ' + fileName);
-        }
-      }
-    };
-
-    removeUncheckedLayers(checkedDistrictFileNames);
     await addCheckedLayers(checkedDistrictFileNames);
     // SearchBox requires a new file to be loaded - select here and show selected suburb
-    if (!eventHandler.onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId)) {
+    if (zoomToSelection && !eventHandler.onSearchBoxSelectedItemChange(searchBoxSelectedSuburbId)) {
       eventHandler.showBounds(bounds);
     }
 
     MapUtils.redrawMap(mapElement);
   };
 
-  const processDistrictsWithPromiseTracking = async () => await trackPromise(processDistricts(), processDistrictsPromiseTrackerArea);
+  const processDistrictsWithPromiseTracking = async () => await trackPromise(addAndRemoveDistricts(), processDistrictsPromiseTrackerArea);
 
   await processDistrictsWithPromiseTracking();
 };
@@ -357,12 +347,13 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   const [handler, setHandler] = useState<SuburbMapEventHandler>();
   dispatch = useDispatch();
-  const [data, setData] = useState<RealEstateResponse[]>();
-  setCurrentPriceData = setData;
   const checkedDistrictFileNames = useSelector(selectCheckedDistricts);
-  const useAdaptiveColors = useSelector(selectUseAdaptiveColors);
+  const useAdaptive = useSelector(selectUseAdaptiveColors);
+  useAdaptiveColors = useAdaptive;
   const filters = useSelector(selectFilters);
-  const districts = useSelector(selectDistricts);
+  currentFilters = filters;
+  const districtFileNamesToLoad = useSelector(selectDistrictsToLoad);
+  zoomToSelection = useSelector(selectZoomToSelection);
   const supportsMouse = window.matchMedia('(hover: hover)').matches;
   // This is used to display proper icon in tooltips
   isApartment = filters.propertyType === 'apartment';
@@ -370,17 +361,27 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   searchBoxHighlightedSuburbId = useSelector(selectHighlightedSuburb);
   const previousSearchBoxHighlightedSuburbId = searchBoxHighlightedSuburbId;
   const previousSearchBoxSelectedSuburbId = searchBoxSelectedSuburbId;
+  const prevDistrictFileNamesToLoad = usePrevious(districtFileNamesToLoad);
+  const prevFilters = usePrevious(filters);
+
   useEffect(() => {
     processCheckedDistricts(checkedDistrictFileNames);
   }, [checkedDistrictFileNames]);
+
   useEffect(() => {
-    return fetchAndApplyPriceData(filters, districts);
-  }, [filters, districts]);
-  useEffect(() => {
-    if (data && data.length) {
-      applyPriceData(useAdaptiveColors, filters, data);
+    const districtsChanged = JSON.stringify(districtFileNamesToLoad) !== JSON.stringify(prevDistrictFileNamesToLoad);
+    const filtersChanged = JSON.stringify(filters) !== JSON.stringify(prevFilters);
+    if (!filtersChanged && !districtsChanged) {
+      return;
     }
-  }, [useAdaptiveColors, filters, data]);
+
+    fetchAndApplyPriceData(filters, districtsChanged ? districtFileNamesToLoad : Object.keys(currentlyCheckedDistricts));
+  }, [filters, districtFileNamesToLoad, prevDistrictFileNamesToLoad, prevFilters]);
+
+  useEffect(() => {
+    setColors(useAdaptive);
+  }, [useAdaptive]);
+
   const geojsonRef = useCallback(
     (node) => {
       if (node !== null) {
@@ -433,3 +434,10 @@ SuburbMap.propTypes = {
 };
 
 export default React.memo(SuburbMap);
+
+function applyPriceDataToLayer(layer: CustomLayer, priceData: RealEstateResponse) {
+  layer.feature.properties.priceData = priceData;
+  if (priceData.suburbId === searchBoxSelectedSuburbId) {
+    highlighter.highlightLayer(layer);
+  }
+}

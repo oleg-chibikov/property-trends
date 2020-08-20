@@ -32,7 +32,7 @@ export default class ColorUtils {
     return firstHalf.concat(secondHalf).map((x) => rgbHex(x));
   };
 
-  static calculatePricesToColors = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[], colors: string[]) => {
+  static setColorProperties = (useAdaptiveColors: boolean, filters: MapFilters, data: RealEstateResponse[], colors: string[]) => {
     if (useAdaptiveColors) {
       return ColorUtils.getColorsAdaptive(colors, data);
     }
