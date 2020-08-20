@@ -2,13 +2,13 @@ import { IconButton, Typography } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { toggleExpanded } from './searchBoxSlice';
+import { toggleSearchBoxExpanded } from './searchBoxSlice';
 
 const SearchBoxButton: React.FunctionComponent = () => {
   const dispatch = useDispatch();
 
   const toggleDrawer = () => {
-    dispatch(toggleExpanded());
+    dispatch(toggleSearchBoxExpanded());
   };
 
   return (

@@ -19,15 +19,15 @@ import MoneyUtils from '../../utils/moneyUtils';
 import StringUtils from '../../utils/stringUtils';
 import CurrentLocation from '../currentLocation/CurrentLocation';
 import { selectCheckedDistricts, selectUseAdaptiveColors, selectZoomToSelection } from '../districtList/districtListSlice';
-import { changeDistrictsToLoad, selectDistrictsToLoad, selectFilters } from '../filters/filtersSlice';
+import { selectFilters } from '../filters/filtersSlice';
 import Info from '../info/Info';
 import Legend from '../legend/Legend';
-import { changePricesToColors } from '../legend/legendSlice';
+import { changeLegendPricesToColors } from '../legend/legendSlice';
 import MapConstants from '../realEstateMap/mapConstants';
-import { selectHighlightedSuburb, selectSelectedSuburb } from '../search/searchBoxSlice';
+import { selectSearchBoxHighlightedSuburb, selectSearchBoxSelectedSuburb } from '../search/searchBoxSlice';
 import ShowAll from '../showAll/ShowAll';
 import SuburbList from '../suburbList/SuburbList';
-import { replaceSuburbs, setSuburbColor } from '../suburbList/suburbListSlice';
+import { replaceSuburbsInList, setSuburbColorInList } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
 import SuburbMapEventHandler from './suburbMapEventHandler';
 
@@ -39,6 +39,7 @@ interface PriceDataBySuburbId {
   [suburbId: string]: RealEstateResponse;
 }
 
+let setDistrictsToLoad: (districtsToLoad: string[]) => void;
 let useAdaptiveColors: boolean;
 let currentFilters: MapFilters;
 let isApartment: boolean;
@@ -106,7 +107,7 @@ const applyStyleToLayer = (layer: CustomLayer) => {
 const fetchAndApplyPriceData = async (filters: MapFilters, districtFileNames: string[]) => {
   const cleanupLegend = () => {
     console.log(`Cleaning up legend...`);
-    return dispatch(changePricesToColors({}));
+    return dispatch(changeLegendPricesToColors({}));
   };
   cleanupLegend();
   const getPriceDataForFileName = async (fileName: string) => {
@@ -165,9 +166,9 @@ const setColors = (useAdaptiveColors: boolean) => {
 
   const { colorsByPriceInterval, suburbIdsByPriceInterval } = ColorUtils.setColorProperties(useAdaptiveColors, currentFilters, priceDataForAllSuburbs, colors);
   eventHandler.setSuburbIdsByPriceInterval(suburbIdsByPriceInterval);
-  dispatch(changePricesToColors(colorsByPriceInterval));
+  dispatch(changeLegendPricesToColors(colorsByPriceInterval));
   for (const priceData of priceDataForAllSuburbs) {
-    dispatch(setSuburbColor({ suburbId: priceData.suburbId, color: priceData.priceIntrevalInfo.color }));
+    dispatch(setSuburbColorInList({ suburbId: priceData.suburbId, color: priceData.priceIntrevalInfo.color }));
   }
 
   console.log('Caclulated colors');
@@ -223,8 +224,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
     if (newlyAddedDistrictFileNames.length) {
       console.log('Getting prices for ' + newlyAddedDistrictFileNames.length + ' new districts...');
       const districtsToFetch = newlyAddedDistrictFileNames;
-      // TODO: do we need Redux for this prop? maybe useState would be enough?
-      dispatch(changeDistrictsToLoad(districtsToFetch));
+      setDistrictsToLoad(districtsToFetch);
     } else {
       const removedDistrictsFileNames = Object.keys(currentlyCheckedDistricts).filter((districtFileName) => !(districtFileName in checkedDistrictFileNames));
       if (removedDistrictsFileNames.length) {
@@ -326,7 +326,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
         console.log('Added polygons for ' + districtFileName);
       }
 
-      dispatch(replaceSuburbs(suburbsToDisplay));
+      dispatch(replaceSuburbsInList(suburbsToDisplay));
     };
 
     await addCheckedLayers(checkedDistrictFileNames);
@@ -346,19 +346,20 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
 const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   const [handler, setHandler] = useState<SuburbMapEventHandler>();
+  const [districtFileNamesToLoad, setDistrictFileNamesToLoad] = useState<string[]>([]);
+  setDistrictsToLoad = setDistrictFileNamesToLoad;
   dispatch = useDispatch();
   const checkedDistrictFileNames = useSelector(selectCheckedDistricts);
   const useAdaptive = useSelector(selectUseAdaptiveColors);
   useAdaptiveColors = useAdaptive;
   const filters = useSelector(selectFilters);
   currentFilters = filters;
-  const districtFileNamesToLoad = useSelector(selectDistrictsToLoad);
   zoomToSelection = useSelector(selectZoomToSelection);
   const supportsMouse = window.matchMedia('(hover: hover)').matches;
   // This is used to display proper icon in tooltips
   isApartment = filters.propertyType === 'apartment';
-  searchBoxSelectedSuburbId = useSelector(selectSelectedSuburb);
-  searchBoxHighlightedSuburbId = useSelector(selectHighlightedSuburb);
+  searchBoxSelectedSuburbId = useSelector(selectSearchBoxSelectedSuburb);
+  searchBoxHighlightedSuburbId = useSelector(selectSearchBoxHighlightedSuburb);
   const previousSearchBoxHighlightedSuburbId = searchBoxHighlightedSuburbId;
   const previousSearchBoxSelectedSuburbId = searchBoxSelectedSuburbId;
   const prevDistrictFileNamesToLoad = usePrevious(districtFileNamesToLoad);

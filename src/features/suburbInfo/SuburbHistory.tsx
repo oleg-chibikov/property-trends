@@ -5,19 +5,19 @@ import { MapFilters } from '../../interfaces';
 import { selectFilters } from '../filters/filtersSlice';
 import Spinner from '../spinner/Spinner';
 import BrushChart from './BrushChart';
-import { selectHistory, selectSuburbKey, setHistory } from './suburbInfoSlice';
+import { selectSuburbInfoHistory, selectSuburbInfoSuburbKey, setSuburbInfoHistory } from './suburbInfoSlice';
 
 let dispatch: Dispatch<any>;
 
 const fetchAndApplyData = async (filters: MapFilters, state: string, postCode: number, locality: string) => {
   const data = await fetchSuburbHistory(filters, state, postCode, locality);
-  dispatch(setHistory(data?.sort((a, b) => (a.date > b.date ? 1 : -1)) || []));
+  dispatch(setSuburbInfoHistory(data?.sort((a, b) => (a.date > b.date ? 1 : -1)) || []));
 };
 
 const SuburbHistory: React.FunctionComponent = () => {
-  const history = useSelector(selectHistory);
+  const history = useSelector(selectSuburbInfoHistory);
   const filters = useSelector(selectFilters);
-  const suburbKey = useSelector(selectSuburbKey);
+  const suburbKey = useSelector(selectSuburbInfoSuburbKey);
   dispatch = useDispatch();
 
   useEffect(() => {

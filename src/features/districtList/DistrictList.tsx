@@ -8,7 +8,7 @@ import withDrawer from '../../hoc/WithDrawer';
 import Spinner from '../spinner/Spinner';
 import { processDistrictsPromiseTrackerArea } from '../suburbMap/SuburbMap';
 import AdaptiveColorsSwitch from './AdaptiveColorsSwitch';
-import { selectDistrictsByState, selectElementToScrollTo, toggleRetry } from './districtListSlice';
+import { selectDistrictsByState, selectElementToScrollTo, toggleDistrictListRetry } from './districtListSlice';
 import StateEntry from './StateEntry';
 
 const scrollToSuburb = (elementIdToScrollTo: string | undefined) => {
@@ -48,7 +48,7 @@ const DistrictList: React.FunctionComponent = () => {
       <React.Fragment>
         <IconButton
           onClick={() => {
-            dispatch(toggleRetry());
+            dispatch(toggleDistrictListRetry());
           }}
           title="Retry"
         >

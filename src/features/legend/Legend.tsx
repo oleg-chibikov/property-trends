@@ -9,11 +9,11 @@ import { LegendEntryEventHandlers } from '../../interfaces';
 import Spinner from '../spinner/Spinner';
 import styles from './Legend.module.css';
 import LegendEntry from './LegendEntry';
-import { selectPricesToColors } from './legendSlice';
+import { selectLegendPricesToColors } from './legendSlice';
 
 const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemClick, onItemMouseOut }) => {
   const priceDataSearchPromiseTracker = usePromiseTracker({ area: priceDataSearchPromiseTrackerArea, delay: 0 });
-  const pricesToColors = useSelector(selectPricesToColors);
+  const pricesToColors = useSelector(selectLegendPricesToColors);
   const [expanded, setExpanded] = useState<boolean>();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));

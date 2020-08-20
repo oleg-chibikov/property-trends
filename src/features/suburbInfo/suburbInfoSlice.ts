@@ -24,42 +24,42 @@ const initialState: SuburbInfoState = {
   chartBrushSelection: [currentDate.getTime(), oneYearFromNow.getTime()],
 };
 
-export const suburbinfoSlice = createSlice({
+export const suburbInfoSlice = createSlice({
   name: 'SuburbInfo',
   initialState,
   reducers: {
-    toggleExpanded: (state) => {
+    toggleSuburbInfoExpanded: (state) => {
       state.expanded = !state.expanded;
     },
-    setExpanded: (state, action: PayloadAction<boolean>) => {
+    setSuburbInfoExpanded: (state, action: PayloadAction<boolean>) => {
       state.expanded = action.payload;
     },
-    setSuburbKey: (state, action: PayloadAction<SuburbKeyWithState | undefined>) => {
+    setSuburbInfoSuburbKey: (state, action: PayloadAction<SuburbKeyWithState | undefined>) => {
       state.suburbKey = action.payload;
     },
-    setProperties: (state, action: PayloadAction<RealEstateEntry[] | undefined>) => {
+    setSuburbInfoProperties: (state, action: PayloadAction<RealEstateEntry[] | undefined>) => {
       state.properties = action.payload;
     },
-    setHistory: (state, action: PayloadAction<HistoryEntry[] | undefined>) => {
+    setSuburbInfoHistory: (state, action: PayloadAction<HistoryEntry[] | undefined>) => {
       state.history = action.payload;
     },
-    setActiveTab: (state, action: PayloadAction<string>) => {
+    setSuburbInfoActiveTab: (state, action: PayloadAction<string>) => {
       state.activeTab = action.payload;
     },
-    setChartBrushSelection: (state, action: PayloadAction<number[]>) => {
+    setSuburbInfoChartBrushSelection: (state, action: PayloadAction<number[]>) => {
       state.chartBrushSelection = action.payload;
     },
   },
 });
 
-export const { setSuburbKey, setProperties, setHistory, toggleExpanded, setExpanded, setActiveTab, setChartBrushSelection } = suburbinfoSlice.actions;
+export const { setSuburbInfoSuburbKey, setSuburbInfoProperties, setSuburbInfoHistory, toggleSuburbInfoExpanded, setSuburbInfoExpanded, setSuburbInfoActiveTab, setSuburbInfoChartBrushSelection } = suburbInfoSlice.actions;
 
 export const selectSuburbInfoPosition = (state: RootState) => state.suburbInfo.expanded;
-export const selectSuburbKey = (state: RootState) => state.suburbInfo.suburbKey;
-export const selectProperties = (state: RootState) => state.suburbInfo.properties;
-export const selectHistory = (state: RootState) => state.suburbInfo.history;
-export const selectExpanded = (state: RootState) => state.suburbInfo.expanded;
-export const selectActiveTab = (state: RootState) => state.suburbInfo.activeTab;
-export const selectChartBrushSelection = (state: RootState) => state.suburbInfo.chartBrushSelection;
+export const selectSuburbInfoSuburbKey = (state: RootState) => state.suburbInfo.suburbKey;
+export const selectSuburbInfoProperties = (state: RootState) => state.suburbInfo.properties;
+export const selectSuburbInfoHistory = (state: RootState) => state.suburbInfo.history;
+export const selectSuburbInfoExpanded = (state: RootState) => state.suburbInfo.expanded;
+export const selectSuburbInfoActiveTab = (state: RootState) => state.suburbInfo.activeTab;
+export const selectSuburbInfoChartBrushSelection = (state: RootState) => state.suburbInfo.chartBrushSelection;
 
-export default suburbinfoSlice.reducer;
+export default suburbInfoSlice.reducer;

@@ -17,15 +17,15 @@ export const currentLocationSlice = createSlice({
     setCurrentLocation: (state, action: PayloadAction<[number, number]>) => {
       state.currentLocation = action.payload;
     },
-    setIsPaused: (state, action: PayloadAction<boolean>) => {
+    setIsCurrentLocationSearchPaused: (state, action: PayloadAction<boolean>) => {
       state.isPaused = action.payload;
     },
   },
 });
 
-export const { setCurrentLocation, setIsPaused } = currentLocationSlice.actions;
+export const { setCurrentLocation, setIsCurrentLocationSearchPaused } = currentLocationSlice.actions;
 
 export const selectCurrentLocation = (state: RootState) => state.currentLocation.currentLocation;
-export const selectIsPaused = (state: RootState) => state.currentLocation.isPaused;
+export const selectIsCurrentLocationSearchPaused = (state: RootState) => state.currentLocation.isPaused;
 
 export default currentLocationSlice.reducer;

@@ -169,19 +169,19 @@ export const districtlistSlice = createSlice({
         delete state.checkedStates[politicalState];
       }
     },
-    toggleExpanded: (state) => {
+    toggleDistrictListExpanded: (state) => {
       state.expanded = !state.expanded;
     },
-    setExpanded: (state, action: PayloadAction<boolean>) => {
+    setDistrictListExpanded: (state, action: PayloadAction<boolean>) => {
       state.expanded = action.payload;
     },
-    setExpandedState: (state, action: PayloadAction<string | false>) => {
+    setDistrictListExpandedState: (state, action: PayloadAction<string | false>) => {
       state.expandedState = action.payload;
     },
-    toggleRetry: (state) => {
+    toggleDistrictListRetry: (state) => {
       state.retrySwitch = !state.retrySwitch;
     },
-    setElementToScrollTo: (state, action: PayloadAction<string | undefined>) => {
+    setDistrictListElementToScrollTo: (state, action: PayloadAction<string | undefined>) => {
       state.elementToScrollTo = action.payload;
     },
     toggleUseAdaptiveColors: (state) => {
@@ -197,12 +197,12 @@ export const {
   checkState,
   uncheckState,
   checkInitialStateIfEmpty,
-  toggleExpanded,
-  setExpanded,
-  setExpandedState,
+  toggleDistrictListExpanded,
+  setDistrictListExpanded,
+  setDistrictListExpandedState,
   addDistrictFileNames,
-  toggleRetry,
-  setElementToScrollTo,
+  toggleDistrictListRetry,
+  setDistrictListElementToScrollTo,
   toggleUseAdaptiveColors,
   checkStatesAndDistricts,
   setZoomToSelection,
@@ -211,9 +211,9 @@ export const {
 export const selectCheckedDistricts = (state: RootState) => state.districtList.checkedDistricts;
 export const selectDistrictsByState = (state: RootState) => state.districtList.districtsByState;
 export const selectCheckedStates = (state: RootState) => state.districtList.checkedStates;
-export const selectExpanded = (state: RootState) => state.districtList.expanded;
-export const selectExpandedState = (state: RootState) => state.districtList.expandedState;
-export const selectRetrySwitch = (state: RootState) => state.districtList.retrySwitch;
+export const selectDistrictListExpanded = (state: RootState) => state.districtList.expanded;
+export const selectDistrictListExpandedState = (state: RootState) => state.districtList.expandedState;
+export const selectDistrictListRetrySwitch = (state: RootState) => state.districtList.retrySwitch;
 export const selectElementToScrollTo = (state: RootState) => state.districtList.elementToScrollTo;
 export const selectUseAdaptiveColors = (state: RootState) => state.districtList.useAdaptiveColors;
 export const selectZoomToSelection = (state: RootState) => state.districtList.zoomToSelection;

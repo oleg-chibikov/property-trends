@@ -3,7 +3,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import PropTypes from 'prop-types';
 import React, { Dispatch } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { checkState, selectCheckedStates, setExpanded, uncheckState } from './districtListSlice';
+import { checkState, selectCheckedStates, setDistrictListExpanded, uncheckState } from './districtListSlice';
 
 let dispatch: Dispatch<unknown>;
 
@@ -33,7 +33,7 @@ const StateEntryHeader: React.FunctionComponent<StateEntryProps> = ({ state }) =
                 dispatch(uncheckState(state));
               }
               if (!isDesktop) {
-                dispatch(setExpanded(false));
+                dispatch(setDistrictListExpanded(false));
               }
             }}
           />

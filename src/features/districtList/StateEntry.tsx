@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from './DistrictList.module.css';
-import { selectCheckedDistricts, selectDistrictsByState, selectExpandedState, setElementToScrollTo, setExpandedState } from './districtListSlice';
+import { selectCheckedDistricts, selectDistrictListExpandedState, selectDistrictsByState, setDistrictListElementToScrollTo, setDistrictListExpandedState } from './districtListSlice';
 import DistrictSelector from './DistrictSelector';
 import StateEntryHeader from './StateEntryHeader';
 
@@ -14,7 +14,7 @@ interface StateEntryProps {
 
 const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state: politicalState }) => {
   const dispatch = useDispatch();
-  const expandedPoliticalState = useSelector(selectExpandedState);
+  const expandedPoliticalState = useSelector(selectDistrictListExpandedState);
   const isExpanded = expandedPoliticalState === politicalState;
   const checkedDistricts = useSelector(selectCheckedDistricts);
   const districtsByState = useSelector(selectDistrictsByState);
@@ -32,13 +32,13 @@ const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state: political
   const firstChecked = districtsForState.find((x) => x.checked)?.id;
 
   const handleStateChange = (panel: string) => (event: React.ChangeEvent<unknown>, isExpanded: boolean) => {
-    dispatch(setExpandedState(isExpanded ? panel : false));
-    dispatch(setElementToScrollTo(isExpanded ? firstChecked : undefined));
+    dispatch(setDistrictListExpandedState(isExpanded ? panel : false));
+    dispatch(setDistrictListElementToScrollTo(isExpanded ? firstChecked : undefined));
   };
 
   useEffect(() => {
     if (firstChecked) {
-      dispatch(setElementToScrollTo(firstChecked));
+      dispatch(setDistrictListElementToScrollTo(firstChecked));
     }
   }, [dispatch, firstChecked]);
 

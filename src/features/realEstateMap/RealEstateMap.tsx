@@ -9,9 +9,9 @@ import fetchSuburbPolygons from '../../backendRequests/suburbPolygonRetrieval';
 import GlobalEventHelper from '../../utils/globalEventHelper';
 import MapUtils from '../../utils/mapUtils';
 import CurrentLocationMarker from '../currentLocation/CurrentLocationMarker';
-import { setIsPaused } from '../currentLocation/currentLocationSlice';
-import { checkStatesAndDistricts, selectExpanded as selectDistrictListExpanded } from '../districtList/districtListSlice';
-import { selectExpanded as selectFiltersExpanded } from '../filters/filtersSlice';
+import { setIsCurrentLocationSearchPaused } from '../currentLocation/currentLocationSlice';
+import { checkStatesAndDistricts, selectDistrictListExpanded } from '../districtList/districtListSlice';
+import { selectFiltersExpanded } from '../filters/filtersSlice';
 import SuburbMap from '../suburbMap/SuburbMap';
 import MapConstants from './mapConstants';
 
@@ -42,7 +42,7 @@ const loadRegionsInViewport = async (map: LeafletMap) => {
 
 const onMapZoomStart = (event: LeafletEvent) => {
   console.log('Starting zooming...');
-  dispatch(setIsPaused(true));
+  dispatch(setIsCurrentLocationSearchPaused(true));
 };
 
 const onMapDragStart = async (event: LeafletEvent) => {
@@ -56,7 +56,7 @@ const onMapDragEnd = async (event: LeafletEvent) => {
 
 const onMapZoomEnd = (event: LeafletEvent) => {
   console.log('Finished zooming');
-  dispatch(setIsPaused(false));
+  dispatch(setIsCurrentLocationSearchPaused(false));
   const map = event.target as LeafletMap;
   const zoom = map.getZoom();
   if (zoom < MapConstants.tooltipZoom && lastZoom >= MapConstants.tooltipZoom) {

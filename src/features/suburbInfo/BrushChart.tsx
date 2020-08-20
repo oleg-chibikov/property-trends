@@ -6,7 +6,7 @@ import useResizeObserver from '../../hooks/useResizeObserver';
 import { ChartData } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
 import './graph.css';
-import { selectChartBrushSelection, selectExpanded, setChartBrushSelection } from './suburbInfoSlice';
+import { selectSuburbInfoChartBrushSelection, selectSuburbInfoExpanded, setSuburbInfoChartBrushSelection } from './suburbInfoSlice';
 
 interface BrushChartProps {
   data: ChartData[];
@@ -28,8 +28,8 @@ const BrushChart: React.FunctionComponent<BrushChartProps> = ({ data }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dimensions = useResizeObserver(wrapperRef);
-  const currentSelection = useSelector(selectChartBrushSelection);
-  const isDrawerExpanded = useSelector(selectExpanded); // no need to refresh graph when the drawer is being hidden (this operation changes dimensions)
+  const currentSelection = useSelector(selectSuburbInfoChartBrushSelection);
+  const isDrawerExpanded = useSelector(selectSuburbInfoExpanded); // no need to refresh graph when the drawer is being hidden (this operation changes dimensions)
 
   // will be called initially and on every data change
   useEffect(() => {
@@ -328,7 +328,7 @@ function applyZoomBehaviorToMainGraph(
     if (brushBehavior) {
       brushGraph.select('.brush').call(brushBehavior.move as any, range.map(transform.invertX, transform));
     }
-    dispatch(setChartBrushSelection(domainValues.map((x) => x.getTime())));
+    dispatch(setSuburbInfoChartBrushSelection(domainValues.map((x) => x.getTime())));
     updateCrosshairPosition();
   };
   zoomBehavior = d3
@@ -385,7 +385,7 @@ function applyBrushSelectionToMainGraph(
     overlay.call(zoomBehavior.transform as any, d3.zoomIdentity.scale(mainGraphWidth / (selection[1] - selection[0])).translate(-selection[0], 0));
   }
 
-  dispatch(setChartBrushSelection(newDomain.map((x) => x.getTime())));
+  dispatch(setSuburbInfoChartBrushSelection(newDomain.map((x) => x.getTime())));
 }
 
 function applyNewDomain(

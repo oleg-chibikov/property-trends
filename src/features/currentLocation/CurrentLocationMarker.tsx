@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CircleMarker } from 'react-leaflet';
 import { useSelector } from 'react-redux';
-import { selectIsPaused } from './currentLocationSlice';
+import { selectIsCurrentLocationSearchPaused } from './currentLocationSlice';
 
 let circle: CircleMarker | null;
 let isPaused: boolean;
@@ -28,7 +28,7 @@ const CurrentLocationMarker: React.FunctionComponent = () => {
   const [currentLocation, setCurrentLocation] = useState<[number, number]>();
   set = setCurrentLocation;
   const circleRef = useRef<CircleMarker>(null);
-  isPaused = useSelector(selectIsPaused);
+  isPaused = useSelector(selectIsCurrentLocationSearchPaused);
   circle = circleRef.current;
   useEffect(() => {
     setLocation();

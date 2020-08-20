@@ -3,7 +3,7 @@ import { GeoJSON } from 'react-leaflet';
 import { CustomLayer, FeatureProperties } from '../../interfaces';
 import { clearInfo, setInfo } from '../info/infoSlice';
 import { highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
-import { highlightSuburb, unhighlightSuburb } from '../suburbList/suburbListSlice';
+import { highlightSuburbInList, unhighlightSuburbInList } from '../suburbList/suburbListSlice';
 class Highlighter {
   private dispatch: Dispatch<any>;
   private geoJsonElement: GeoJSON;
@@ -79,11 +79,11 @@ class Highlighter {
   };
 
   private highlightSuburbInList = (suburbId: string) => {
-    this.dispatch(highlightSuburb(suburbId));
+    this.dispatch(highlightSuburbInList(suburbId));
   };
 
   private unhighlightSuburbInList = (suburbId: string) => {
-    this.dispatch(unhighlightSuburb(suburbId));
+    this.dispatch(unhighlightSuburbInList(suburbId));
   };
 
   private highlightSuburbInLegend = (properties: FeatureProperties) => {

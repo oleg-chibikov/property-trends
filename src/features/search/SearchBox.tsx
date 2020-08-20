@@ -12,7 +12,7 @@ import { PostCodeFileInfo } from '../../interfaces';
 import DomainUtils from '../../utils/domainUtils';
 import { checkDistrictOnly } from '../districtList/districtListSlice';
 import styles from './SearchBox.module.css';
-import { highlightSuburb, selectExpanded, setExpanded, setSearchResult, unhighlightSuburb } from './searchBoxSlice';
+import { highlightSearchBoxSuburb, selectSearchBoxExpanded, setSearchBoxExpanded, setSearchResult, unhighlightSearchBoxSuburb } from './searchBoxSlice';
 
 let inputRef: HTMLInputElement | undefined;
 
@@ -52,7 +52,7 @@ const SearchBox: React.FunctionComponent = () => {
   const [searchPattern, setSearchPattern] = useState<string>();
   const [data, setData] = useState<PostCodeFileInfo[]>([]);
   const { promiseInProgress } = usePromiseTracker({ area: suburbSearchPromiseTrackerArea, delay: 0 });
-  const expanded = useSelector(selectExpanded);
+  const expanded = useSelector(selectSearchBoxExpanded);
   if (expanded && inputRef) {
     inputRef.focus();
   }
@@ -97,7 +97,7 @@ const SearchBox: React.FunctionComponent = () => {
             const suburbId = DomainUtils.getSuburbId(value.locality, value.postCode);
             dispatch(setSearchResult(suburbId));
             dispatch(checkDistrictOnly(value.state + ' - ' + value.outerDistrict + '.json'));
-            dispatch(setExpanded(false));
+            dispatch(setSearchBoxExpanded(false));
           }
         }}
         className={styles.searchBox}
@@ -112,10 +112,10 @@ const SearchBox: React.FunctionComponent = () => {
           return (
             <div
               onMouseOver={() => {
-                dispatch(highlightSuburb(suburbId));
+                dispatch(highlightSearchBoxSuburb(suburbId));
               }}
               onMouseOut={() => {
-                dispatch(unhighlightSuburb());
+                dispatch(unhighlightSearchBoxSuburb());
               }}
             >
               <Grid container alignItems="center">

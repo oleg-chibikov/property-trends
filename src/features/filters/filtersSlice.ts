@@ -6,14 +6,12 @@ const defaultRange: number[] = [0, 7];
 
 interface FiltersState {
   filters: MapFilters;
-  districtsToLoad: string[];
   expanded: boolean;
 }
 
 const initialState: FiltersState = {
   filters: { propertyType: 'apartment', dealType: 'buy', bedrooms: [2, 2], bathrooms: defaultRange, parkingSpaces: defaultRange, constructionStatus: 'any', allowedWindowInDays: 7, mainPriceOnly: true, includeSold: false },
   expanded: false,
-  districtsToLoad: [],
 };
 
 export const FiltersSlice = createSlice({
@@ -65,13 +63,10 @@ export const FiltersSlice = createSlice({
         state.filters.constructionStatus = action.payload;
       }
     },
-    changeDistrictsToLoad: (state, action: PayloadAction<string[]>) => {
-      state.districtsToLoad = action.payload;
-    },
-    toggleExpanded: (state) => {
+    toggleFiltersExpanded: (state) => {
       state.expanded = !state.expanded;
     },
-    setExpanded: (state, action: PayloadAction<boolean>) => {
+    setFiltersExpanded: (state, action: PayloadAction<boolean>) => {
       state.expanded = action.payload;
     },
   },
@@ -87,13 +82,11 @@ export const {
   changeMainPriceOnly,
   changeIncludeSold,
   changeParkingSpaces,
-  changeDistrictsToLoad,
-  toggleExpanded,
-  setExpanded,
+  toggleFiltersExpanded,
+  setFiltersExpanded,
 } = FiltersSlice.actions;
 
 export const selectFilters = (state: RootState) => state.filters.filters;
-export const selectDistrictsToLoad = (state: RootState) => state.filters.districtsToLoad;
 export const selectPropertyType = (state: RootState) => state.filters.filters.propertyType;
 export const selectDealType = (state: RootState) => state.filters.filters.dealType;
 export const selectBedrooms = (state: RootState) => state.filters.filters.bedrooms;
@@ -103,6 +96,6 @@ export const selectConstructionStatus = (state: RootState) => state.filters.filt
 export const selectAllowedWindowInDays = (state: RootState) => state.filters.filters.allowedWindowInDays;
 export const selectMainPriceOnly = (state: RootState) => state.filters.filters.mainPriceOnly;
 export const selectIncludeSold = (state: RootState) => state.filters.filters.includeSold;
-export const selectExpanded = (state: RootState) => state.filters.expanded;
+export const selectFiltersExpanded = (state: RootState) => state.filters.expanded;
 
 export default FiltersSlice.reducer;

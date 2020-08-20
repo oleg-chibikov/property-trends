@@ -7,14 +7,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { districtListRetrievalPromiseTrackerArea } from '../../backendRequests/districtListRetrieval';
 import Spinner from '../spinner/Spinner';
 import { processDistrictsPromiseTrackerArea } from '../suburbMap/SuburbMap';
-import { selectDistrictsByState, toggleExpanded } from './districtListSlice';
+import { selectDistrictsByState, toggleDistrictListExpanded } from './districtListSlice';
 import SelectedStates from './SelectedStates';
 
 const DistrictListButton: React.FunctionComponent = () => {
   const dispatch = useDispatch();
 
   const toggleDrawer = () => {
-    dispatch(toggleExpanded());
+    dispatch(toggleDistrictListExpanded());
   };
 
   const districtListRetrievalPromiseTracker = usePromiseTracker({ area: districtListRetrievalPromiseTrackerArea, delay: 0 });

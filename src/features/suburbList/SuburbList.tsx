@@ -8,14 +8,14 @@ import SearchBoxButton from '../search/SearchBoxButton';
 import Spinner from '../spinner/Spinner';
 import styles from './SuburbList.module.css';
 import SuburbListEntry from './SuburbListEntry';
-import { selectScrollToSuburb, selectSuburbs } from './suburbListSlice';
+import { selectScrollToSuburbInList, selectSuburbsInList } from './suburbListSlice';
 
 interface FeatureListProps extends SuburbListEntryEventHandlers, WithMap {}
 
 const SuburbList: React.FunctionComponent<FeatureListProps> = (props) => {
   const polygonRetrievalPromiseTracker = usePromiseTracker({ area: polygonRetrievalPromiseTrackerArea, delay: 0 });
-  const suburbs = useSelector(selectSuburbs);
-  const scrollToSuburb = useSelector(selectScrollToSuburb);
+  const suburbs = useSelector(selectSuburbsInList);
+  const scrollToSuburb = useSelector(selectScrollToSuburbInList);
   useEffect(() => {
     if (scrollToSuburb) {
       const scrollIntoView = () => {

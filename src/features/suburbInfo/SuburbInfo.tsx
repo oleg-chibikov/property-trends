@@ -10,14 +10,14 @@ import PropertiesList from './PropertiesList';
 import SuburbHeader from './SuburbHeader';
 import SuburbHistory from './SuburbHistory';
 import styles from './SuburbInfo.module.css';
-import { selectActiveTab, setActiveTab } from './suburbInfoSlice';
+import { selectSuburbInfoActiveTab, setSuburbInfoActiveTab } from './suburbInfoSlice';
 
 const SuburbInfo: React.FunctionComponent = () => {
   const dispatch = useDispatch();
-  const activeTab = useSelector(selectActiveTab);
+  const activeTab = useSelector(selectSuburbInfoActiveTab);
 
   const handleChange = (event: React.ChangeEvent<any>, newValue: string) => {
-    dispatch(setActiveTab(newValue));
+    dispatch(setSuburbInfoActiveTab(newValue));
   };
 
   return (

@@ -2,7 +2,7 @@ import { FormControl, InputLabel, MenuItem, Select, Typography, useMediaQuery, u
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { setExpanded } from './filtersSlice';
+import { setFiltersExpanded } from './filtersSlice';
 
 interface SelectItem {
   label: string;
@@ -34,7 +34,7 @@ const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaul
           onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
             dispatch(onChange(event.target.value as string));
             if (!isDesktop) {
-              dispatch(setExpanded(false));
+              dispatch(setFiltersExpanded(false));
             }
           }}
         >

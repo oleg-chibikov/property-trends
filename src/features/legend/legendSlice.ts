@@ -16,7 +16,7 @@ export const legendSlice = createSlice({
   name: 'Legend',
   initialState,
   reducers: {
-    changePricesToColors: (state, action: PayloadAction<PricesToColors>) => {
+    changeLegendPricesToColors: (state, action: PayloadAction<PricesToColors>) => {
       state.pricesToColors = action.payload;
     },
     highlightLegendEntry: (state, action: PayloadAction<number>) => {
@@ -28,9 +28,9 @@ export const legendSlice = createSlice({
   },
 });
 
-export const { changePricesToColors, highlightLegendEntry, unhighlightLegendEntry } = legendSlice.actions;
+export const { changeLegendPricesToColors, highlightLegendEntry, unhighlightLegendEntry } = legendSlice.actions;
 
-export const selectPricesToColors = (state: RootState) => state.legend.pricesToColors;
+export const selectLegendPricesToColors = (state: RootState) => state.legend.pricesToColors;
 export const selectHighlightedPrices = (state: RootState) => state.legend.highlightedPrices;
 
 export default legendSlice.reducer;

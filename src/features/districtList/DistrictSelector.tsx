@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import DomainUtils from '../../utils/domainUtils';
-import { checkDistrict, setExpanded, uncheckDistrict } from './districtListSlice';
+import { checkDistrict, setDistrictListExpanded, uncheckDistrict } from './districtListSlice';
 
 interface IDistrictSelectorProps {
   districtFileName: string;
@@ -23,7 +23,7 @@ const DistrictSelector: React.FunctionComponent<IDistrictSelectorProps> = ({ dis
       dispatch(uncheckDistrict(districtFileName));
     }
     if (!isDesktop) {
-      dispatch(setExpanded(false));
+      dispatch(setDistrictListExpanded(false));
     }
   };
   return (

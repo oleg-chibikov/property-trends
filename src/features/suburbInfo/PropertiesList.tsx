@@ -7,19 +7,19 @@ import { selectFilters } from '../filters/filtersSlice';
 import RealEstatePropertyLink from '../links/RealEstatePropertyLink';
 import Spinner from '../spinner/Spinner';
 import styles from './SuburbInfo.module.css';
-import { selectProperties, selectSuburbKey, setProperties } from './suburbInfoSlice';
+import { selectSuburbInfoProperties, selectSuburbInfoSuburbKey, setSuburbInfoProperties } from './suburbInfoSlice';
 
 let dispatch: Dispatch<any>;
 
 const fetchAndApplyData = async (filters: MapFilters, state: string, postCode: number, locality: string) => {
   const data = await fetchSuburbData(filters, state, postCode, locality);
-  dispatch(setProperties(data?.sort((a, b) => (a.minPrice > b.minPrice ? 1 : a.minPrice === b.minPrice ? ((a.maxPrice || 0) > (b.maxPrice || 0) ? 1 : -1) : -1)) || []));
+  dispatch(setSuburbInfoProperties(data?.sort((a, b) => (a.minPrice > b.minPrice ? 1 : a.minPrice === b.minPrice ? ((a.maxPrice || 0) > (b.maxPrice || 0) ? 1 : -1) : -1)) || []));
 };
 
 const PropertiesList: React.FunctionComponent = () => {
-  const properties = useSelector(selectProperties);
+  const properties = useSelector(selectSuburbInfoProperties);
   const filters = useSelector(selectFilters);
-  const suburbKey = useSelector(selectSuburbKey);
+  const suburbKey = useSelector(selectSuburbInfoSuburbKey);
   dispatch = useDispatch();
 
   useEffect(() => {

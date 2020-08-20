@@ -3,8 +3,8 @@ import { Dispatch } from 'react';
 import { CustomLayer, EventArgs, FeatureProperties } from '../../interfaces';
 import GlobalEventHelper from '../../utils/globalEventHelper';
 import { removeSearchResult } from '../search/searchBoxSlice';
-import { setExpanded, setHistory, setProperties, setSuburbKey } from '../suburbInfo/suburbInfoSlice';
-import { scrollToSuburb } from '../suburbList/suburbListSlice';
+import { setSuburbInfoExpanded, setSuburbInfoHistory, setSuburbInfoProperties, setSuburbInfoSuburbKey } from '../suburbInfo/suburbInfoSlice';
+import { scrollToSuburbInList } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
 
 class SuburbMapEventHandler {
@@ -56,7 +56,7 @@ class SuburbMapEventHandler {
   }
 
   scrollToSuburbInList = (suburbId: string) => {
-    this.dispatch(scrollToSuburb(suburbId));
+    this.dispatch(scrollToSuburbInList(suburbId));
   };
 
   zoomToLayerOnMap = (layer: CustomLayer) => {
@@ -192,11 +192,11 @@ class SuburbMapEventHandler {
   };
 
   private showSuburbInfo(properties: FeatureProperties) {
-    this.dispatch(setProperties(undefined));
-    this.dispatch(setHistory(undefined));
-    this.dispatch(setSuburbKey(undefined));
-    this.dispatch(setSuburbKey({ state: properties.state, locality: properties.locality, postCode: properties.postCode }));
-    this.dispatch(setExpanded(true));
+    this.dispatch(setSuburbInfoProperties(undefined));
+    this.dispatch(setSuburbInfoHistory(undefined));
+    this.dispatch(setSuburbInfoSuburbKey(undefined));
+    this.dispatch(setSuburbInfoSuburbKey({ state: properties.state, locality: properties.locality, postCode: properties.postCode }));
+    this.dispatch(setSuburbInfoExpanded(true));
   }
 }
 

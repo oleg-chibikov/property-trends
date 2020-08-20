@@ -1,9 +1,9 @@
 import React from 'react';
 import SearchBox from './SearchBox';
-import { selectExpanded, setExpanded, toggleExpanded } from './searchBoxSlice';
+import { selectSearchBoxExpanded, setSearchBoxExpanded, toggleSearchBoxExpanded } from './searchBoxSlice';
 
 const SearchBoxWithDrawer: React.FunctionComponent = () => {
-  return <SearchBox openWhenDesktop={false} caption="SearchBox" anchor="top" selectExpanded={selectExpanded} setExpanded={setExpanded} toggleExpanded={toggleExpanded} />;
+  return <SearchBox openWhenDesktop={false} caption="SearchBox" anchor="top" selectExpanded={selectSearchBoxExpanded} setExpanded={setSearchBoxExpanded} toggleExpanded={toggleSearchBoxExpanded} />;
 };
 
 export default React.memo(SearchBoxWithDrawer);

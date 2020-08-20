@@ -21,10 +21,10 @@ export const suburbListSlice = createSlice({
   name: 'SuburbList',
   initialState,
   reducers: {
-    replaceSuburbs: (state, action: PayloadAction<{ [suburbId: string]: SuburbInfo }>) => {
+    replaceSuburbsInList: (state, action: PayloadAction<{ [suburbId: string]: SuburbInfo }>) => {
       state.suburbs = action.payload;
     },
-    highlightSuburb: (state, action: PayloadAction<string>) => {
+    highlightSuburbInList: (state, action: PayloadAction<string>) => {
       const suburbId = action.payload;
       const suburb = state.suburbs[suburbId];
       if (!suburb) {
@@ -32,7 +32,7 @@ export const suburbListSlice = createSlice({
       }
       suburb.isHighlighted = true;
     },
-    unhighlightSuburb: (state, action: PayloadAction<string>) => {
+    unhighlightSuburbInList: (state, action: PayloadAction<string>) => {
       const suburbId = action.payload;
       const suburb = state.suburbs[suburbId];
       if (!suburb) {
@@ -41,22 +41,22 @@ export const suburbListSlice = createSlice({
       suburb.isHighlighted = false;
       state.scrollToSuburb = undefined;
     },
-    setSuburbColor: (state, action: PayloadAction<{ suburbId: string; color: string }>) => {
+    setSuburbColorInList: (state, action: PayloadAction<{ suburbId: string; color: string }>) => {
       const suburb = state.suburbs[action.payload.suburbId];
       if (!suburb) {
         return;
       }
       suburb.color = action.payload.color;
     },
-    scrollToSuburb: (state, action: PayloadAction<string>) => {
+    scrollToSuburbInList: (state, action: PayloadAction<string>) => {
       state.scrollToSuburb = action.payload;
     },
   },
 });
 
-export const { replaceSuburbs, highlightSuburb, unhighlightSuburb, setSuburbColor, scrollToSuburb } = suburbListSlice.actions;
+export const { replaceSuburbsInList, highlightSuburbInList, unhighlightSuburbInList, setSuburbColorInList, scrollToSuburbInList } = suburbListSlice.actions;
 
-export const selectSuburbs = (state: RootState) => state.suburbList.suburbs;
-export const selectScrollToSuburb = (state: RootState) => state.suburbList.scrollToSuburb;
+export const selectSuburbsInList = (state: RootState) => state.suburbList.suburbs;
+export const selectScrollToSuburbInList = (state: RootState) => state.suburbList.scrollToSuburb;
 
 export default suburbListSlice.reducer;
