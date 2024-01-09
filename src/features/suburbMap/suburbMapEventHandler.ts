@@ -6,6 +6,7 @@ import { removeSearchResult } from '../search/searchBoxSlice';
 import { setSuburbInfoExpanded, setSuburbInfoHistory, setSuburbInfoProperties, setSuburbInfoSuburbKey } from '../suburbInfo/suburbInfoSlice';
 import { scrollToSuburbInList } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
+import { Coordinates } from '../currentLocation/CurrentLocation';
 
 class SuburbMapEventHandler {
   private dispatch: Dispatch<any>;
@@ -30,7 +31,7 @@ class SuburbMapEventHandler {
     if (bounds && bounds.isValid()) {
       const zoomToBounds = () => {
         const mapElement = this.mapElement;
-        const promise = new Promise((resolve) => {
+        const promise = new Promise<void>((resolve) => {
           mapElement.once('moveend', function () {
             setTimeout(function () {
               resolve();

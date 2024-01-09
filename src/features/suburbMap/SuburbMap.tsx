@@ -275,7 +275,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
           return { postCode, name };
         };
         for (const feature of data.features) {
-          const { postCode, name } = readPropertiesFromNewFeature((feature.properties as unknown) as NewFeatureProperties);
+          const { postCode, name } = readPropertiesFromNewFeature(feature.properties as unknown as NewFeatureProperties);
 
           const properties = feature.properties;
           properties.fileName = fileName;
@@ -318,7 +318,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
         }
 
         // This object contains all the layers, not just recently added
-        const compoundLayer = geoJsonElement.leafletElement.addData((data as unknown) as GeoJSON.GeoJsonObject) as CompoundLayer;
+        const compoundLayer = geoJsonElement.leafletElement.addData(data as unknown as GeoJSON.GeoJsonObject) as unknown as CompoundLayer;
         bounds = compoundLayer.getBounds();
         currentlyCheckedDistricts[districtFileName] = 0;
         console.log('Added polygons for ' + districtFileName);

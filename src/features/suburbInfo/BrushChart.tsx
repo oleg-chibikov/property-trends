@@ -150,14 +150,19 @@ function applyHighlightAndCrosshair(
     if (!selectedData) {
       return;
     }
-    focus.transition().duration(100).ease(d3.easeLinear).attr('cx', xScale(selectedData.date)).attr('cy', yScale(selectedData.median));
+    focus
+      .transition()
+      .duration(100)
+      .ease(d3.easeLinear)
+      .attr('cx', xScale(selectedData.date) as number)
+      .attr('cy', yScale(selectedData.median) as number);
     focusText.html(`${timeFormat(selectedData.date)}  :${MoneyUtils.format(selectedData.median)}`);
 
     const isSecondHalf = selectedData.date.getTime() >= midDate;
     const tooltipWidth = (focusText.node() as SVGTextElement).getBBox().width;
     const xShift = isSecondHalf ? -tooltipWidth - 15 : 15;
-    const pointX = xScale(selectedData.date);
-    const pointY = yScale(selectedData.median);
+    const pointX = xScale(selectedData.date) as number;
+    const pointY = yScale(selectedData.median) as number;
     focusText
       .transition()
       .duration(100)
@@ -165,8 +170,24 @@ function applyHighlightAndCrosshair(
       .attr('x', pointX + xShift)
       .attr('y', pointY);
 
-    crosshair.select('#crosshairX').transition().duration(100).ease(d3.easeLinear).attr('x1', pointX).attr('y1', yScale(yDomain[0])).attr('x2', pointX).attr('y2', yScale(yDomain[1]));
-    crosshair.select('#crosshairY').transition().duration(100).ease(d3.easeLinear).attr('x1', xScale(xDomain[0])).attr('y1', pointY).attr('x2', xScale(xDomain[1])).attr('y2', pointY);
+    crosshair
+      .select('#crosshairX')
+      .transition()
+      .duration(100)
+      .ease(d3.easeLinear)
+      .attr('x1', pointX)
+      .attr('y1', yScale(yDomain[0]) as number)
+      .attr('x2', pointX)
+      .attr('y2', yScale(yDomain[1]) as number);
+    crosshair
+      .select('#crosshairY')
+      .transition()
+      .duration(100)
+      .ease(d3.easeLinear)
+      .attr('x1', xScale(xDomain[0]) as number)
+      .attr('y1', pointY)
+      .attr('x2', xScale(xDomain[1]) as number)
+      .attr('y2', pointY);
   };
 
   overlay.on('mouseenter', showCrosshair).on('mousemove', updateCrosshairPosition).on('mouseleave', hideCrosshair);
@@ -243,7 +264,7 @@ function applyDefaultBrushSelection(
   }
 
   const brushedSelection = selection.map(xBrushScale);
-  applyBrushSelectionToMainGraph(data, brushedSelection, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
+  applyBrushSelectionToMainGraph(data, brushedSelection as number[], xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
 }
 
 function getCurrentOrDefaultSelection(currentSelection: number[]) {
@@ -420,8 +441,8 @@ function applyNewDomain(
   scatter
     .selectAll('circle')
     //   .transition(transition as any)
-    .attr('cx', (d: any) => xScale(d.date))
-    .attr('cy', (d: any) => yScale(d.median));
+    .attr('cx', (d: any) => xScale(d.date) as number)
+    .attr('cy', (d: any) => yScale(d.median) as number);
 
   const range = xScale.range();
   const domainValues = range.map(xScale.invert);
@@ -477,8 +498,8 @@ function appendScatterToMainGraph(
     .enter()
     .append('circle')
     .attr('class', 'dot')
-    .attr('cx', (d) => xScale(d.date))
-    .attr('cy', (d) => yScale(d.median))
+    .attr('cx', (d) => xScale(d.date) as number)
+    .attr('cy', (d) => yScale(d.median) as number)
     .style('opacity', (x) => (x.count < 3 ? 0.2 : x.count < 5 ? 0.5 : x.count < 10 ? 0.7 : 1));
 
   scatter
@@ -487,8 +508,8 @@ function appendScatterToMainGraph(
     .enter()
     .append('circle')
     .attr('class', 'dotSurrounding')
-    .attr('cx', (d) => xScale(d.date))
-    .attr('cy', (d) => yScale(d.median))
+    .attr('cx', (d) => xScale(d.date) as number)
+    .attr('cy', (d) => yScale(d.median) as number)
     .style('fill', (x) => (x.count < 3 ? '#f3f0e7' : x.count < 5 ? '#eedfb4' : x.count < 10 ? '#eed590' : '#ffc21a'))
     .style('opacity', (x) => (x.count < 3 ? 0.1 : x.count < 5 ? 0.3 : x.count < 10 ? 0.5 : 0.7))
     .on('mouseover', (d) => showTooltip(d, tooltip))
@@ -611,30 +632,26 @@ function createMainLine(xScale: d3.ScaleTime<number, number>, yScale: d3.ScaleLi
   return d3
     .line<ChartData>()
     .curve(d3.curveBasis)
-    .x((d) => xScale(d.date))
-    .y((d) => yScale(d.median));
+    .x((d) => xScale(d.date) as number)
+    .y((d) => yScale(d.median) as number);
 }
 
 function createMainArea(xScale: d3.ScaleTime<number, number>, mainGraphHeight: number, yScale: d3.ScaleLinear<number, number>) {
   return d3
     .area<ChartData>()
     .curve(d3.curveMonotoneX)
-    .x((d) => xScale(d.date))
+    .x((d) => xScale(d.date) as number)
     .y0(mainGraphHeight)
-    .y1((d) => yScale(d.median));
+    .y1((d) => yScale(d.median) as number);
 }
 
 function createBrushArea(xBrushScale: d3.ScaleTime<number, number>, brushHeight: number, yBrushScale: d3.ScaleLinear<number, number>) {
   return d3
     .area<ChartData>()
     .curve(d3.curveMonotoneX)
-    .x(function (d) {
-      return xBrushScale(d.date);
-    })
+    .x((d) => xBrushScale(d.date) as number)
     .y0(brushHeight)
-    .y1(function (d) {
-      return yBrushScale(d.median);
-    });
+    .y1((d) => yBrushScale(d.median) as number);
 }
 
 function createBrushGraph(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, brushPosition: { top: number; left: number }) {
@@ -667,9 +684,9 @@ function applyGradient(svg: d3.Selection<SVGSVGElement, unknown, null, undefined
     .attr('id', id)
     .attr('gradientUnits', 'userSpaceOnUse')
     .attr('x1', 0)
-    .attr('y1', yScale(prices.minPrice))
+    .attr('y1', yScale(prices.minPrice) as number)
     .attr('x2', 0)
-    .attr('y2', yScale(prices.maxPrice))
+    .attr('y2', yScale(prices.maxPrice) as number)
     .selectAll('stop')
     .data([
       { offset: '0%', color: '#e0f0ea' },

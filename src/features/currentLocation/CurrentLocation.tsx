@@ -1,6 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
 interface CurrentLocationProps {
   onLocationFound: (coords: Coordinates) => void;
 }
@@ -32,4 +37,5 @@ CurrentLocation.propTypes = {
   onLocationFound: PropTypes.func.isRequired,
 };
 
+export type { Coordinates };
 export default React.memo(CurrentLocation);

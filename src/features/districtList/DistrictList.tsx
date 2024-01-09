@@ -61,10 +61,10 @@ const DistrictList: React.FunctionComponent = () => {
 
   return (
     <FormGroup>
+      <AdaptiveColorsSwitch />
       {keys.map((state, index) => (
         <StateEntry key={index} state={state} />
       ))}
-      <AdaptiveColorsSwitch />
     </FormGroup>
   );
 };
