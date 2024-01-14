@@ -29,7 +29,7 @@ const App = () => {
           <main>
             <RealEstateMap />
           </main>
-          <footer>Australian Property Trends 2020</footer>
+          <footer>Australian Property Trends 2024</footer>
         </div>
         <DistrictListWithDrawer />
         <SuburbInfoWithDrawer />

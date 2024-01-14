@@ -100,30 +100,11 @@ const ThemeUtils = {
                 fontSize: '0.625rem',
               },
             },
-            marked: {
-              marginBottom: 0,
-            },
-            track: {
-              height: 6,
-              marginTop: -2,
-            },
-            mark: {
-              height: 4,
-              marginTop: -1,
-              width: 4,
-              '&$markActive': {
-                height: 6,
-                marginTop: -2,
-                width: 4,
-              },
-            },
             thumb: {
               height: 16,
               width: 16,
               backgroundColor: '#fff',
               border: '2px solid currentColor',
-              marginTop: -8,
-              marginLeft: -8,
               '&:focus, &:hover, &$active': {
                 boxShadow: 'inherit',
               },
@@ -131,17 +112,7 @@ const ThemeUtils = {
           },
         },
         MuiSelect: {
-          styleOverrides: {
-            root: {
-              padding: '0.5rem',
-              [breakpoints.up('md')]: {
-                padding: '0.6rem',
-              },
-              [breakpoints.up('lg')]: {
-                padding: '0.7rem',
-              },
-            },
-          },
+          styleOverrides: {},
         },
         MuiAccordion: {
           styleOverrides: {
