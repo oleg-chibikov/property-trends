@@ -77,11 +77,11 @@ html {
   margin-right: auto;
 }
 
-.MuiPaper-root.vertical{
+.MuiPaper-root.vertical,.MuiDrawer-root.vertical{
   transition: height 0.3s ease-in-out !important;
 }
 
-.MuiPaper-root.horizontal{  
+.MuiPaper-root.horizontal,.MuiDrawer-root.horizontal{  
   transition: width 0.3s ease-in-out !important;
 }
 

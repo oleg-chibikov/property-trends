@@ -53,6 +53,13 @@ const withDrawer =
     const toggleDrawer = useCallback(() => {
       dispatch(props.toggleExpanded());
     }, [dispatch, props]);
+
+    const classes = clsx({
+      ['drawerOpen']: expanded,
+      ['drawerClose']: !expanded,
+      ['horizontal']: isHorizontal,
+      ['vertical']: !isHorizontal,
+    });
     return (
       <SwipeableDrawer
         variant={widthOrHeight ? 'persistent' : 'temporary'}
@@ -60,13 +67,9 @@ const withDrawer =
         open={widthOrHeight ? true : expanded}
         onClose={toggleDrawer}
         onOpen={toggleDrawer}
+        className={classes}
         classes={{
-          paper: clsx({
-            ['drawerOpen']: expanded,
-            ['drawerClose']: !expanded,
-            ['horizontal']: isHorizontal,
-            ['vertical']: !isHorizontal,
-          }),
+          paper: classes,
         }}
       >
         <div className={'drawerWrapper ' + (isHorizontal ? 'horizontal' : 'vertical') + ' ' + props.anchor}>
