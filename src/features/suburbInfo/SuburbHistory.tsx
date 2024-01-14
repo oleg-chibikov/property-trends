@@ -7,7 +7,7 @@ import Spinner from '../spinner/Spinner';
 import BrushChart from './BrushChart';
 import { selectSuburbInfoHistory, selectSuburbInfoSuburbKey, setSuburbInfoHistory } from './suburbInfoSlice';
 
-let dispatch: Dispatch<any>;
+let dispatch: Dispatch<unknown>;
 
 const fetchAndApplyData = async (filters: MapFilters, state: string, postCode: number, locality: string) => {
   const data = await fetchSuburbHistory(filters, state, postCode, locality);

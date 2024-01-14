@@ -73,53 +73,55 @@ const getButton = (anchor: string) => {
   }
 };
 
-const withDrawer = <P extends DrawerComponentProps>(Component: React.ComponentType<P>): React.FunctionComponent<P> => (props) => {
-  const isHorizontal = props.anchor === 'left' || props.anchor === 'right';
-  const classes = useStyles(isHorizontal, props.widthOrHeight || 'auto');
-  const dispatch = useDispatch();
-  const expanded = useSelector(props.selectExpanded);
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
-  const widthOrHeight = isDesktop ? props.widthOrHeight : undefined;
+const withDrawer =
+  <P extends DrawerComponentProps>(Component: React.ComponentType<P>): React.FunctionComponent<P> =>
+  (props) => {
+    const isHorizontal = props.anchor === 'left' || props.anchor === 'right';
+    const classes = useStyles(isHorizontal, props.widthOrHeight || 'auto');
+    const dispatch = useDispatch();
+    const expanded = useSelector(props.selectExpanded);
+    const theme = useTheme();
+    const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+    const widthOrHeight = isDesktop ? props.widthOrHeight : undefined;
 
-  if (props.openWhenDesktop === undefined || props.openWhenDesktop) {
-    useEffect(() => {
-      dispatch(props.setExpanded(isDesktop));
-    }, [dispatch, props, isDesktop]);
-  }
+    if (props.openWhenDesktop === undefined || props.openWhenDesktop) {
+      useEffect(() => {
+        dispatch(props.setExpanded(isDesktop));
+      }, [dispatch, props, isDesktop]);
+    }
 
-  const toggleDrawer = useCallback(() => {
-    dispatch(props.toggleExpanded());
-  }, [dispatch, props]);
-  return (
-    <SwipeableDrawer
-      variant={widthOrHeight ? 'persistent' : 'temporary'}
-      anchor={props.anchor}
-      open={widthOrHeight ? true : expanded}
-      onClose={toggleDrawer}
-      onOpen={toggleDrawer}
-      className={clsx({
-        [classes.drawerOpen]: expanded,
-        [classes.drawerClose]: !expanded,
-      })}
-      classes={{
-        paper: clsx({
+    const toggleDrawer = useCallback(() => {
+      dispatch(props.toggleExpanded());
+    }, [dispatch, props]);
+    return (
+      <SwipeableDrawer
+        variant={widthOrHeight ? 'persistent' : 'temporary'}
+        anchor={props.anchor}
+        open={widthOrHeight ? true : expanded}
+        onClose={toggleDrawer}
+        onOpen={toggleDrawer}
+        className={clsx({
           [classes.drawerOpen]: expanded,
           [classes.drawerClose]: !expanded,
-        }),
-      }}
-    >
-      <div className={'drawerWrapper ' + (isHorizontal ? 'horizontal' : 'vertical') + ' ' + props.anchor}>
-        {isDesktop && <IconButton onClick={toggleDrawer}>{getButton(props.anchor)}</IconButton>}
-        {useMemo(
-          () => (
-            <Component {...props} />
-          ),
-          [props]
-        )}
-      </div>
-    </SwipeableDrawer>
-  );
-};
+        })}
+        classes={{
+          paper: clsx({
+            [classes.drawerOpen]: expanded,
+            [classes.drawerClose]: !expanded,
+          }),
+        }}
+      >
+        <div className={'drawerWrapper ' + (isHorizontal ? 'horizontal' : 'vertical') + ' ' + props.anchor}>
+          {isDesktop && <IconButton onClick={toggleDrawer}>{getButton(props.anchor)}</IconButton>}
+          {useMemo(
+            () => (
+              <Component {...props} />
+            ),
+            [props]
+          )}
+        </div>
+      </SwipeableDrawer>
+    );
+  };
 
 export default withDrawer;

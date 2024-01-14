@@ -9,7 +9,7 @@ import Highlighter from './highlighter';
 import { Coordinates } from '../currentLocation/CurrentLocation';
 
 class SuburbMapEventHandler {
-  private dispatch: Dispatch<any>;
+  private dispatch: Dispatch<unknown>;
   private mapElement: Map;
   private highlighter: Highlighter;
   private layersBySuburbId: { [suburbId: string]: CustomLayer };
@@ -17,7 +17,7 @@ class SuburbMapEventHandler {
   private layerPressTimer: number | undefined;
   private supportsMouse: boolean;
 
-  constructor(supportsMouse: boolean, dispatch: Dispatch<any>, mapElement: Map, highlighter: Highlighter, layersBySuburbId: { [suburbId: string]: CustomLayer }) {
+  constructor(supportsMouse: boolean, dispatch: Dispatch<unknown>, mapElement: Map, highlighter: Highlighter, layersBySuburbId: { [suburbId: string]: CustomLayer }) {
     this.dispatch = dispatch;
     this.mapElement = mapElement;
     this.highlighter = highlighter;

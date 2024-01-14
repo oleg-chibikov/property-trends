@@ -2,10 +2,10 @@ import { Mark, Slider, Tooltip, Typography } from '@material-ui/core';
 import CodeIcon from '@material-ui/icons/Code';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 interface SliderFilterProps {
-  label: any;
+  label: string | ReactNode;
   useRange?: boolean;
   value: number | number[];
   min: number;

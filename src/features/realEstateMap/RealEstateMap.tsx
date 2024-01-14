@@ -16,7 +16,7 @@ import SuburbMap from '../suburbMap/SuburbMap';
 import MapConstants from './mapConstants';
 
 let lastZoom = 15;
-let dispatch: Dispatch<any>;
+let dispatch: Dispatch<unknown>;
 
 const triggerDistrictsReloadForUserInitiatedEvent = (event: LeafletEvent) => {
   if (!GlobalEventHelper.isProgrammaticEvent) {

@@ -16,7 +16,7 @@ const SuburbInfo: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const activeTab = useSelector(selectSuburbInfoActiveTab);
 
-  const handleChange = (event: React.ChangeEvent<any>, newValue: string) => {
+  const handleChange = (event: React.ChangeEvent<unknown>, newValue: string) => {
     dispatch(setSuburbInfoActiveTab(newValue));
   };
 

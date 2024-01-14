@@ -12,7 +12,7 @@ interface BrushChartProps {
   data: ChartData[];
 }
 
-let dispatch: Dispatch<any>;
+let dispatch: Dispatch<unknown>;
 const timeFormat = d3.timeFormat('%b %Y');
 let midDate: number;
 let brushBehavior: d3.BrushBehavior<unknown> | undefined;
@@ -27,7 +27,7 @@ const BrushChart: React.FunctionComponent<BrushChartProps> = ({ data }) => {
   dispatch = useDispatch();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const dimensions = useResizeObserver(wrapperRef);
+  const dimensions = useResizeObserver(wrapperRef as { current: Element });
   const currentSelection = useSelector(selectSuburbInfoChartBrushSelection);
   const isDrawerExpanded = useSelector(selectSuburbInfoExpanded); // no need to refresh graph when the drawer is being hidden (this operation changes dimensions)
 
@@ -85,8 +85,8 @@ function createOverlay(svg: d3.Selection<SVGSVGElement, unknown, null, undefined
   return overlay;
 }
 
-function applyTranslate(overlay: d3.Selection<any, unknown, null, undefined>, margin: { top: number; right: number; bottom: number; left: number }) {
-  overlay.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+function applyTranslate(overlay: d3.Selection<SVGRectElement, unknown, null, undefined> | d3.Selection<SVGGElement, unknown, null, undefined>, margin: { top: number; right: number; bottom: number; left: number }) {
+  overlay.attr('transform', `translate(${margin.left},${margin.top})`);
 }
 
 function applyHighlightAndCrosshair(
@@ -213,7 +213,7 @@ function createXGridLines(xScale: d3.ScaleTime<number, number>) {
   return d3
     .axisBottom(xScale)
     .ticks(7)
-    .tickFormat('' as any);
+    .tickFormat(() => '');
 }
 
 // Gridlines in y axis function
@@ -221,7 +221,7 @@ function createYGridLines(yScale: d3.ScaleLinear<number, number>) {
   return d3
     .axisLeft(yScale)
     .ticks(7)
-    .tickFormat('' as any);
+    .tickFormat(() => '');
 }
 
 function applyGridLines(mainGraphGroup: d3.Selection<SVGGElement, unknown, null, undefined>, height: number, width: number, xScale: d3.ScaleTime<number, number>, yScale: d3.ScaleLinear<number, number>) {
@@ -347,7 +347,7 @@ function applyZoomBehaviorToMainGraph(
 
     const { range, domainValues } = applyNewDomain(data, newDomain, xScale, yScale, xAxis, yAxis, mainGraphGroup, area, line, scatter);
     if (brushBehavior) {
-      brushGraph.select('.brush').call(brushBehavior.move as any, range.map(transform.invertX, transform));
+      brushGraph.select('.brush').call(brushBehavior.move as (x: unknown) => void, range.map(transform.invertX, transform));
     }
     dispatch(setSuburbInfoChartBrushSelection(domainValues.map((x) => x.getTime())));
     updateCrosshairPosition();
@@ -381,7 +381,7 @@ function applyZoomBehaviorToMainGraph(
   //   updateCrosshairPosition();
   // });
 
-  overlay.call(zoomBehavior as any);
+  overlay.call(zoomBehavior as (x: unknown) => void);
 }
 
 function applyBrushSelectionToMainGraph(
@@ -403,7 +403,7 @@ function applyBrushSelectionToMainGraph(
   applyNewDomain(data, newDomain, xScale, yScale, xAxis, yAxis, mainGraphGroup, area, line, scatter);
   // This line retains the brush selection on the brush graph
   if (zoomBehavior) {
-    overlay.call(zoomBehavior.transform as any, d3.zoomIdentity.scale(mainGraphWidth / (selection[1] - selection[0])).translate(-selection[0], 0));
+    overlay.call(zoomBehavior.transform as (x: unknown) => void, d3.zoomIdentity.scale(mainGraphWidth / (selection[1] - selection[0])).translate(-selection[0], 0));
   }
 
   dispatch(setSuburbInfoChartBrushSelection(newDomain.map((x) => x.getTime())));
@@ -426,23 +426,23 @@ function applyNewDomain(
   mainGraphGroup
     .select('.area')
     //  .transition(transition as any)
-    .attr('d', area as any);
+    .attr('d', area as d3.ValueFn<d3.BaseType, unknown, string | number | boolean | null>);
   mainGraphGroup
     .select('.line')
     //  .transition(transition as any)
-    .attr('d', line as any);
+    .attr('d', line as d3.ValueFn<d3.BaseType, unknown, string | number | boolean | null>);
   const xAxisSelection = mainGraphGroup
     .select('.axis--x')
     //  .transition(transition as any)
-    .call(xAxis as any);
+    .call(xAxis as (x: unknown) => void);
 
   rotateAxisTicks(xAxisSelection);
 
   scatter
     .selectAll('circle')
     //   .transition(transition as any)
-    .attr('cx', (d: any) => xScale(d.date) as number)
-    .attr('cy', (d: any) => yScale(d.median) as number);
+    .attr('cx', ((d: ChartData) => xScale(d.date) as number) as d3.ValueFn<d3.BaseType, unknown, string | number | boolean | null>)
+    .attr('cy', ((d: ChartData) => yScale(d.median) as number) as d3.ValueFn<d3.BaseType, unknown, string | number | boolean | null>);
 
   const range = xScale.range();
   const domainValues = range.map(xScale.invert);
@@ -452,7 +452,7 @@ function applyNewDomain(
   const yAxisSelection = mainGraphGroup
     .select('.axis--y')
     //  .transition(transition as any)
-    .call(yAxis as any);
+    .call(yAxis as (x: unknown) => void);
 
   rotateAxisTicks(yAxisSelection);
 
@@ -519,14 +519,14 @@ function appendScatterToMainGraph(
   return scatter;
 }
 
-function repositionTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
+function repositionTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
   const isSecondHalf = d.date.getTime() >= midDate;
   const tooltipWidth = parseInt(tooltip.style('width'));
   const xShift = isSecondHalf ? -tooltipWidth : 0;
   tooltip.style('left', d3.event.pageX + xShift + 'px').style('top', d3.event.pageY + 'px');
 }
 
-function showTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
+function showTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
   tooltip.style('opacity', 1);
   const tooltipHtml = `${timeFormat(d.date)}
   <br />
@@ -537,7 +537,7 @@ function showTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, H
   repositionTooltip(d, tooltip);
 }
 
-function hideTooltip(tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
+function hideTooltip(tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
   tooltip.style('opacity', 0);
 }
 

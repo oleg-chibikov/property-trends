@@ -5,11 +5,11 @@ import { clearInfo, setInfo } from '../info/infoSlice';
 import { highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
 import { highlightSuburbInList, unhighlightSuburbInList } from '../suburbList/suburbListSlice';
 class Highlighter {
-  private dispatch: Dispatch<any>;
+  private dispatch: Dispatch<unknown>;
   private geoJsonElement: GeoJSON;
   private currentlyHighlightedLayers: { [suburbId: string]: CustomLayer } = {};
 
-  constructor(dispatch: Dispatch<any>, geoJsonElement: GeoJSON) {
+  constructor(dispatch: Dispatch<unknown>, geoJsonElement: GeoJSON) {
     this.dispatch = dispatch;
     this.geoJsonElement = geoJsonElement;
   }

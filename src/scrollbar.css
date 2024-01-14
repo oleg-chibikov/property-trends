@@ -1,16 +1,12 @@
-* The emerging W3C standard that is currently Firefox-only */ * {
-  scrollbar-width: thin;
-  scrollbar-color: white transparent;
-}
-
-/* Works on Chrome/Edge/Safari */
-*::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 0.7rem;
 }
-*::-webkit-scrollbar-track {
+
+::-webkit-scrollbar-track {
   background: transparent;
 }
-*::-webkit-scrollbar-thumb {
+
+::-webkit-scrollbar-thumb {
   background-color: white;
   border-radius: 1.4rem;
   border: 0.1rem solid transparent;

@@ -2,7 +2,7 @@ import axios, { Method } from 'axios';
 import { trackPromise } from 'react-promise-tracker';
 
 export default class AxiosUtils {
-  static async fetch<T>(url: string, method: Method = 'get', data?: any) {
+  static async fetch<T>(url: string, method: Method = 'get', data?: unknown) {
     console.log(`Fetching ${url}...`);
 
     const CancelToken = axios.CancelToken;
@@ -30,7 +30,7 @@ export default class AxiosUtils {
       });
   }
 
-  static async fetchWithPromiseTracking<T>(promiseTrackerArea: string, url: string, method: Method = 'get', data?: any) {
+  static async fetchWithPromiseTracking<T>(promiseTrackerArea: string, url: string, method: Method = 'get', data?: unknown) {
     return await trackPromise(AxiosUtils.fetch<T>(url, method, data), promiseTrackerArea);
   }
 }

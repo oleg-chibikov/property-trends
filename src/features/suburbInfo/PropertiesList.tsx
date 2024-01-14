@@ -9,7 +9,7 @@ import Spinner from '../spinner/Spinner';
 import styles from './SuburbInfo.module.css';
 import { selectSuburbInfoProperties, selectSuburbInfoSuburbKey, setSuburbInfoProperties } from './suburbInfoSlice';
 
-let dispatch: Dispatch<any>;
+let dispatch: Dispatch<unknown>;
 
 const fetchAndApplyData = async (filters: MapFilters, state: string, postCode: number, locality: string) => {
   const data = await fetchSuburbData(filters, state, postCode, locality);

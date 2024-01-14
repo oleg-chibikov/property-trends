@@ -4,7 +4,9 @@ import fetchDistrictList from '../../backendRequests/districtListRetrieval';
 import DistrictList from './DistrictList';
 import { addDistrictFileNames, checkInitialStateIfEmpty, selectDistrictListExpanded, selectDistrictListRetrySwitch, setDistrictListExpanded, setZoomToSelection, toggleDistrictListExpanded } from './districtListSlice';
 
-const fetchAndApplyDistrictList = async (dispatch: Dispatch<any>) => {
+let dispatch: Dispatch<unknown>;
+
+const fetchAndApplyDistrictList = async () => {
   // In order to zoom to initial regions zoomToSelection should be explicitly set to true at startup (otherwise it might be overwritten by redux-persisted state)
   dispatch(setZoomToSelection(true));
   const data = await fetchDistrictList();
@@ -16,10 +18,10 @@ const fetchAndApplyDistrictList = async (dispatch: Dispatch<any>) => {
 
 const DistrictListWithDrawer: React.FunctionComponent = () => {
   const retrySwitch = useSelector(selectDistrictListRetrySwitch);
-  const dispatch = useDispatch();
   useEffect(() => {
-    fetchAndApplyDistrictList(dispatch);
+    fetchAndApplyDistrictList();
   }, [retrySwitch]);
+  dispatch = useDispatch();
   return <DistrictList widthOrHeight={'20rem'} caption="Districts" anchor="right" selectExpanded={selectDistrictListExpanded} setExpanded={setDistrictListExpanded} toggleExpanded={toggleDistrictListExpanded} />;
 };
 
