@@ -77,6 +77,34 @@ html {
   margin-right: auto;
 }
 
+.MuiPaper-root.vertical{
+  transition: height 0.3s ease-in-out !important;
+}
+
+.MuiPaper-root.horizontal{  
+  transition: width 0.3s ease-in-out !important;
+}
+
+/* Open State */
+
+.drawerOpen.horizontal {
+  width: 250px; /* replace with your desired widthOrHeightWhenOpen value */
+}
+
+.drawerOpen.vertical {
+  height: 250px; /* replace with your desired widthOrHeightWhenOpen value */
+}
+
+/* Close State */
+
+.drawerClose.horizontal {
+  width: 0;
+}
+
+.drawerClose.vertical {
+  height: 0;
+}
+
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   background-color: rgb(39, 39, 39);

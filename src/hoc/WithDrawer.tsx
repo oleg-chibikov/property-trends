@@ -38,27 +38,21 @@ const withDrawer =
   <P extends DrawerComponentProps>(Component: React.ComponentType<P>): React.FunctionComponent<P> =>
   (props) => {
     const isHorizontal = props.anchor === 'left' || props.anchor === 'right';
-    const expanded = useSelector(props.selectExpanded);
     const dispatch = useDispatch<AppDispatch>();
+    const expanded = useSelector(props.selectExpanded);
     const theme = useTheme();
     const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
     const widthOrHeight = isDesktop ? props.widthOrHeight : undefined;
 
-    useEffect(() => {
-      if (props.openWhenDesktop === undefined || props.openWhenDesktop) {
+    if (props.openWhenDesktop === undefined || props.openWhenDesktop) {
+      useEffect(() => {
         dispatch(props.setExpanded(isDesktop));
-      }
-    }, [dispatch, props, isDesktop]);
+      }, [dispatch, props, isDesktop]);
+    }
 
     const toggleDrawer = useCallback(() => {
       dispatch(props.toggleExpanded());
     }, [dispatch, props]);
-
-    const drawerStyle: React.CSSProperties = {
-      transition: `all 0.3s ease-in-out`,
-      [isHorizontal ? 'width' : 'height']: widthOrHeight || 'auto',
-    };
-
     return (
       <SwipeableDrawer
         variant={widthOrHeight ? 'persistent' : 'temporary'}
@@ -66,15 +60,16 @@ const withDrawer =
         open={widthOrHeight ? true : expanded}
         onClose={toggleDrawer}
         onOpen={toggleDrawer}
-        style={drawerStyle}
         classes={{
           paper: clsx({
-            drawerOpen: expanded,
-            drawerClose: !expanded,
+            ['drawerOpen']: expanded,
+            ['drawerClose']: !expanded,
+            ['horizontal']: isHorizontal,
+            ['vertical']: !isHorizontal,
           }),
         }}
       >
-        <div className={`drawerWrapper ${isHorizontal ? 'horizontal' : 'vertical'} ${props.anchor}`}>
+        <div className={'drawerWrapper ' + (isHorizontal ? 'horizontal' : 'vertical') + ' ' + props.anchor}>
           {isDesktop && <IconButton onClick={toggleDrawer}>{getButton(props.anchor)}</IconButton>}
           {useMemo(
             () => (
