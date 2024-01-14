@@ -1,8 +1,8 @@
-import { FormControlLabel, Typography, useMediaQuery, useTheme } from '@material-ui/core';
-import Checkbox from '@material-ui/core/Checkbox';
-import PropTypes from 'prop-types';
+import { FormControlLabel, Typography, useMediaQuery, useTheme } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
 import React, { Dispatch } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { checkState, selectCheckedStates, setDistrictListExpanded, uncheckState } from './districtListSlice';
 
 let dispatch: Dispatch<unknown>;
@@ -12,7 +12,7 @@ interface StateEntryProps {
 }
 
 const StateEntryHeader: React.FunctionComponent<StateEntryProps> = ({ state }) => {
-  dispatch = useDispatch();
+  dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
 
@@ -42,10 +42,6 @@ const StateEntryHeader: React.FunctionComponent<StateEntryProps> = ({ state }) =
       />
     </Typography>
   );
-};
-
-StateEntryHeader.propTypes = {
-  state: PropTypes.string.isRequired,
 };
 
 export default React.memo(StateEntryHeader);

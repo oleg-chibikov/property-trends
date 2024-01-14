@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import PropTypes from 'prop-types';
 import React, { Dispatch, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import useResizeObserver from '../../hooks/useResizeObserver';
 import { ChartData } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
@@ -24,7 +24,7 @@ let isCrosshairVisible: boolean;
 let previousCoordinates: [number, number];
 
 const BrushChart: React.FunctionComponent<BrushChartProps> = ({ data }) => {
-  dispatch = useDispatch();
+  dispatch = useDispatch<AppDispatch>();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dimensions = useResizeObserver(wrapperRef as { current: Element });
@@ -73,11 +73,6 @@ const BrushChart: React.FunctionComponent<BrushChartProps> = ({ data }) => {
     </div>
   );
 };
-
-BrushChart.propTypes = {
-  data: PropTypes.array.isRequired,
-};
-export default BrushChart;
 
 function createOverlay(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, mainGraphWidth: number, mainGraphHeight: number, margin: { top: number; right: number; bottom: number; left: number }) {
   const overlay = svg.append('rect').attr('class', 'overlay').style('fill', 'none').style('pointer-events', 'all').attr('width', mainGraphWidth).attr('height', mainGraphHeight);
@@ -709,3 +704,5 @@ function getDefaultSelection() {
   oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() - 1);
   return [oneYearFromNow, currentDate];
 }
+
+export default BrushChart;

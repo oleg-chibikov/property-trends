@@ -1,9 +1,10 @@
-import { IconButton, Typography } from '@material-ui/core';
-import ErrorIcon from '@material-ui/icons/Error';
-import MapIcon from '@material-ui/icons/Map';
+import ErrorIcon from '@mui/icons-material/Error';
+import MapIcon from '@mui/icons-material/Map';
+import { IconButton, Typography } from '@mui/material';
 import React from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { districtListRetrievalPromiseTrackerArea } from '../../backendRequests/districtListRetrieval';
 import Spinner from '../spinner/Spinner';
 import { processDistrictsPromiseTrackerArea } from '../suburbMap/SuburbMap';
@@ -11,7 +12,7 @@ import { selectDistrictsByState, toggleDistrictListExpanded } from './districtLi
 import SelectedStates from './SelectedStates';
 
 const DistrictListButton: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const toggleDrawer = () => {
     dispatch(toggleDistrictListExpanded());

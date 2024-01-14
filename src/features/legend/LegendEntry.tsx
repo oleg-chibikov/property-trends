@@ -1,5 +1,4 @@
-import { Typography } from '@material-ui/core';
-import PropTypes from 'prop-types';
+import { Typography } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { LegendEntryEventHandlers } from '../../interfaces';
@@ -26,15 +25,6 @@ const LegendEntry: React.FunctionComponent<LegendEntryProps> = ({ onItemClick: o
       </Typography>
     </div>
   );
-};
-
-LegendEntry.propTypes = {
-  onItemClick: PropTypes.func.isRequired,
-  onItemMouseOut: PropTypes.func.isRequired,
-  color: PropTypes.string.isRequired,
-  price: PropTypes.number.isRequired,
-  nextPrice: PropTypes.number,
-  suburbCount: PropTypes.number.isRequired,
 };
 
 export default React.memo(LegendEntry);

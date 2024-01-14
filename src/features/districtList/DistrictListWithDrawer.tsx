@@ -1,5 +1,6 @@
 import React, { Dispatch, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import fetchDistrictList from '../../backendRequests/districtListRetrieval';
 import DistrictList from './DistrictList';
 import { addDistrictFileNames, checkInitialStateIfEmpty, selectDistrictListExpanded, selectDistrictListRetrySwitch, setDistrictListExpanded, setZoomToSelection, toggleDistrictListExpanded } from './districtListSlice';
@@ -21,7 +22,7 @@ const DistrictListWithDrawer: React.FunctionComponent = () => {
   useEffect(() => {
     fetchAndApplyDistrictList();
   }, [retrySwitch]);
-  dispatch = useDispatch();
+  dispatch = useDispatch<AppDispatch>();
   return <DistrictList widthOrHeight={'20rem'} caption="Districts" anchor="right" selectExpanded={selectDistrictListExpanded} setExpanded={setDistrictListExpanded} toggleExpanded={toggleDistrictListExpanded} />;
 };
 

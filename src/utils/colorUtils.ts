@@ -221,7 +221,7 @@ export default class ColorUtils {
 
     const assignColorsToSuburbs = () => {
       const buildPiecewiseEasingFunction = () => {
-        const piecewiseEasingFnObjects = [];
+        const piecewiseEasingFnObjects: { tInterval: number[]; easingFn: () => number }[] = [];
         const keys = Object.keys(colorsByPriceInterval).map(Number);
         let index = 0;
         for (const subIntervalMinPrice of keys) {

@@ -1,8 +1,9 @@
-import { FormGroup, IconButton } from '@material-ui/core';
-import ErrorIcon from '@material-ui/icons/Error';
+import ErrorIcon from '@mui/icons-material/Error';
+import { FormGroup, IconButton } from '@mui/material';
 import React, { useEffect } from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { districtListRetrievalPromiseTrackerArea } from '../../backendRequests/districtListRetrieval';
 import withDrawer from '../../hoc/WithDrawer';
 import Spinner from '../spinner/Spinner';
@@ -25,7 +26,7 @@ const scrollToSuburb = (elementIdToScrollTo: string | undefined) => {
 };
 
 const DistrictList: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const districtsByState = useSelector(selectDistrictsByState);
   const districtListRetrievalPromiseTracker = usePromiseTracker({ area: districtListRetrievalPromiseTrackerArea, delay: 0 });
   const districtProcessingPromiseTracker = usePromiseTracker({ area: processDistrictsPromiseTrackerArea, delay: 0 });

@@ -1,52 +1,13 @@
-import { createStyles, IconButton, makeStyles, SwipeableDrawer, Theme, useMediaQuery, useTheme } from '@material-ui/core';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
-import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { IconButton, SwipeableDrawer, useMediaQuery, useTheme } from '@mui/material';
 import { ActionCreatorWithoutPayload, ActionCreatorWithPayload } from '@reduxjs/toolkit';
 import clsx from 'clsx';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../app/store';
-
-const useStyles = (isWidth: boolean, widthOrHeightWhenOpen: string | number) =>
-  makeStyles((theme: Theme) =>
-    createStyles(
-      isWidth
-        ? {
-            drawerOpen: {
-              width: widthOrHeightWhenOpen,
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-            },
-            drawerClose: {
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-              width: 0,
-            },
-          }
-        : {
-            drawerOpen: {
-              height: widthOrHeightWhenOpen,
-              transition: theme.transitions.create('height', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-            },
-            drawerClose: {
-              transition: theme.transitions.create('height', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-              height: 0,
-            },
-          }
-    )
-  )();
+import { AppDispatch, RootState } from '../app/store';
 
 interface DrawerComponentProps {
   caption: string;
@@ -77,22 +38,27 @@ const withDrawer =
   <P extends DrawerComponentProps>(Component: React.ComponentType<P>): React.FunctionComponent<P> =>
   (props) => {
     const isHorizontal = props.anchor === 'left' || props.anchor === 'right';
-    const classes = useStyles(isHorizontal, props.widthOrHeight || 'auto');
-    const dispatch = useDispatch();
     const expanded = useSelector(props.selectExpanded);
+    const dispatch = useDispatch<AppDispatch>();
     const theme = useTheme();
     const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
     const widthOrHeight = isDesktop ? props.widthOrHeight : undefined;
 
-    if (props.openWhenDesktop === undefined || props.openWhenDesktop) {
-      useEffect(() => {
+    useEffect(() => {
+      if (props.openWhenDesktop === undefined || props.openWhenDesktop) {
         dispatch(props.setExpanded(isDesktop));
-      }, [dispatch, props, isDesktop]);
-    }
+      }
+    }, [dispatch, props, isDesktop]);
 
     const toggleDrawer = useCallback(() => {
       dispatch(props.toggleExpanded());
     }, [dispatch, props]);
+
+    const drawerStyle: React.CSSProperties = {
+      transition: `all 0.3s ease-in-out`,
+      [isHorizontal ? 'width' : 'height']: widthOrHeight || 'auto',
+    };
+
     return (
       <SwipeableDrawer
         variant={widthOrHeight ? 'persistent' : 'temporary'}
@@ -100,18 +66,15 @@ const withDrawer =
         open={widthOrHeight ? true : expanded}
         onClose={toggleDrawer}
         onOpen={toggleDrawer}
-        className={clsx({
-          [classes.drawerOpen]: expanded,
-          [classes.drawerClose]: !expanded,
-        })}
+        style={drawerStyle}
         classes={{
           paper: clsx({
-            [classes.drawerOpen]: expanded,
-            [classes.drawerClose]: !expanded,
+            drawerOpen: expanded,
+            drawerClose: !expanded,
           }),
         }}
       >
-        <div className={'drawerWrapper ' + (isHorizontal ? 'horizontal' : 'vertical') + ' ' + props.anchor}>
+        <div className={`drawerWrapper ${isHorizontal ? 'horizontal' : 'vertical'} ${props.anchor}`}>
           {isDesktop && <IconButton onClick={toggleDrawer}>{getButton(props.anchor)}</IconButton>}
           {useMemo(
             () => (

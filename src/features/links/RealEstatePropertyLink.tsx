@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import DomainUtils from '../../utils/domainUtils';
 
@@ -13,11 +12,6 @@ const RealEstatePropertyLink: React.FunctionComponent<RealEstatePropertyLink> = 
       {text}
     </a>
   );
-};
-
-RealEstatePropertyLink.propTypes = {
-  id: PropTypes.number.isRequired,
-  text: PropTypes.string.isRequired,
 };
 
 export default React.memo(RealEstatePropertyLink);

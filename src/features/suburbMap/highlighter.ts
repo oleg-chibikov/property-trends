@@ -1,15 +1,14 @@
 import { Dispatch } from 'react';
-import { GeoJSON } from 'react-leaflet';
 import { CustomLayer, FeatureProperties } from '../../interfaces';
 import { clearInfo, setInfo } from '../info/infoSlice';
 import { highlightLegendEntry, unhighlightLegendEntry } from '../legend/legendSlice';
 import { highlightSuburbInList, unhighlightSuburbInList } from '../suburbList/suburbListSlice';
 class Highlighter {
   private dispatch: Dispatch<unknown>;
-  private geoJsonElement: GeoJSON;
+  private geoJsonElement: L.GeoJSON;
   private currentlyHighlightedLayers: { [suburbId: string]: CustomLayer } = {};
 
-  constructor(dispatch: Dispatch<unknown>, geoJsonElement: GeoJSON) {
+  constructor(dispatch: Dispatch<unknown>, geoJsonElement: L.GeoJSON) {
     this.dispatch = dispatch;
     this.geoJsonElement = geoJsonElement;
   }
@@ -110,7 +109,7 @@ class Highlighter {
   };
 
   private unhighlightLayerOnMap = (layer: CustomLayer) => {
-    this.geoJsonElement.leafletElement.resetStyle(layer);
+    this.geoJsonElement.resetStyle(layer);
   };
 }
 

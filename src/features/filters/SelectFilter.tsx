@@ -1,7 +1,7 @@
-import { FormControl, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@material-ui/core';
-import PropTypes from 'prop-types';
+import { FormControl, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { setFiltersExpanded } from './filtersSlice';
 
 interface SelectItem {
@@ -17,7 +17,7 @@ interface SelectFilterProps {
 }
 
 const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaultValue, onChange, name }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
 
@@ -31,8 +31,8 @@ const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaul
           label={name}
           displayEmpty
           value={defaultValue}
-          onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
-            dispatch(onChange(event.target.value as string));
+          onChange={(event) => {
+            onChange(event.target.value as string);
             if (!isDesktop) {
               dispatch(setFiltersExpanded(false));
             }
@@ -47,13 +47,6 @@ const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaul
       </FormControl>
     </div>
   );
-};
-
-SelectFilter.propTypes = {
-  data: PropTypes.any.isRequired,
-  defaultValue: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  name: PropTypes.string.isRequired,
 };
 
 export default React.memo(SelectFilter);

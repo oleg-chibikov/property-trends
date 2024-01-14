@@ -1,9 +1,10 @@
-import { Typography } from '@material-ui/core';
-import Apartment from '@material-ui/icons/Apartment';
-import CloseIcon from '@material-ui/icons/Close';
-import Home from '@material-ui/icons/Home';
+import Apartment from '@mui/icons-material/Apartment';
+import CloseIcon from '@mui/icons-material/Close';
+import Home from '@mui/icons-material/Home';
+import { Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { InfoData } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
 import { selectFilters } from '../filters/filtersSlice';
@@ -15,7 +16,7 @@ const Info: React.FunctionComponent = () => {
   const info = useSelector(selectInfo);
   const filters = useSelector(selectFilters);
   const isApartment = filters.propertyType === 'apartment';
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const renderAdditionalInfo = (info: InfoData) =>
     info.priceData && (

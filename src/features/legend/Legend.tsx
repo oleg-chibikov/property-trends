@@ -1,6 +1,5 @@
-import { Accordion, AccordionDetails, AccordionSummary, useMediaQuery, useTheme } from '@material-ui/core';
-import ExpandLessIcon from '@material-ui/icons/ExpandLess';
-import PropTypes from 'prop-types';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { Accordion, AccordionDetails, AccordionSummary, useMediaQuery, useTheme } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
 import { useSelector } from 'react-redux';
@@ -60,11 +59,6 @@ const Legend: React.FunctionComponent<LegendEntryEventHandlers> = ({ onItemClick
       </AccordionDetails>
     </Accordion>
   );
-};
-
-Legend.propTypes = {
-  onItemClick: PropTypes.func.isRequired,
-  onItemMouseOut: PropTypes.func.isRequired,
 };
 
 export default React.memo(Legend);

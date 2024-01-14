@@ -1,10 +1,9 @@
-import AppBar from '@material-ui/core/AppBar';
-import Tab from '@material-ui/core/Tab';
-import TabContext from '@material-ui/lab/TabContext';
-import TabList from '@material-ui/lab/TabList';
-import TabPanel from '@material-ui/lab/TabPanel';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import AppBar from '@mui/material/AppBar';
+import Tab from '@mui/material/Tab';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import withDrawer from '../../hoc/WithDrawer';
 import PropertiesList from './PropertiesList';
 import SuburbHeader from './SuburbHeader';
@@ -13,10 +12,10 @@ import styles from './SuburbInfo.module.css';
 import { selectSuburbInfoActiveTab, setSuburbInfoActiveTab } from './suburbInfoSlice';
 
 const SuburbInfo: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const activeTab = useSelector(selectSuburbInfoActiveTab);
 
-  const handleChange = (event: React.ChangeEvent<unknown>, newValue: string) => {
+  const handleChange = (_event: React.ChangeEvent<unknown>, newValue: string) => {
     dispatch(setSuburbInfoActiveTab(newValue));
   };
 

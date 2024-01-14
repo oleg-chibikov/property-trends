@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import { SuburbInfo, SuburbListEntryEventHandlers } from '../../interfaces';
 import styles from './SuburbList.module.css';
@@ -17,15 +16,5 @@ const SuburbListEntry: React.FunctionComponent<FeatureEntryProps> = ({ name, sub
     {name}
   </div>
 );
-
-SuburbListEntry.propTypes = {
-  name: PropTypes.string.isRequired,
-  suburbId: PropTypes.string.isRequired,
-  isHighlighted: PropTypes.bool,
-  color: PropTypes.string,
-  onItemMouseOver: PropTypes.func.isRequired,
-  onItemMouseOut: PropTypes.func.isRequired,
-  onItemClick: PropTypes.func.isRequired,
-};
 
 export default React.memo(SuburbListEntry);

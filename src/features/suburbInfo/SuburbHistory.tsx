@@ -1,5 +1,6 @@
 import React, { Dispatch, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import fetchSuburbHistory from '../../backendRequests/suburbHistoryRetrieval';
 import { MapFilters } from '../../interfaces';
 import { selectFilters } from '../filters/filtersSlice';
@@ -18,7 +19,7 @@ const SuburbHistory: React.FunctionComponent = () => {
   const history = useSelector(selectSuburbInfoHistory);
   const filters = useSelector(selectFilters);
   const suburbKey = useSelector(selectSuburbInfoSuburbKey);
-  dispatch = useDispatch();
+  dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     if (suburbKey) {

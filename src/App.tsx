@@ -1,5 +1,4 @@
-import { MuiThemeProvider } from '@material-ui/core';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
 import styles from './App.module.css';
 import DistrictListButton from './features/districtList/DistrictListButton';
@@ -13,7 +12,7 @@ import ThemeUtils from './utils/themeUtils';
 
 const App = () => {
   return (
-    <MuiThemeProvider theme={ThemeUtils.themeDark}>
+    <ThemeProvider theme={ThemeUtils.themeDark}>
       <CssBaseline />
       <SearchBoxWithDrawer />
       <div className={styles.wrapper}>
@@ -36,7 +35,7 @@ const App = () => {
         <SuburbInfoWithDrawer />
         <div className="tooltip"></div>
       </div>
-    </MuiThemeProvider>
+    </ThemeProvider>
   );
 };
 

@@ -1,8 +1,11 @@
-import { Mark, Slider, Tooltip, Typography } from '@material-ui/core';
-import CodeIcon from '@material-ui/icons/Code';
-import ToggleButton from '@material-ui/lab/ToggleButton';
-import PropTypes from 'prop-types';
+import CodeIcon from '@mui/icons-material/Code';
+import { Slider, ToggleButton, Tooltip, Typography } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
+
+interface Mark {
+  value: number;
+  label?: React.ReactNode;
+}
 
 interface SliderFilterProps {
   label: string | ReactNode;
@@ -53,7 +56,7 @@ const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label
           value={valueCopy}
           valueLabelDisplay="auto"
           marks={marks}
-          onChange={(event: unknown, newValue: number | number[]) => {
+          onChange={(_event: unknown, newValue: number | number[]) => {
             setLocalValue(newValue);
           }}
           onChangeCommitted={(event: unknown, newValue: number | number[]) => {
@@ -63,16 +66,6 @@ const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label
       </div>
     </div>
   );
-};
-
-SliderFilter.propTypes = {
-  label: PropTypes.any.isRequired,
-  useRange: PropTypes.bool,
-  value: PropTypes.any.isRequired,
-  min: PropTypes.number.isRequired,
-  max: PropTypes.number.isRequired,
-  onChange: PropTypes.func.isRequired,
-  marks: PropTypes.any.isRequired,
 };
 
 export default React.memo(SliderFilter);

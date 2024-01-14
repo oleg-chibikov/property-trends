@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 
 interface Coordinates {
@@ -31,10 +30,6 @@ const CurrentLocation: React.FunctionComponent<CurrentLocationProps> = ({ onLoca
       ☉
     </button>
   );
-};
-
-CurrentLocation.propTypes = {
-  onLocationFound: PropTypes.func.isRequired,
 };
 
 export type { Coordinates };

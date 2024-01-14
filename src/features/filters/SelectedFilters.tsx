@@ -1,10 +1,10 @@
-import { Chip } from '@material-ui/core';
-import Apartment from '@material-ui/icons/Apartment';
-import AttachMoney from '@material-ui/icons/AttachMoney';
-import Bathtub from '@material-ui/icons/Bathtub';
-import DirectionsCar from '@material-ui/icons/DirectionsCar';
-import Home from '@material-ui/icons/Home';
-import SingleBed from '@material-ui/icons/SingleBed';
+import Apartment from '@mui/icons-material/Apartment';
+import AttachMoney from '@mui/icons-material/AttachMoney';
+import Bathtub from '@mui/icons-material/Bathtub';
+import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import Home from '@mui/icons-material/Home';
+import SingleBed from '@mui/icons-material/SingleBed';
+import { Chip } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectFilters } from './filtersSlice';

@@ -1,11 +1,12 @@
-import { CircularProgress, Grid, TextField, Typography, useMediaQuery, useTheme } from '@material-ui/core';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import Autocomplete from '@mui/lab/Autocomplete';
+import { CircularProgress, Grid, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import fetchDistrictInfoDebounced, { suburbSearchPromiseTrackerArea } from '../../backendRequests/suburbSearch';
 import withDrawer from '../../hoc/WithDrawer';
 import { PostCodeFileInfo } from '../../interfaces';
@@ -46,7 +47,7 @@ const fetchAndSetData = (searchPattern: string | undefined, setData: (data: Post
 };
 
 const SearchBox: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [searchPattern, setSearchPattern] = useState<string>();
@@ -102,10 +103,10 @@ const SearchBox: React.FunctionComponent = () => {
         }}
         className={styles.searchBox}
         options={data.sort((a, b) => -b.state.localeCompare(a.state))}
-        groupBy={(option) => option.state}
-        getOptionSelected={(option, value) => option.locality === value.locality}
+        groupBy={(option: PostCodeFileInfo) => option.state}
+        // getOptionSelected={(option, value) => option.locality === value.locality}
         getOptionLabel={(option) => option.locality + ' ' + DomainUtils.padPostCode(option.postCode)}
-        renderOption={(option, { inputValue }) => {
+        renderOption={(_props, option, { inputValue }) => {
           const matches = match(option.locality, inputValue);
           const parts = parse(option.locality, matches);
           const suburbId = DomainUtils.getSuburbId(option.locality, option.postCode);

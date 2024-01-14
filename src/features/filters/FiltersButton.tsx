@@ -1,12 +1,13 @@
-import { IconButton, Typography } from '@material-ui/core';
-import TuneIcon from '@material-ui/icons/Tune';
+import TuneIcon from '@mui/icons-material/Tune';
+import { IconButton, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { toggleFiltersExpanded } from './filtersSlice';
 import SelectedFilters from './SelectedFilters';
 
 const FiltersButton: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const toggleDrawer = () => {
     dispatch(toggleFiltersExpanded());

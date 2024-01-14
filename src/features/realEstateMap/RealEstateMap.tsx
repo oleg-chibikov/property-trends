@@ -1,10 +1,10 @@
-import { debounce, useTheme } from '@material-ui/core';
+import { debounce, useTheme } from '@mui/material';
 import { Layer, LeafletEvent, Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'react';
-import { Map, ScaleControl, TileLayer, ZoomControl } from 'react-leaflet';
-import { BoxZoomControl } from 'react-leaflet-box-zoom';
+import React, { Dispatch, FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { MapContainer, ScaleControl, TileLayer, useMapEvents, ZoomControl } from 'react-leaflet';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import fetchSuburbPolygons from '../../backendRequests/suburbPolygonRetrieval';
 import GlobalEventHelper from '../../utils/globalEventHelper';
 import MapUtils from '../../utils/mapUtils';
@@ -17,13 +17,6 @@ import MapConstants from './mapConstants';
 
 let lastZoom = 15;
 let dispatch: Dispatch<unknown>;
-
-const triggerDistrictsReloadForUserInitiatedEvent = (event: LeafletEvent) => {
-  if (!GlobalEventHelper.isProgrammaticEvent) {
-    // Trigger reloading districts according to viewport only for user-initiated events
-    loadRegionsInViewport(event.target as LeafletMap);
-  }
-};
 
 const loadRegionsInViewport = async (map: LeafletMap) => {
   if (lastZoom < MapConstants.loadDistrictsZoom) {
@@ -40,56 +33,7 @@ const loadRegionsInViewport = async (map: LeafletMap) => {
   }
 };
 
-const onMapZoomStart = (event: LeafletEvent) => {
-  console.log('Starting zooming...');
-  dispatch(setIsCurrentLocationSearchPaused(true));
-};
-
-const onMapMoveStart = async (event: LeafletEvent) => {
-  console.log('Starting moving...');
-};
-
-const onMapMoveEnd = async (event: LeafletEvent) => {
-  triggerDistrictsReloadForUserInitiatedEvent(event);
-  console.log('Finished moving');
-};
-
-const onMapZoomEnd = (event: LeafletEvent) => {
-  dispatch(setIsCurrentLocationSearchPaused(false));
-  const map = event.target as LeafletMap;
-  const zoom = map.getZoom();
-  if (zoom < MapConstants.tooltipZoom && lastZoom >= MapConstants.tooltipZoom) {
-    console.log('Closing tooltips...');
-    map.eachLayer(function (layer: Layer) {
-      if (layer.getTooltip) {
-        const toolTip = layer.getTooltip();
-        if (toolTip) {
-          map.closeTooltip(toolTip);
-        }
-      }
-    });
-  } else if (zoom >= MapConstants.tooltipZoom && lastZoom < MapConstants.tooltipZoom) {
-    console.log('Opening tooltips...');
-    map.eachLayer(function (layer: Layer) {
-      if (layer.getTooltip) {
-        const toolTip = layer.getTooltip();
-        if (toolTip) {
-          map.openTooltip(toolTip);
-        }
-      }
-    });
-  }
-  lastZoom = zoom;
-  console.log('Finished zooming');
-};
-
 const RealEstateMap: React.FunctionComponent = () => {
-  const [map, setMap] = useState<Map>();
-  const filtersExpanded = useSelector(selectFiltersExpanded);
-  const districtListExpanded = useSelector(selectDistrictListExpanded);
-  const theme = useTheme();
-  dispatch = useDispatch();
-
   const [currentLocation, setCurrentLocation] = useState<[number, number]>();
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -105,17 +49,101 @@ const RealEstateMap: React.FunctionComponent = () => {
       }
     );
   }, []);
+  return useMemo(() => {
+    if (!currentLocation) {
+      return null;
+    }
+    return (
+      <MapContainer zoomControl={false} attributionControl={false} inertia={true} preferCanvas={false} scrollWheelZoom={true} zoom={lastZoom} center={currentLocation}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
+        <CurrentLocationMarker />
+        <ScaleControl position="topright" />
+        {/* <BoxZoomControl position="bottomright" sticky={false} /> TODO: Implement as this one is outdated */}
+        <ZoomControl position="bottomright" />
+        <MapEvents />
+      </MapContainer>
+    );
+  }, [currentLocation]);
+};
+
+const MapEvents: FunctionComponent = () => {
+  const triggerDistrictsReloadForUserInitiatedEvent = (event: LeafletEvent) => {
+    if (!GlobalEventHelper.isProgrammaticEvent) {
+      // Trigger reloading districts according to viewport only for user-initiated events
+      loadRegionsInViewport(event.target as LeafletMap);
+    }
+  };
+
+  const onMapZoomStart = (event: LeafletEvent) => {
+    console.log('Starting zooming...');
+    dispatch(setIsCurrentLocationSearchPaused(true));
+  };
+
+  const onMapMoveStart = async (event: LeafletEvent) => {
+    console.log('Starting moving...');
+  };
+
+  const onMapMoveEnd = async (event: LeafletEvent) => {
+    triggerDistrictsReloadForUserInitiatedEvent(event);
+    console.log('Finished moving');
+  };
+
+  const onMapZoomEnd = (event: LeafletEvent) => {
+    dispatch(setIsCurrentLocationSearchPaused(false));
+    const map = event.target as LeafletMap;
+    const zoom = map.getZoom();
+    if (zoom < MapConstants.tooltipZoom && lastZoom >= MapConstants.tooltipZoom) {
+      console.log('Closing tooltips...');
+      map.eachLayer(function (layer: Layer) {
+        if (layer.getTooltip) {
+          const toolTip = layer.getTooltip();
+          if (toolTip) {
+            map.closeTooltip(toolTip);
+          }
+        }
+      });
+    } else if (zoom >= MapConstants.tooltipZoom && lastZoom < MapConstants.tooltipZoom) {
+      console.log('Opening tooltips...');
+      map.eachLayer(function (layer: Layer) {
+        if (layer.getTooltip) {
+          const toolTip = layer.getTooltip();
+          if (toolTip) {
+            map.openTooltip(toolTip);
+          }
+        }
+      });
+    }
+    lastZoom = zoom;
+    console.log('Finished zooming');
+  };
+  const map = useMapEvents({
+    zoomstart(e) {
+      onMapZoomStart(e);
+    },
+    zoomend(e) {
+      onMapZoomEnd(e);
+    },
+    movestart(e) {
+      onMapMoveStart(e);
+    },
+    moveend(e) {
+      onMapMoveEnd(e);
+    },
+  });
+  const filtersExpanded = useSelector(selectFiltersExpanded);
+  const districtListExpanded = useSelector(selectDistrictListExpanded);
+  const theme = useTheme();
+  dispatch = useDispatch<AppDispatch>();
 
   const maxTransitionTime = Math.max(theme.transitions.duration.enteringScreen, theme.transitions.duration.leavingScreen) + 10;
   useEffect(() => {
-    const leafletElement = map?.leafletElement;
-    if (leafletElement) {
-      MapUtils.redrawMap(leafletElement, maxTransitionTime);
+    if (map) {
+      MapUtils.redrawMap(map, maxTransitionTime);
     }
   }, [filtersExpanded, districtListExpanded, map, maxTransitionTime]);
 
   useEffect(() => {
-    const leafletElement = map?.leafletElement;
+    const leafletElement = map;
     if (leafletElement) {
       const handleResize = debounce(() => {
         MapUtils.redrawMap(leafletElement);
@@ -123,42 +151,7 @@ const RealEstateMap: React.FunctionComponent = () => {
       window.addEventListener('resize', handleResize);
     }
   }, [map]);
-
-  const mapRef = useCallback((node) => {
-    if (node) {
-      setMap(node);
-    }
-  }, []);
-
-  return useMemo(() => {
-    if (!currentLocation) {
-      return null;
-    }
-    return (
-      <Map
-        animate={true}
-        onzoomstart={onMapZoomStart}
-        onzoomend={onMapZoomEnd}
-        onmovestart={onMapMoveStart}
-        onmoveend={onMapMoveEnd}
-        ref={mapRef}
-        zoomControl={false}
-        attributionControl={false}
-        inertia={true}
-        preferCanvas={false}
-        scrollWheelZoom={true}
-        zoom={lastZoom}
-        center={currentLocation}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
-        <CurrentLocationMarker />
-        {map?.leafletElement && <SuburbMap leafletMap={map.leafletElement} />}
-        <ScaleControl position="topright" />
-        <BoxZoomControl position="bottomright" sticky={false} />
-        <ZoomControl position="bottomright" />
-      </Map>
-    );
-  }, [map, mapRef, currentLocation]);
+  return map && <SuburbMap leafletMap={map} />;
 };
 
 export default React.memo(RealEstateMap);

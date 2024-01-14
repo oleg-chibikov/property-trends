@@ -1,5 +1,5 @@
-import { Chip } from '@material-ui/core';
-import MapIcon from '@material-ui/icons/Map';
+import MapIcon from '@mui/icons-material/Map';
+import { Chip } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectCheckedStates } from './districtListSlice';

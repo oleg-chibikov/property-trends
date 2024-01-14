@@ -1,10 +1,11 @@
-import { Checkbox, FormControlLabel } from '@material-ui/core';
+import { Checkbox, FormControlLabel } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { changeIncludeSold, selectDealType, selectIncludeSold } from './filtersSlice';
 
 const MainPriceOnlyFilter: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   let defaultValue = useSelector(selectIncludeSold);
   const dealType = useSelector(selectDealType);
   const isRent = dealType === 'rent';

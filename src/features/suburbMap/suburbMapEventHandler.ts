@@ -2,11 +2,11 @@ import { DomEvent, LatLngBounds, Map } from 'leaflet';
 import { Dispatch } from 'react';
 import { CustomLayer, EventArgs, FeatureProperties } from '../../interfaces';
 import GlobalEventHelper from '../../utils/globalEventHelper';
+import { Coordinates } from '../currentLocation/CurrentLocation';
 import { removeSearchResult } from '../search/searchBoxSlice';
 import { setSuburbInfoExpanded, setSuburbInfoHistory, setSuburbInfoProperties, setSuburbInfoSuburbKey } from '../suburbInfo/suburbInfoSlice';
 import { scrollToSuburbInList } from '../suburbList/suburbListSlice';
 import Highlighter from './highlighter';
-import { Coordinates } from '../currentLocation/CurrentLocation';
 
 class SuburbMapEventHandler {
   private dispatch: Dispatch<unknown>;

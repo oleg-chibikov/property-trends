@@ -1,6 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
@@ -11,15 +10,15 @@ import './scrollbar.css';
 import * as serviceWorker from './serviceWorker';
 import './whyDidYouRender';
 
-ReactDOM.render(
+const root = createRoot(document.getElementById('root') as HTMLElement);
+root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <App />
       </PersistGate>
     </Provider>
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.StrictMode>
 );
 
 // If you want your app to work offline and load faster, you can change

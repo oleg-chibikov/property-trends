@@ -1,8 +1,7 @@
-import { FormControlLabel, Typography, useMediaQuery, useTheme } from '@material-ui/core';
-import Checkbox from '@material-ui/core/Checkbox';
-import PropTypes from 'prop-types';
+import { Checkbox, FormControlLabel, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import DomainUtils from '../../utils/domainUtils';
 import { checkDistrict, setDistrictListExpanded, uncheckDistrict } from './districtListSlice';
 
@@ -13,7 +12,7 @@ interface IDistrictSelectorProps {
 }
 
 const DistrictSelector: React.FunctionComponent<IDistrictSelectorProps> = ({ districtFileName, checked, id }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,12 +30,6 @@ const DistrictSelector: React.FunctionComponent<IDistrictSelectorProps> = ({ dis
       <FormControlLabel control={<Checkbox id={id} checked={checked} onChange={onChange} />} label={DomainUtils.getDistrictNameFromFileName(districtFileName)} />
     </Typography>
   );
-};
-
-DistrictSelector.propTypes = {
-  districtFileName: PropTypes.string.isRequired,
-  checked: PropTypes.bool.isRequired,
-  id: PropTypes.string.isRequired,
 };
 
 export default React.memo(DistrictSelector);

@@ -1,10 +1,11 @@
-import { Checkbox, FormControlLabel, Tooltip } from '@material-ui/core';
+import { Checkbox, FormControlLabel, Tooltip } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { selectUseAdaptiveColors, toggleUseAdaptiveColors } from './districtListSlice';
 
 const MainPriceOnlyFilter: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const defaultValue = useSelector(selectUseAdaptiveColors);
   return (
     <div>

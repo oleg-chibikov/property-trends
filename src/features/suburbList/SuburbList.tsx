@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { usePromiseTracker } from 'react-promise-tracker';
 import { useSelector } from 'react-redux';
@@ -42,13 +41,6 @@ const SuburbList: React.FunctionComponent<FeatureListProps> = (props) => {
       </div>
     </div>
   );
-};
-
-SuburbList.propTypes = {
-  onItemMouseOver: PropTypes.func.isRequired,
-  onItemMouseOut: PropTypes.func.isRequired,
-  onItemClick: PropTypes.func.isRequired,
-  leafletMap: PropTypes.any.isRequired,
 };
 
 export default React.memo(SuburbList);

@@ -1,25 +1,20 @@
-import { createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
-import createBreakpoints from '@material-ui/core/styles/createBreakpoints';
-import { ToggleButtonClassKey } from '@material-ui/lab/ToggleButton';
+import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
-declare module '@material-ui/core/styles/overrides' {
-  export interface ComponentNameToClassKey {
-    MuiToggleButton: ToggleButtonClassKey;
-  }
-}
+// The breakpoints API has changed in v5
+const theme = createTheme();
+const breakpoints = theme.breakpoints;
 
-const pxToRem = (value: number) => `${value / 16}rem`;
-const breakpoints = createBreakpoints({});
+// Update values for breakpoints
 breakpoints.values.sm = 640;
 breakpoints.values.md = 1024;
 breakpoints.values.lg = 1440;
 
-export default class ThemeUtils {
-  static themeDark = responsiveFontSizes(
-    createMuiTheme({
-      breakpoints: breakpoints,
+const ThemeUtils = {
+  themeDark: responsiveFontSizes(
+    createTheme({
+      breakpoints,
       palette: {
-        type: 'dark',
+        mode: 'dark', // 'type' has been replaced with 'mode'
         primary: {
           main: '#a22a11',
         },
@@ -27,172 +22,162 @@ export default class ThemeUtils {
           main: '#e1d5cc',
         },
       },
-      overrides: {
+      components: {
         MuiToggleButton: {
-          sizeSmall: {
-            padding: '0.1rem',
-          },
-        },
-        MuiIconButton: {
-          root: {
-            [`${breakpoints.down('md')} and (orientation: landscape)`]: {
-              padding: '0.2rem',
+          styleOverrides: {
+            sizeSmall: {
+              padding: '0.1rem',
             },
           },
         },
         MuiSvgIcon: {
-          root: {
-            verticalAlign: 'bottom',
+          styleOverrides: {
+            root: {
+              verticalAlign: 'bottom',
+            },
           },
         },
         MuiTypography: {
-          body1: {
-            fontSize: pxToRem(12),
-            [breakpoints.up('md')]: {
-              fontSize: pxToRem(13),
+          styleOverrides: {
+            body1: {
+              fontSize: '0.75rem', // Adjust the values accordingly
+              [breakpoints.up('md')]: {
+                fontSize: '0.8125rem',
+              },
+              [breakpoints.up('lg')]: {
+                fontSize: '0.875rem',
+              },
             },
-            [breakpoints.up('lg')]: {
-              fontSize: pxToRem(14),
+            body2: {
+              fontSize: '0.6875rem',
+              [breakpoints.up('md')]: {
+                fontSize: '0.75rem',
+              },
+              [breakpoints.up('lg')]: {
+                fontSize: '0.8125rem',
+              },
             },
-          },
-          body2: {
-            fontSize: pxToRem(11),
-            [breakpoints.up('md')]: {
-              fontSize: pxToRem(12),
-            },
-            [breakpoints.up('lg')]: {
-              fontSize: pxToRem(13),
-            },
-          },
-          subtitle1: {
-            fontSize: pxToRem(10),
-            [breakpoints.up('md')]: {
-              fontSize: pxToRem(11),
-            },
-            [breakpoints.up('lg')]: {
-              fontSize: pxToRem(12),
+            subtitle1: {
+              fontSize: '0.625rem',
+              [breakpoints.up('md')]: {
+                fontSize: '0.6875rem',
+              },
+              [breakpoints.up('lg')]: {
+                fontSize: '0.75rem',
+              },
             },
           },
         },
         MuiFormControl: {
-          root: {
-            width: '100%',
-          },
-          marginNormal: {
-            marginTop: '0.3rem',
-            marginBottom: 0,
-            [breakpoints.up('lg')]: {
-              marginBottom: '0.5rem',
+          styleOverrides: {
+            root: {
+              width: '100%',
+            },
+            marginNormal: {
+              marginTop: '0.3rem',
+              marginBottom: 0,
+              [breakpoints.up('lg')]: {
+                marginBottom: '0.5rem',
+              },
             },
           },
         },
         MuiFormGroup: {
-          root: {
-            flexWrap: 'nowrap', // force one column for district list
+          styleOverrides: {
+            root: {
+              flexWrap: 'nowrap', // force one column for district list
+            },
           },
         },
         MuiSlider: {
-          markLabel: {
-            fontSize: pxToRem(8),
-            [breakpoints.up('md')]: {
-              fontSize: pxToRem(9),
+          styleOverrides: {
+            markLabel: {
+              fontSize: '0.5rem',
+              [breakpoints.up('md')]: {
+                fontSize: '0.5625rem',
+              },
+              [breakpoints.up('lg')]: {
+                fontSize: '0.625rem',
+              },
             },
-            [breakpoints.up('lg')]: {
-              fontSize: pxToRem(10),
+            marked: {
+              marginBottom: 0,
             },
-          },
-          marked: {
-            marginBottom: 0,
-          },
-          track: {
-            height: 6,
-            marginTop: -2,
-          },
-          mark: {
-            height: 4,
-            marginTop: -1,
-            width: 4,
-            '&$markActive': {
+            track: {
               height: 6,
               marginTop: -2,
-              width: 4,
             },
-          },
-          thumb: {
-            height: 16,
-            width: 16,
-            backgroundColor: '#fff',
-            border: '2px solid currentColor',
-            marginTop: -8,
-            marginLeft: -8,
-            '&:focus, &:hover, &$active': {
-              boxShadow: 'inherit',
+            mark: {
+              height: 4,
+              marginTop: -1,
+              width: 4,
+              '&$markActive': {
+                height: 6,
+                marginTop: -2,
+                width: 4,
+              },
+            },
+            thumb: {
+              height: 16,
+              width: 16,
+              backgroundColor: '#fff',
+              border: '2px solid currentColor',
+              marginTop: -8,
+              marginLeft: -8,
+              '&:focus, &:hover, &$active': {
+                boxShadow: 'inherit',
+              },
             },
           },
         },
         MuiSelect: {
-          root: {
-            padding: '0.5rem',
-            [breakpoints.up('md')]: {
-              padding: '0.6rem',
-            },
-            [breakpoints.up('lg')]: {
-              padding: '0.7rem',
+          styleOverrides: {
+            root: {
+              padding: '0.5rem',
+              [breakpoints.up('md')]: {
+                padding: '0.6rem',
+              },
+              [breakpoints.up('lg')]: {
+                padding: '0.7rem',
+              },
             },
           },
         },
         MuiAccordion: {
-          root: {
-            '&.innerAccordion .MuiCheckbox-root': {
-              marginRight: '0.3rem',
-              padding: '0.1rem',
+          styleOverrides: {
+            root: {
+              '&.innerAccordion .MuiCheckbox-root': {
+                marginRight: '0.3rem',
+                padding: '0.1rem',
+              },
+              backgroundColor: '#262626',
             },
-            backgroundColor: '#262626',
           },
         },
         MuiAccordionDetails: {
-          root: {
-            '&.innerAccordionDetails': {
-              maxHeight: '20rem',
-              overflow: 'auto',
-              scrollBehavior: 'smooth',
-              whiteSpace: 'break-spaces',
-              padding: '0.5rem',
+          styleOverrides: {
+            root: {
+              '&.innerAccordionDetails': {
+                maxHeight: '20rem',
+                overflow: 'auto',
+                scrollBehavior: 'smooth',
+                whiteSpace: 'break-spaces',
+                padding: '0.5rem',
+                '& .MuiFormGroup-root': {
+                  width: '100%',
+                  padding: '0 0.8rem',
+                },
+              },
               '& .MuiFormGroup-root': {
                 width: '100%',
-                padding: '0 0.8rem',
               },
+              padding: 0,
             },
-            '& .MuiFormGroup-root': {
-              width: '100%',
-            },
-            padding: 0,
           },
         },
-        // MuiFormLabel: {
-        //   root: {
-        //     '&$focused': {
-        //       color: 'tomato',
-        //       fontWeight: 'bold',
-        //     },
-        //   },
-
-        //   focused: {},
-        // },
-        // MuiOutlinedInput: {
-        //   root: {
-        //     '& $notchedOutline': {
-        //       borderColor: 'white',
-        //     },
-        //     '&:hover $notchedOutline': {
-        //       borderColor: 'cyan',
-        //     },
-        //     '&$focused $notchedOutline': {
-        //       borderColor: 'tomato',
-        //     },
-        //   },
-        // },
       },
     })
-  );
-}
+  ),
+};
+
+export default ThemeUtils;

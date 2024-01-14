@@ -1,8 +1,8 @@
-import { Accordion, AccordionDetails, AccordionSummary, FormGroup } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import PropTypes from 'prop-types';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Accordion, AccordionDetails, AccordionSummary, FormGroup } from '@mui/material';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import styles from './DistrictList.module.css';
 import { selectCheckedDistricts, selectDistrictListExpandedState, selectDistrictsByState, setDistrictListElementToScrollTo, setDistrictListExpandedState } from './districtListSlice';
 import DistrictSelector from './DistrictSelector';
@@ -13,7 +13,7 @@ interface StateEntryProps {
 }
 
 const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state: politicalState }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const expandedPoliticalState = useSelector(selectDistrictListExpandedState);
   const isExpanded = expandedPoliticalState === politicalState;
   const checkedDistricts = useSelector(selectCheckedDistricts);
@@ -56,10 +56,6 @@ const StateEntry: React.FunctionComponent<StateEntryProps> = ({ state: political
       </AccordionDetails>
     </Accordion>
   );
-};
-
-StateEntry.propTypes = {
-  state: PropTypes.string.isRequired,
 };
 
 export default React.memo(StateEntry);

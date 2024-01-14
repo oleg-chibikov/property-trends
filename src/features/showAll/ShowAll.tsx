@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 
 interface ShowAllProps {
@@ -10,9 +9,5 @@ const ShowAll: React.FunctionComponent<ShowAllProps> = ({ onClick }) => (
     ⛶
   </button>
 );
-
-ShowAll.propTypes = {
-  onClick: PropTypes.func.isRequired,
-};
 
 export default React.memo(ShowAll);

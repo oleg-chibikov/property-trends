@@ -1,13 +1,13 @@
-import Apartment from '@material-ui/icons/Apartment';
-import Home from '@material-ui/icons/Home';
+import Apartment from '@mui/icons-material/Apartment';
+import Home from '@mui/icons-material/Home';
+import { FeatureCollection, Point } from 'geojson';
 import { LatLngBounds, Map, StyleFunction } from 'leaflet';
-import PropTypes from 'prop-types';
-import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Dispatch, useEffect, useMemo, useRef, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 import { GeoJSON } from 'react-leaflet';
-import Control from 'react-leaflet-control';
 import { trackPromise } from 'react-promise-tracker';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import fetchPolygonData from '../../backendRequests/polygonRetrieval';
 import fetchPriceData from '../../backendRequests/priceDataSearch';
 import usePrevious from '../../hooks/usePrevious';
@@ -28,6 +28,7 @@ import { selectSearchBoxHighlightedSuburb, selectSearchBoxSelectedSuburb } from 
 import ShowAll from '../showAll/ShowAll';
 import SuburbList from '../suburbList/SuburbList';
 import { replaceSuburbsInList, setSuburbColorInList } from '../suburbList/suburbListSlice';
+import Control from './Control';
 import Highlighter from './highlighter';
 import SuburbMapEventHandler from './suburbMapEventHandler';
 
@@ -45,7 +46,7 @@ let highlighter: Highlighter;
 let eventHandler: SuburbMapEventHandler;
 let mapElement: Map;
 let bounds: LatLngBounds | undefined;
-let geoJsonElement: GeoJSON;
+let geoJsonElement: L.GeoJSON;
 let dispatch: Dispatch<unknown>;
 let searchBoxSelectedSuburbId: string | undefined;
 let searchBoxHighlightedSuburbId: string | undefined;
@@ -250,7 +251,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
         if (!(fileName in checkedDistricts)) {
           const innerLayers = layersByFileName[fileName];
           for (const layer of innerLayers) {
-            const compoundLayer = geoJsonElement.leafletElement.removeLayer(layer);
+            const compoundLayer = geoJsonElement.removeLayer(layer);
             bounds = compoundLayer.getBounds();
           }
 
@@ -318,7 +319,7 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
         }
 
         // This object contains all the layers, not just recently added
-        const compoundLayer = geoJsonElement.leafletElement.addData(data as unknown as GeoJSON.GeoJsonObject) as unknown as CompoundLayer;
+        const compoundLayer = geoJsonElement.addData(data as unknown as GeoJSON.GeoJsonObject) as unknown as CompoundLayer;
         bounds = compoundLayer.getBounds();
         currentlyCheckedDistricts[districtFileName] = 0;
         console.log('Added polygons for ' + districtFileName);
@@ -341,12 +342,17 @@ const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: st
   await processDistrictsWithPromiseTracking();
 };
 
+const emptyGeoJSON: FeatureCollection<Point> = {
+  type: 'FeatureCollection',
+  features: [],
+};
+
 const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   mapElement = leafletMap;
   const [handler, setHandler] = useState<SuburbMapEventHandler>();
   const [districtFileNamesToLoad, setDistrictFileNamesToLoad] = useState<string[]>([]);
   setDistrictsToLoad = setDistrictFileNamesToLoad;
-  dispatch = useDispatch();
+  dispatch = useDispatch<AppDispatch>();
   const checkedDistrictFileNames = useSelector(selectCheckedDistricts);
   const useAdaptive = useSelector(selectUseAdaptiveColors);
   useAdaptiveColors = useAdaptive;
@@ -381,17 +387,20 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
     setColors(useAdaptive);
   }, [useAdaptive]);
 
-  const geojsonRef = useCallback(
-    (node) => {
-      if (node !== null) {
-        // Use state to load (and display in GEOJson tag) all polygons that are already here
-        geoJsonElement = node;
-        highlighter = new Highlighter(dispatch, geoJsonElement);
-        setHandler(new SuburbMapEventHandler(supportsMouse, dispatch, mapElement, highlighter, layersBySuburbId));
-      }
-    },
-    [supportsMouse]
-  );
+  const geoJSONRef = useRef<L.GeoJSON | null>(null);
+
+  useEffect(() => {
+    // Access the Leaflet GeoJSON layer instance through the ref
+    const geoJSONLayer = geoJSONRef.current;
+
+    if (geoJSONLayer) {
+      // Perform actions when the GeoJSON layer is ready
+      console.log('GeoJSON layer is ready:', geoJSONLayer);
+      geoJsonElement = geoJSONLayer;
+      highlighter = new Highlighter(dispatch, geoJsonElement);
+      setHandler(new SuburbMapEventHandler(supportsMouse, dispatch, mapElement, highlighter, layersBySuburbId));
+    }
+  }, [geoJSONRef, supportsMouse]);
 
   if (handler) {
     eventHandler = handler;
@@ -406,7 +415,16 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
   return useMemo(
     () => (
       <React.Fragment>
-        <GeoJSON style={getFeatureStyle} ref={geojsonRef} data={[]} onEachFeature={onEachFeature} />
+        <GeoJSON
+          style={getFeatureStyle}
+          ref={(geoJSON) => {
+            if (geoJSON) {
+              geoJSONRef.current = geoJSON;
+            }
+          }}
+          data={emptyGeoJSON}
+          onEachFeature={onEachFeature}
+        />
         <Control position="topleft">
           {handler && <SuburbList leafletMap={mapElement} onItemMouseOver={handler.onSuburbListEntryMouseOver} onItemMouseOut={handler.onSuburbListEntryMouseOut} onItemClick={handler.onSuburbListEntryClick} />}
         </Control>
@@ -424,12 +442,8 @@ const SuburbMap: React.FunctionComponent<WithMap> = ({ leafletMap }) => {
         </Control>
       </React.Fragment>
     ),
-    [geojsonRef, handler]
+    [geoJSONRef, handler]
   );
-};
-
-SuburbMap.propTypes = {
-  leafletMap: PropTypes.any.isRequired,
 };
 
 export default React.memo(SuburbMap);

@@ -1,11 +1,12 @@
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import { changeAllowedWindowInDays, selectAllowedWindowInDays } from './filtersSlice';
 import SliderFilter from './SliderFilter';
 
 const Filters: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const allowedWindowInDays = useSelector(selectAllowedWindowInDays);
   return (
     <SliderFilter

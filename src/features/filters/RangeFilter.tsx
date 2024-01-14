@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import SliderFilter from './SliderFilter';
 
@@ -17,15 +16,6 @@ const RangeFilter: React.FunctionComponent<RangeFilterProps> = ({ label, value, 
     marks.push({ value: i, label: i.toString() + (i === max ? '+' : '') });
   }
   return <SliderFilter label={label} min={min} max={max} onChange={onChange} value={value} marks={marks} useRange={true} />;
-};
-
-RangeFilter.propTypes = {
-  isRangeByDefault: PropTypes.bool,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.any.isRequired,
-  min: PropTypes.number.isRequired,
-  max: PropTypes.number.isRequired,
-  onChange: PropTypes.func.isRequired,
 };
 
 export default React.memo(RangeFilter);

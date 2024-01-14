@@ -1,4 +1,4 @@
-// declare module '@material-ui/core/styles/createBreakpoints' {
+// declare module '@mui/material/styles/createBreakpoints' {
 //   interface BreakpointOverrides {
 //     xs: false; // removes the `xs` breakpoint
 //     sm: false;

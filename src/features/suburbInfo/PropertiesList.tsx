@@ -1,5 +1,6 @@
 import React, { Dispatch, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../../app/store';
 import fetchSuburbData from '../../backendRequests/suburbDataRetrieval';
 import { MapFilters } from '../../interfaces';
 import MoneyUtils from '../../utils/moneyUtils';
@@ -20,7 +21,7 @@ const PropertiesList: React.FunctionComponent = () => {
   const properties = useSelector(selectSuburbInfoProperties);
   const filters = useSelector(selectFilters);
   const suburbKey = useSelector(selectSuburbInfoSuburbKey);
-  dispatch = useDispatch();
+  dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     if (suburbKey) {
