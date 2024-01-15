@@ -16,16 +16,16 @@
     "@welldone-software/why-did-you-render": "^4.2.5",
     "autosuggest-highlight": "^3.1.1",
     "axios": "^0.19.2",
-    "color-map": "^1.1.0",
+    "color-map": "^2.0.6",
     "d3": "^5.16.0",
-    "debounce-async": "0.0.2",
+    "debounce-async": "^0.0.2",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
     "react-loader-spinner": "^6.1.6",
-    "react-promise-tracker": "^2.1.0",
+    "react-promise-tracker": "^2.1.1",
     "react-redux": "^9.1.0",
     "react-scripts": "^5.0.1",
     "react-style-object-to-css": "^1.1.2",
@@ -63,7 +63,6 @@
     "@types/autosuggest-highlight": "^3.1.0",
     "@types/d3": "^5.7.2",
     "@types/jest": "^26.0.3",
-    "@types/leaflet": "^1.9.8",
     "@types/leaflet-draw": "^1.0.11",
     "@types/node": "^14.0.14",
     "@types/react": "^18.2.47",
@@ -80,9 +79,12 @@
     "eslint-plugin-react-hooks": "^4.0.5",
     "eslint-plugin-sort-imports-es6-autofix": "^0.5.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.0.5",
-    "prettier-plugin-organize-imports": "^3.2.3",
-    "serve": "^11.3.2",
+    "prettier": "^3.2.2",
+    "prettier-plugin-organize-imports": "^3.2.4",
+    "serve": "^14.2.1",
+    "typescript": "^5.3.3"
+  },
+  "overrides": {
     "typescript": "^5.3.3"
   }
 }
