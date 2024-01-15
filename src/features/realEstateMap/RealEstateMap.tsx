@@ -13,6 +13,7 @@ import { setIsCurrentLocationSearchPaused } from '../currentLocation/currentLoca
 import { checkStatesAndDistricts, selectDistrictListExpanded } from '../districtList/districtListSlice';
 import { selectFiltersExpanded } from '../filters/filtersSlice';
 import SuburbMap from '../suburbMap/SuburbMap';
+import BoxZoomControl from './BoxZoomControl';
 import MapConstants from './mapConstants';
 
 let lastZoom = 15;
@@ -151,7 +152,14 @@ const MapEvents: FunctionComponent = () => {
       window.addEventListener('resize', handleResize);
     }
   }, [map]);
-  return map && <SuburbMap leafletMap={map} />;
+  return (
+    map && (
+      <>
+        <BoxZoomControl position="bottomright" leafletMap={map} />
+        <SuburbMap leafletMap={map} />
+      </>
+    )
+  );
 };
 
 export default React.memo(RealEstateMap);
