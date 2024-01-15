@@ -65,6 +65,7 @@ const BrushChart: React.FunctionComponent<BrushChartProps> = ({ data }) => {
 
     applyDefaultBrushSelection(data, currentSelection, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, trendLine, scatter, mainGraphWidth);
     appendAxesToBrushGraph(brushGraph, brushHeight, xBrushAxis);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dimensions]); // only dimensions change should trigger the redraw
 
   return (

@@ -2,7 +2,7 @@ import { debounce, useTheme } from '@mui/material';
 import { Layer, LeafletEvent, Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import React, { Dispatch, FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { MapContainer, ScaleControl, TileLayer, useMapEvents, ZoomControl } from 'react-leaflet';
+import { MapContainer, ScaleControl, TileLayer, ZoomControl, useMapEvents } from 'react-leaflet';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../app/store';
 import fetchSuburbPolygons from '../../backendRequests/suburbPolygonRetrieval';

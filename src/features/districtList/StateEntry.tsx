@@ -4,9 +4,9 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../app/store';
 import styles from './DistrictList.module.css';
-import { selectCheckedDistricts, selectDistrictListExpandedState, selectDistrictsByState, setDistrictListElementToScrollTo, setDistrictListExpandedState } from './districtListSlice';
 import DistrictSelector from './DistrictSelector';
 import StateEntryHeader from './StateEntryHeader';
+import { selectCheckedDistricts, selectDistrictListExpandedState, selectDistrictsByState, setDistrictListElementToScrollTo, setDistrictListExpandedState } from './districtListSlice';
 
 interface StateEntryProps {
   state: string;

@@ -2,11 +2,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { SuburbInfo } from '../../interfaces';
 
-interface HighlightSuburbParams {
-  suburbId: string;
-  scroll: boolean;
-}
-
 interface SuburbListState {
   suburbs: { [suburbId: string]: SuburbInfo };
   scrollToSuburb: string | undefined;

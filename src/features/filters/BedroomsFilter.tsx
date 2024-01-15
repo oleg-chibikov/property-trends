@@ -1,8 +1,8 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../app/store';
-import { changeBedrooms, selectBedrooms } from './filtersSlice';
 import RangeFilter from './RangeFilter';
+import { changeBedrooms, selectBedrooms } from './filtersSlice';
 
 const BedroomsFilter: React.FunctionComponent = () => {
   const dispatch = useDispatch<AppDispatch>();

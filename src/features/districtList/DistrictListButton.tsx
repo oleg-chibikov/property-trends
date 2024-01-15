@@ -8,8 +8,8 @@ import { AppDispatch } from '../../app/store';
 import { districtListRetrievalPromiseTrackerArea } from '../../backendRequests/districtListRetrieval';
 import Spinner from '../spinner/Spinner';
 import { processDistrictsPromiseTrackerArea } from '../suburbMap/SuburbMap';
-import { selectDistrictsByState, toggleDistrictListExpanded } from './districtListSlice';
 import SelectedStates from './SelectedStates';
+import { selectDistrictsByState, toggleDistrictListExpanded } from './districtListSlice';
 
 const DistrictListButton: React.FunctionComponent = () => {
   const dispatch = useDispatch<AppDispatch>();

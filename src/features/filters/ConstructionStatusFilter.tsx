@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { changeConstructionStatus, selectConstructionStatus } from './filtersSlice';
 import SelectFilter from './SelectFilter';
+import { changeConstructionStatus, selectConstructionStatus } from './filtersSlice';
 
 const ConstructionStatusFilter: React.FunctionComponent = () => {
   const defaultValue = useSelector(selectConstructionStatus);

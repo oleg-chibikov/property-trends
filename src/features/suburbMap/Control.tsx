@@ -43,7 +43,7 @@ const Control = (props: Props): JSX.Element => {
     const mapContainer = map.getContainer();
     const targetDiv = mapContainer.getElementsByClassName(positionClass);
     setPortalRoot(targetDiv[0]);
-  }, [positionClass]);
+  }, [map, positionClass]);
 
   /**
    * Whenever the portal root is complete,

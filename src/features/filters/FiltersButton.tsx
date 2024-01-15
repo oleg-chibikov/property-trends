@@ -3,8 +3,8 @@ import { IconButton, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../app/store';
-import { toggleFiltersExpanded } from './filtersSlice';
 import SelectedFilters from './SelectedFilters';
+import { toggleFiltersExpanded } from './filtersSlice';
 
 const FiltersButton: React.FunctionComponent = () => {
   const dispatch = useDispatch<AppDispatch>();

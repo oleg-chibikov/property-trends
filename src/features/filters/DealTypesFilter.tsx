@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { changeDealType, selectDealType } from './filtersSlice';
 import SelectFilter from './SelectFilter';
+import { changeDealType, selectDealType } from './filtersSlice';
 
 const DealTypesFilter: React.FunctionComponent = () => {
   const defaultValue = useSelector(selectDealType);
