@@ -101,7 +101,7 @@ class SuburbMapEventHandler {
     this.showBounds(combinedBounds);
   };
 
-  onLegendEntryMouseOut = (intervalMinPrice: number) => {
+  onLegendEntryMouseOut = () => {
     // this.applyByPriceInterval(intervalMinPrice, (suburbId) => {
     //   this.highlighter.unhighlightLayer(this.layersBySuburbId[suburbId]);
     // });
@@ -165,7 +165,7 @@ class SuburbMapEventHandler {
     DomEvent.stopPropagation(e);
   };
 
-  onLayerMouseDown = (e: EventArgs<CustomLayer>) => {
+  onLayerMouseDown = () => {
     // const layer = e.target;
     // const properties = layer.feature.properties;
     // this.layerPressTimer = window.setTimeout(function () {
@@ -176,7 +176,7 @@ class SuburbMapEventHandler {
     // return false;
   };
 
-  onLayerMouseUp = (e: EventArgs<CustomLayer>) => {
+  onLayerMouseUp = () => {
     // if (this.layerPressTimer) {
     //   clearTimeout(this.layerPressTimer);
     //   this.layerPressTimer = undefined;

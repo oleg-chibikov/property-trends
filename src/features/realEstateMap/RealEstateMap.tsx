@@ -75,12 +75,12 @@ const MapEvents: FunctionComponent = () => {
     }
   };
 
-  const onMapZoomStart = (event: LeafletEvent) => {
+  const onMapZoomStart = () => {
     console.log('Starting zooming...');
     dispatch(setIsCurrentLocationSearchPaused(true));
   };
 
-  const onMapMoveStart = async (event: LeafletEvent) => {
+  const onMapMoveStart = async () => {
     console.log('Starting moving...');
   };
 
@@ -118,14 +118,14 @@ const MapEvents: FunctionComponent = () => {
     console.log('Finished zooming');
   };
   const map = useMapEvents({
-    zoomstart(e) {
-      onMapZoomStart(e);
+    zoomstart() {
+      onMapZoomStart();
     },
     zoomend(e) {
       onMapZoomEnd(e);
     },
-    movestart(e) {
-      onMapMoveStart(e);
+    movestart() {
+      onMapMoveStart();
     },
     moveend(e) {
       onMapMoveEnd(e);
