@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../app/store';
 import { selectUseAdaptiveColors, toggleUseAdaptiveColors } from './districtListSlice';
 
-const MainPriceOnlyFilter: React.FunctionComponent = () => {
+const AdaptiveColorsSwitch: React.FunctionComponent = () => {
   const dispatch = useDispatch<AppDispatch>();
   const defaultValue = useSelector(selectUseAdaptiveColors);
   return (
@@ -27,4 +27,4 @@ const MainPriceOnlyFilter: React.FunctionComponent = () => {
   );
 };
 
-export default React.memo(MainPriceOnlyFilter);
+export default React.memo(AdaptiveColorsSwitch);

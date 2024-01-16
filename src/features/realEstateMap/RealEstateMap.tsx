@@ -93,7 +93,8 @@ const MapEvents: FunctionComponent = () => {
     dispatch(setIsCurrentLocationSearchPaused(false));
     const map = event.target as LeafletMap;
     const zoom = map.getZoom();
-    if (zoom < MapConstants.tooltipZoom && lastZoom >= MapConstants.tooltipZoom) {
+    const tooltipZoom = MapConstants.tooltipZoom;
+    if (zoom < tooltipZoom && lastZoom >= tooltipZoom) {
       console.log('Closing tooltips...');
       map.eachLayer(function (layer: Layer) {
         if (layer.getTooltip) {
@@ -103,7 +104,7 @@ const MapEvents: FunctionComponent = () => {
           }
         }
       });
-    } else if (zoom >= MapConstants.tooltipZoom && lastZoom < MapConstants.tooltipZoom) {
+    } else if (zoom >= tooltipZoom && lastZoom < tooltipZoom) {
       console.log('Opening tooltips...');
       map.eachLayer(function (layer: Layer) {
         if (layer.getTooltip) {

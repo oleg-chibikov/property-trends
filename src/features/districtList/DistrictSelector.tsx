@@ -26,7 +26,7 @@ const DistrictSelector: React.FunctionComponent<IDistrictSelectorProps> = ({ dis
     }
   };
   return (
-    <Typography variant="body2">
+    <Typography variant="caption">
       <FormControlLabel control={<Checkbox id={id} checked={checked} onChange={onChange} />} label={DomainUtils.getDistrictNameFromFileName(districtFileName)} />
     </Typography>
   );

@@ -20,7 +20,7 @@ const StateEntryHeader: React.FunctionComponent<StateEntryProps> = ({ state }) =
   const checkedDistrictsCount = checkedStates[state] || 0;
   const checked = checkedDistrictsCount > 0;
   return (
-    <Typography variant="body1">
+    <Typography variant="caption">
       <FormControlLabel
         control={
           <Checkbox

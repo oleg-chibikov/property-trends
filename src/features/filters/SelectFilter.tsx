@@ -1,4 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { UnknownAction } from '@reduxjs/toolkit';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../app/store';
@@ -32,7 +33,7 @@ const SelectFilter: React.FunctionComponent<SelectFilterProps> = ({ data, defaul
           displayEmpty
           value={defaultValue}
           onChange={(event) => {
-            onChange(event.target.value as string);
+            dispatch(onChange(event.target.value as string) as unknown as UnknownAction);
             if (!isDesktop) {
               dispatch(setFiltersExpanded(false));
             }

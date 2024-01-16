@@ -14,10 +14,11 @@ interface SliderFilterProps {
   min: number;
   max: number;
   marks: boolean | Mark[];
+  restrictSteps?: boolean;
   onChange: (value: number | number[]) => void;
 }
 
-const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label, useRange, value, onChange, min, max }) => {
+const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label, useRange, value, onChange, min, max, restrictSteps }) => {
   let isRange = Array.isArray(value);
   const convertValue = (value: number | number[]) => {
     return isRange ? (Array.isArray(value) ? [...value] : [value, value]) : Array.isArray(value) ? value[0] : value;
@@ -54,6 +55,7 @@ const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label
           min={min}
           max={max}
           value={valueCopy}
+          step={restrictSteps ? null : 1}
           valueLabelDisplay="auto"
           marks={marks}
           onChange={(_event: unknown, newValue: number | number[]) => {

@@ -78,7 +78,7 @@ html {
 }
 
 .MuiPaper-root.vertical,.MuiDrawer-root.vertical{
-  transition: height 0.3s ease-in-out !important;
+  transition: max-height 0.3s ease-in-out !important;
 }
 
 .MuiPaper-root.horizontal,.MuiDrawer-root.horizontal{  
@@ -88,11 +88,11 @@ html {
 /* Open State */
 
 .drawerOpen.horizontal {
-  width: 250px; /* replace with your desired widthOrHeightWhenOpen value */
+  width: 400px;
 }
 
 .drawerOpen.vertical {
-  height: 250px; /* replace with your desired widthOrHeightWhenOpen value */
+  max-height: 700px;
 }
 
 /* Close State */
@@ -102,7 +102,7 @@ html {
 }
 
 .drawerClose.vertical {
-  height: 0;
+  max-height: 0;
 }
 
 .leaflet-popup-content-wrapper,
@@ -119,4 +119,11 @@ a {
 
 a:visited {
   color: #a6d161;
+}
+
+.tooltipContent{
+  display: flex; 
+  flex-direction: row; 
+  column-gap: 4px;
+  align-items: center;
 }

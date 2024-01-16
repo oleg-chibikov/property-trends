@@ -29,7 +29,7 @@ const Filters: React.FunctionComponent = () => {
         },
         {
           value: 60,
-          label: '2m',
+          label: 'any',
         },
       ]}
       onChange={(newValue: number | number[]) => {

@@ -2,7 +2,7 @@ import Apartment from '@mui/icons-material/Apartment';
 import Home from '@mui/icons-material/Home';
 import { FeatureCollection, Point } from 'geojson';
 import { LatLngBounds, Map, StyleFunction } from 'leaflet';
-import React, { Dispatch, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Dispatch, FunctionComponent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 import { GeoJSON } from 'react-leaflet';
 import { trackPromise } from 'react-promise-tracker';
@@ -51,8 +51,18 @@ let dispatch: Dispatch<unknown>;
 let searchBoxSelectedSuburbId: string | undefined;
 let searchBoxHighlightedSuburbId: string | undefined;
 let zoomToSelection: boolean;
-const apartmentHtml = renderToString(<Apartment />);
-const houseHtml = renderToString(<Home />);
+const iconSize = 24;
+
+interface IconProps {
+  icon: ReactNode;
+  iconSize: number;
+}
+
+const SizedIcon: FunctionComponent<IconProps> = ({ icon, iconSize }) => <div style={{ display: 'inline-block', width: iconSize }}>{icon}</div>;
+
+const apartmentHtml = renderToString(<SizedIcon icon={<Apartment />} iconSize={iconSize} />);
+const houseHtml = renderToString(<SizedIcon icon={<Home />} iconSize={iconSize} />);
+
 const priceDataByFileName: { [fileName: string]: PriceDataBySuburbId } = {};
 const currentlyCheckedDistricts: { [fileName: string]: number } = {};
 const layersBySuburbId: { [suburbId: string]: CustomLayer } = {};
@@ -69,10 +79,18 @@ const setLayerTooltip = (layer: CustomLayer) => {
   // const realEstateSuburbUri = DomainUtils.getRealEstateSuburbUri(name, formattedPostCode, properties.state);
   // const realEstateLink = `<a href='${realEstateSuburbUri}' target="_blank">${name} ${formattedPostCode}</a>`;
   const tooltipContent = priceDataForFeature
-    ? `<h4>${name} ${formattedPostCode}</h4><div>${MoneyUtils.format(priceDataForFeature.medianPrice)} - ${priceDataForFeature.count} ${isApartment ? apartmentHtml : houseHtml}<div>`
+    ? `<h4>${name} ${formattedPostCode}</h4><div class="tooltipContent">${MoneyUtils.format(priceDataForFeature.medianPrice)} - ${priceDataForFeature.count} ${isApartment ? apartmentHtml : houseHtml}<div>`
     : `<div>${name} ${formattedPostCode}</div>`;
-  layer.setTooltipContent(tooltipContent);
-  return tooltipContent;
+
+  layer.bindTooltip(tooltipContent, { permanent: true, direction: 'center', interactive: false, className: 'suburb-tooltip' });
+
+  // layer.bindPopup('');
+
+  if (mapElement.getZoom() >= MapConstants.tooltipZoom) {
+    layer.openTooltip();
+  } else {
+    layer.closeTooltip();
+  }
 };
 
 const getFeatureStyle: StyleFunction<FeatureProperties> = (feature) => {
@@ -119,7 +137,7 @@ const fetchAndApplyPriceData = async (filters: MapFilters, districtFileNames: st
           const properties = layer.feature.properties;
           properties.priceData = undefined;
           applyStyleToLayer(layer);
-          setLayerTooltip(layer);
+          layer.unbindTooltip();
         }
       }
     };
@@ -203,18 +221,6 @@ const onEachFeature = (feature: GeoJSON.Feature<GeoJSON.Geometry, FeaturePropert
     applyPriceDataToLayer(layer, priceDataForSuburb);
     // No need to apply style here as it is applied natively by Leaflet
   }
-
-  // layer.bindPopup('');
-  const tooltipContent = setLayerTooltip(layer);
-  layer.bindTooltip(tooltipContent, { permanent: true, direction: 'center', interactive: false, className: 'suburb-tooltip' });
-  // For some reason it doesn't work without setTimeout
-  setTimeout(() => {
-    if (mapElement.getZoom() >= MapConstants.tooltipZoom) {
-      layer.openTooltip();
-    } else {
-      layer.closeTooltip();
-    }
-  }, 0);
 };
 
 const processCheckedDistricts = async (checkedDistrictFileNames: { [fileName: string]: number }) => {

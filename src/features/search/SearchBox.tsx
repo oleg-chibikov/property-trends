@@ -106,18 +106,19 @@ const SearchBox: React.FunctionComponent = () => {
         groupBy={(option: PostCodeFileInfo) => option.state}
         // getOptionSelected={(option, value) => option.locality === value.locality}
         getOptionLabel={(option) => option.locality + ' ' + DomainUtils.padPostCode(option.postCode)}
-        renderOption={(_props, option, { inputValue }) => {
+        renderOption={(props, option, { inputValue }) => {
           const matches = match(option.locality, inputValue);
           const parts = parse(option.locality, matches);
           const suburbId = DomainUtils.getSuburbId(option.locality, option.postCode);
           return (
-            <div
+            <li
               onMouseOver={() => {
                 dispatch(highlightSearchBoxSuburb(suburbId));
               }}
               onMouseOut={() => {
                 dispatch(unhighlightSearchBoxSuburb());
               }}
+              {...props}
             >
               <Grid container alignItems="center">
                 <Grid item>
@@ -137,7 +138,7 @@ const SearchBox: React.FunctionComponent = () => {
                   </Typography>
                 </Grid>
               </Grid>
-            </div>
+            </li>
           );
         }}
       />
