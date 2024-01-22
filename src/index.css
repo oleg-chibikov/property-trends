@@ -88,7 +88,7 @@ html {
 /* Open State */
 
 .drawerOpen.horizontal {
-  width: 400px;
+  width: 300px;
 }
 
 .drawerOpen.vertical {

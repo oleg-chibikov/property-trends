@@ -5,6 +5,7 @@ import React, { ReactNode, useState } from 'react';
 interface Mark {
   value: number;
   label?: React.ReactNode;
+  scaledValue?: number;
 }
 
 interface SliderFilterProps {
@@ -25,6 +26,7 @@ const SliderFilter: React.FunctionComponent<SliderFilterProps> = ({ marks, label
   };
   const [localValue, setLocalValue] = useState<number | number[]>(value);
   const valueCopy = convertValue ? convertValue(localValue) : localValue;
+
   return (
     <div>
       <Typography variant="body1">

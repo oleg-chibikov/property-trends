@@ -46,19 +46,19 @@ nav {
   scroll-behavior: smooth;
 }
 
-nav > * {
+nav > div {
   display: flex;
   align-items: center;
   align-content: center;
   flex-wrap: wrap;
 }
 
-nav > *:last-child {
+nav > div:last-child {
   margin-left: auto;
   flex-direction: row-reverse;
 }
 
-nav > *:last-child > div {
+nav > div:last-child > div {
   flex-direction: row-reverse;
 }
 
@@ -81,7 +81,7 @@ footer {
     display: none;
   }
   nav {
-    padding: 0.2rem;
+    padding: 0.5rem 0.2rem;
   }
 }
 

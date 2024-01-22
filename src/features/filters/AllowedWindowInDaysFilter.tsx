@@ -8,32 +8,58 @@ import { changeAllowedWindowInDays, selectAllowedWindowInDays } from './filtersS
 const Filters: React.FunctionComponent = () => {
   const dispatch = useDispatch<AppDispatch>();
   const allowedWindowInDays = useSelector(selectAllowedWindowInDays);
+  const marks = [
+    {
+      scaledValue: 1,
+      label: '1d',
+    },
+    {
+      scaledValue: 2,
+      label: '2d',
+    },
+    {
+      scaledValue: 3,
+      label: '3d',
+    },
+    {
+      scaledValue: 7,
+      label: '1w',
+    },
+    {
+      scaledValue: 14,
+      label: '2w',
+    },
+    {
+      scaledValue: 30,
+      label: '1m',
+    },
+    {
+      scaledValue: 180,
+      label: '6m',
+    },
+    {
+      scaledValue: 365,
+      label: '1y',
+    },
+    {
+      scaledValue: 500,
+      label: 'any',
+    },
+  ].map((x, i) => ({ ...x, value: i }));
   return (
     <SliderFilter
-      min={1}
-      max={60}
+      min={0}
+      max={marks.length - 1}
       value={allowedWindowInDays}
       label={
         <Tooltip title="Show only the data modified within this interval">
           <span>Data relevance:</span>
         </Tooltip>
       }
-      marks={[
-        {
-          value: 1,
-          label: '1d',
-        },
-        {
-          value: 30,
-          label: '1m',
-        },
-        {
-          value: 60,
-          label: 'any',
-        },
-      ]}
+      marks={marks}
       onChange={(newValue: number | number[]) => {
-        dispatch(changeAllowedWindowInDays(newValue as number));
+        const scaledValue = marks[newValue as number].scaledValue;
+        dispatch(changeAllowedWindowInDays(scaledValue));
       }}
     />
   );

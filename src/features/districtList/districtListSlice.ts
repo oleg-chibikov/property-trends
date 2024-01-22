@@ -51,7 +51,7 @@ const initialState: DistrictListState = {
   expandedState: false,
   retrySwitch: false,
   elementToScrollTo: undefined,
-  useAdaptiveColors: true,
+  useAdaptiveColors: false,
   zoomToSelection: true,
 };
 

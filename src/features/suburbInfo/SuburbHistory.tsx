@@ -11,7 +11,8 @@ import { selectSuburbInfoHistory, selectSuburbInfoSuburbKey, setSuburbInfoHistor
 let dispatch: Dispatch<unknown>;
 
 const fetchAndApplyData = async (filters: MapFilters, state: string, postCode: number, locality: string) => {
-  const data = await fetchSuburbHistory(filters, state, postCode, locality);
+  // Always include sold data for history
+  const data = await fetchSuburbHistory({ ...filters, includeSold: true }, state, postCode, locality);
   dispatch(setSuburbInfoHistory(data?.sort((a, b) => (a.date > b.date ? 1 : -1)) || []));
 };
 

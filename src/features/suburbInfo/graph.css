@@ -81,7 +81,7 @@ div.tooltip {
 
 .dotSurrounding,
 .selectedDot {
-  r: 14px;
+  r: 5px;
 }
 
 .selectedDotTooltip {

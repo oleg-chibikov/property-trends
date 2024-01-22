@@ -51,8 +51,4 @@ export default App;
 // place site and retriever on the same hosting
 // Error alerts
 // Load suburbs one by one? signalR?
-// Store last filter in cookies
-// Get data by post code and not by post-code + suburb
-// Get data for sold channel
-// Display Sold properties with flag
 // Display properties as dots on map

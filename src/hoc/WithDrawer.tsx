@@ -73,7 +73,7 @@ const withDrawer =
         }}
       >
         <div className={'drawerWrapper ' + (isHorizontal ? 'horizontal' : 'vertical') + ' ' + props.anchor}>
-          {isDesktop && <IconButton onClick={toggleDrawer}>{getButton(props.anchor)}</IconButton>}
+          <IconButton onClick={toggleDrawer}>{getButton(props.anchor)}</IconButton>
           {useMemo(
             () => (
               <Component {...props} />

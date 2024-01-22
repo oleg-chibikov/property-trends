@@ -264,7 +264,10 @@ function applyDefaultBrushSelection(
 }
 
 function getCurrentOrDefaultSelection(currentSelection: number[]) {
-  const selection = currentSelection || getDefaultSelection();
+  let selection = currentSelection;
+  if (!selection || selection[0] >= selection[1]) {
+    selection = getDefaultSelection();
+  }
   return [selection[0], selection[1]];
 }
 
@@ -703,7 +706,7 @@ function getDefaultSelection() {
   const currentDate = new Date();
   const oneYearFromNow = new Date();
   oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() - 1);
-  return [oneYearFromNow, currentDate];
+  return [oneYearFromNow.getTime(), currentDate.getTime()];
 }
 
 export default BrushChart;
