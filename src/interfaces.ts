@@ -33,7 +33,7 @@ export interface RealEstateEntry {
   minPrice: number;
   maxPrice?: number;
   propertyName?: string;
-  address?: string;
+  streetAddress?: string;
   latitude?: number;
   longitude?: number;
   id: number;
@@ -148,6 +148,7 @@ export interface MapFilters {
   constructionStatus: string;
   allowedWindowInDays: number;
   mainPriceOnly: boolean;
+  modernOnly: boolean;
   includeSold: boolean;
 }
 

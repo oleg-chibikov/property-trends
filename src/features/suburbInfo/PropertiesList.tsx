@@ -41,7 +41,7 @@ const PropertiesList: React.FunctionComponent = () => {
       {properties.map((el, index) => (
         <div key={index}>
           {index + 1 + '. ' + MoneyUtils.format(el.minPrice) + (el.maxPrice ? ' - ' + MoneyUtils.format(el.maxPrice as number) : '') + ' '}
-          <RealEstatePropertyLink id={el.id} text={el.address || 'No address'} />
+          <RealEstatePropertyLink id={el.id} text={el.streetAddress || 'No address'} />
         </div>
       ))}
     </div>

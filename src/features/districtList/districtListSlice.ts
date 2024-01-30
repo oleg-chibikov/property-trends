@@ -12,15 +12,7 @@ interface StateByDistrict {
 }
 
 const defaultDistrictsByState: { [state: string]: string[] } = {
-  NSW: [
-    'Sydney - City',
-    'Sydney - Eastern',
-    'Sydney - Inner',
-    // 'Sydney - North',
-    // 'Sydney - Ryde',
-    // 'Sydney - Parramatta',
-    // 'Sydney - Sutherland'
-  ],
+  NSW: ['Sydney'],
   QLD: ['Brisbane'],
   TAS: ['Hobart'],
   SA: ['Adelaide'],
