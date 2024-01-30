@@ -17,9 +17,9 @@ const timeFormat = d3.timeFormat('%b %Y');
 let midDate: number;
 let brushBehavior: d3.BrushBehavior<unknown> | undefined;
 let zoomBehavior: d3.ZoomBehavior<Element, unknown> | undefined;
-let showCrosshair: () => void;
-let hideCrosshair: () => void;
-let updateCrosshairPosition: () => void;
+let showCrosshair: (e: d3.D3BrushEvent<Element>) => void;
+let hideCrosshair: (e: d3.D3BrushEvent<Element>) => void;
+let updateCrosshairPosition: (e: d3.D3BrushEvent<Element> | d3.D3ZoomEvent<Element, unknown>) => void;
 let isCrosshairVisible: boolean;
 let previousCoordinates: [number, number];
 
@@ -135,12 +135,12 @@ function applyHighlightAndCrosshair(
     }
   };
 
-  updateCrosshairPosition = () => {
+  updateCrosshairPosition = (e: d3.D3BrushEvent<Element> | d3.D3ZoomEvent<Element, unknown>) => {
     // Recover coordinate we need
-    const mouse = d3.mouse(group.node() as d3.ContainerElement);
+    const pointer = d3.pointer(e);
     const xDomain = xScale.domain();
     const yDomain = yScale.domain();
-    const x = getCurrentXPosition(mouse);
+    const x = getCurrentXPosition(pointer);
     const i = bisect(data, xScale.invert(x), 1);
     const selectedData = data[i];
     if (!selectedData) {
@@ -263,10 +263,14 @@ function applyDefaultBrushSelection(
   applyBrushSelectionToMainGraph(data, brushedSelection as number[], xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
 }
 
+const inverseSelectionIfNeeded = (selection: number[]): number[] => (selection[0] > selection[1] ? [selection[1], selection[0]] : selection);
+
 function getCurrentOrDefaultSelection(currentSelection: number[]) {
   let selection = currentSelection;
-  if (!selection || selection[0] >= selection[1]) {
+  if (!selection || selection[0] === selection[1]) {
     selection = getDefaultSelection();
+  } else {
+    selection = inverseSelectionIfNeeded(selection);
   }
   return [selection[0], selection[1]];
 }
@@ -287,13 +291,13 @@ function applyBrushBehaviorToBrushGraph(
   brushHeight: number,
   brushGraph: d3.Selection<SVGGElement, unknown, null, undefined>
 ) {
-  const onBrush = () => {
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
+  const onBrush = (e: d3.D3BrushEvent<Element>) => {
+    if (!e.sourceEvent || e.sourceEvent.type === 'zoom') {
       return; // ignore brush-by-zoom
     }
-    const selection = (d3.event.selection as number[]) || xBrushScale.range();
+    const selection = (e.selection as number[]) || xBrushScale.range();
     applyBrushSelectionToMainGraph(data, selection, xBrushScale, xScale, yScale, xAxis, yAxis, mainGraphGroup, overlay, area, line, scatter, mainGraphWidth);
-    updateCrosshairPosition();
+    updateCrosshairPosition(e);
   };
 
   brushBehavior = d3
@@ -318,7 +322,11 @@ function applyBrushBehaviorToBrushGraph(
   //   showCrosshair();
   //   updateCrosshairPosition();
   // });
-  brushGraph.append('g').attr('class', 'brush').call(brushBehavior).call(brushBehavior.move, xScale.range());
+  brushGraph
+    .append('g')
+    .attr('class', 'brush')
+    .call(brushBehavior)
+    .call(brushBehavior.move, xScale.range() as d3.BrushSelection);
 }
 
 function applyZoomBehaviorToMainGraph(
@@ -337,19 +345,20 @@ function applyZoomBehaviorToMainGraph(
   mainGraphWidth: number,
   mainGraphHeight: number
 ) {
-  const onZoom = () => {
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
+  const onZoom = (e: d3.D3ZoomEvent<Element, unknown>) => {
+    if (!e.sourceEvent || e.sourceEvent.type === 'brush') {
       return; // ignore zoom-by-brush
     }
-    const transform = d3.event.transform as d3.ZoomTransform;
+    const transform = e.transform as d3.ZoomTransform;
     const newDomain = transform.rescaleX(xBrushScale).domain();
 
     const { range, domainValues } = applyNewDomain(data, newDomain, xScale, yScale, xAxis, yAxis, mainGraphGroup, area, line, scatter);
     if (brushBehavior) {
+      // @ts-expect-error call has 2 args
       brushGraph.select('.brush').call(brushBehavior.move as (x: unknown) => void, range.map(transform.invertX, transform));
     }
     dispatch(setSuburbInfoChartBrushSelection(domainValues.map((x) => x.getTime())));
-    updateCrosshairPosition();
+    updateCrosshairPosition(e);
   };
   zoomBehavior = d3
     .zoom()
@@ -398,10 +407,11 @@ function applyBrushSelectionToMainGraph(
   scatter: d3.Selection<SVGGElement, unknown, null, undefined>,
   mainGraphWidth: number
 ) {
-  const newDomain = selection.map(xBrushScale.invert, xBrushScale);
+  const newDomain = selection.map(xBrushScale.invert, xBrushScale) as Date[];
   applyNewDomain(data, newDomain, xScale, yScale, xAxis, yAxis, mainGraphGroup, area, line, scatter);
   // This line retains the brush selection on the brush graph
   if (zoomBehavior) {
+    // @ts-expect-error call has 2 args
     overlay.call(zoomBehavior.transform as (x: unknown) => void, d3.zoomIdentity.scale(mainGraphWidth / (selection[1] - selection[0])).translate(-selection[0], 0));
   }
 
@@ -511,21 +521,21 @@ function appendScatterToMainGraph(
     .attr('cy', (d) => yScale(d.median) as number)
     .style('fill', (x) => (x.count < 3 ? '#f3f0e7' : x.count < 5 ? '#eedfb4' : x.count < 10 ? '#eed590' : '#ffc21a'))
     .style('opacity', (x) => (x.count < 3 ? 0.1 : x.count < 5 ? 0.3 : x.count < 10 ? 0.5 : 0.7))
-    .on('mouseover', (d) => showTooltip(d, tooltip))
-    .on('click', (d) => showTooltip(d, tooltip))
-    .on('mousemove', (d) => repositionTooltip(d, tooltip))
+    .on('mouseover', (e, d) => showTooltip(e, d, tooltip))
+    .on('click', (e, d) => showTooltip(e, d, tooltip))
+    .on('mousemove', (e, d) => repositionTooltip(e, d, tooltip))
     .on('mouseleave', () => hideTooltip(tooltip));
   return scatter;
 }
 
-function repositionTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
+function repositionTooltip(e: { pageX: number; pageY: number }, d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
   const isSecondHalf = d.date.getTime() >= midDate;
   const tooltipWidth = parseInt(tooltip.style('width'));
   const xShift = isSecondHalf ? -tooltipWidth : 0;
-  tooltip.style('left', d3.event.pageX + xShift + 'px').style('top', d3.event.pageY + 'px');
+  tooltip.style('left', e.pageX + xShift + 'px').style('top', e.pageY + 'px');
 }
 
-function showTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
+function showTooltip(e: { pageX: number; pageY: number }, d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
   tooltip.style('opacity', 1);
   const tooltipHtml = `${timeFormat(d.date)}
   <br />
@@ -533,7 +543,7 @@ function showTooltip(d: ChartData, tooltip: d3.Selection<d3.BaseType, unknown, H
   <br />
   ${d.count} ${d.count === 1 ? 'property' : 'properties'}`;
   tooltip.html(tooltipHtml);
-  repositionTooltip(d, tooltip);
+  repositionTooltip(e, d, tooltip);
 }
 
 function hideTooltip(tooltip: d3.Selection<d3.BaseType, unknown, HTMLElement, unknown>) {
